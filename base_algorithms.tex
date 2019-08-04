@@ -1,27 +1,31 @@
 The algorithms that I investigated for this thesis can be grouped very broadly into two approaches, which I will describe in the following two sections.
 
 
-
-
 \section{Intersection algorithms}
-A simple definition of the backbone is that it is the intersection of all models of it's formula. If a literal is not part of the backbone, there must exist a model that contains the negation of that literal. Therefore if we had a way to iterate over every single model of the formula and, starting with the set of both literals for every variable and removing every literal from that set that was missing in one of these models, that set would end up being the backbone of the formula. \cite{adebu83} as well as \cite{adebu84} list an algorithm that does exactly this. 
+A simple definition of the backbone is that it is the intersection of all models of it's formula. If a literal is not part of the backbone, there must exist a model that contains the negation of that literal. Therefore if we had a way to iterate over every single model of the formula and, starting with the set of both literals for every variable and removing every literal from that set that was missing in one of these models, that set would end up being the backbone of the formula. \cite{mjl10} as well as \cite{mjl15} list an algorithm that does exactly this. 
+
 \begin{algorithm}
+
 \end{algorithm}
+
 Here, found models are prevented from being found again by adding a blocking clause of said model and the algorithm terminates once all models are prohibited and the formula became unsatisfiable through this. This blocking clause is a disjunction $verodert negiert alles in schnitt bekannter models$ which enforces that at least one variable must be different.
 
 %\cite{adebu84} improves this apporach slightly by reducing the found models, turning them to implicants, which cover multiple models, drastically reducing the amount of computation to calculate the backbone. Soll in improvements rein.
 
-Clearly, calculating every single model of a formula leaves room for optimization. Most models of a common boolean formula differ by small, independent differences that can just as well occur in other models. Therefore the intersection of only a handful of models can suffice to result in the backbone, as long as these models are chosen to be as different as possible. 
-TODO paper finden das gefundene models/implikanten miteinander schneidet und verbietet (IBB)
+Clearly, calculating every single model of a formula leaves room for optimization. Most models of a common boolean formula differ by small, independent differences that can just as well occur in other models. Therefore the intersection of only a handful of models can suffice to result in the backbone, as long as these models are chosen to be as different as possible. This was achieved in \cite{mjl15} as is described in algorithm X.
 
-It generates an upper bound $\nu_r$ of the backbone by intersecting found models and inhibits this upper bound instead of individual models. This blocking clause is much more powerful, because it enforces not only that a new model is found, but also that this new model will reduce the upper bound estimation of the backbone. %TODO mathematisch beschreiben wieso 
+\begin{algorithm}
+\end{algorithm}
+
+It generates an upper bound $\nu_r$ of the backbone by intersecting found models and inhibits this upper bound instead of individual models. This blocking clause is much more powerful, because it enforces not only that a new model is found, but also that this new model will reduce the upper bound estimation of the backbone. 
+%TODO mathematisch beschreiben wieso 
 Eventually $\nu_r$ will be reduced to the backbone. This can be easily recognized, because the blocking clause of the backbone or any of it's subsets makes the formula unsatisfiable.
 
 This algorithm is implemented in the Sat4J library under the designation $IBB$. 
 
 
 \section{Probing algorithms}
-Alternatively, you can define the backbone as all literals that occur with the same assignment in all models of it's problem, which implies that enforcing that variable to it's negation should make the formula unsatisfiable. This definition already leads to a simple algorithm that can calculate the backbone, by checking both assignments of every literal for whether it would make the formula unsatisfiable, see Algorithm 1. This algorithm is referenced in \cite{adebu83}
+Alternatively, you can define the backbone as all literals that occur with the same assignment in all models of it's problem, which implies that enforcing that variable to it's negation should make the formula unsatisfiable. This definition already leads to a simple algorithm that can calculate the backbone, by checking both assignments of every literal for whether it would make the formula unsatisfiable, see Algorithm 1. This algorithm is referenced in \cite{mjl10}
 \begin{algorithm}
 \caption{{\sc Iterative algorithm (two tests per variable)}}
 \DontPrintSemicolon

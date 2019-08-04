@@ -4,22 +4,50 @@ The algorithms that I investigated for this thesis can be grouped very broadly i
 \section{Intersection algorithms}
 A simple definition of the backbone is that it is the intersection of all models of it's formula. If a literal is not part of the backbone, there must exist a model that contains the negation of that literal. Therefore if we had a way to iterate over every single model of the formula and, starting with the set of both literals for every variable and removing every literal from that set that was missing in one of these models, that set would end up being the backbone of the formula. \cite{mjl10} as well as \cite{mjl15} list an algorithm that does exactly this. 
 
-\begin{algorithm}
-
+\begin{algorithm} %ueber alle models iterieren
+\caption{{\sc Enumeration-based backbone computation}}
+\DontPrintSemicolon
+\KwIn{Satisfiable formula $F$}
+\KwOut{Backbone of $F$, $\nu_r$}
+$\nu_r \gets \{ x | x \in Var(F) \} \cup \{ \neg x | x \in Var(F) \}$\;
+\While{$\nu_r \neq \emptyset$}{
+	$(outc,\nu) \gets SAT(F)$\;
+	\If{$outc = \bot$}{
+		$return \; \nu_r$
+	}
+	$\nu_r \gets \nu_r \cap \nu$\;
+	$\omega_B \gets \bigvee_{l \in \nu}\neg l$\;
+	$F \gets F \cup \omega_B$\;
+}
+$assert(\nu_r = \emptyset)$\;
+$return\; \nu_r$\;
 \end{algorithm}
 
-Here, found models are prevented from being found again by adding a blocking clause of said model and the algorithm terminates once all models are prohibited and the formula became unsatisfiable through this. This blocking clause is a disjunction $verodert negiert alles in schnitt bekannter models$ which enforces that at least one variable must be different.
+Here, found models are prevented from being found again by adding a blocking clause of said model and the algorithm terminates once all models are prohibited and the formula became unsatisfiable through this.
 
 %\cite{adebu84} improves this apporach slightly by reducing the found models, turning them to implicants, which cover multiple models, drastically reducing the amount of computation to calculate the backbone. Soll in improvements rein.
 
-Clearly, calculating every single model of a formula leaves room for optimization. Most models of a common boolean formula differ by small, independent differences that can just as well occur in other models. Therefore the intersection of only a handful of models can suffice to result in the backbone, as long as these models are chosen to be as different as possible. This was achieved in \cite{mjl15} as is described in algorithm X.
+Clearly, calculating every single model of a formula leaves room for optimization. Most models of a common boolean formula differ by small, independent differences that can just as well occur in other models. Therefore the intersection of only a handful of models can suffice to result in the backbone, as long as these models are chosen to be as different as possible. This was achieved in \cite{mjl15} as is described in algorithm 2.
 
 \begin{algorithm}
+\caption{{\sc Iterative algorithm with complement of backbone estimate}}
+\DontPrintSemicolon
+\KwIn{Satisfiable formula $F$}
+\KwOut{Backbone of $F$, $\nu_r$}
+$(outc,\nu_r) \gets SAT(F)$\;
+\While{$\nu_r \neq \emptyset$}{
+	$(outc,\nu) \gets SAT(F \cup \{\bigvee _{l\in\nu_r}\neg l\})$\;
+	\If{$outc = \bot$}{
+		$return\; \nu_r$\;
+	}
+	$\nu_r \gets \nu_r \cap \nu$\;
+}
+$return \; \nu_r$\;
 \end{algorithm}
 
 It generates an upper bound $\nu_r$ of the backbone by intersecting found models and inhibits this upper bound instead of individual models. This blocking clause is much more powerful, because it enforces not only that a new model is found, but also that this new model will reduce the upper bound estimation of the backbone. 
 %TODO mathematisch beschreiben wieso 
-Eventually $\nu_r$ will be reduced to the backbone. This can be easily recognized, because the blocking clause of the backbone or any of it's subsets makes the formula unsatisfiable.
+Eventually $\nu_r$ will be reduced to the backbone. This can be easily recognized, because the blocking clause of the backbone or any of it's subsets makes the formula unsatisfiable, except in the case that the formulas backbone would be empty. 
 
 This algorithm is implemented in the Sat4J library under the designation $IBB$. 
 
@@ -52,3 +80,6 @@ $\nu_r \gets \emptyset$\;
 \end{algorithm}
 
 As is commonly written in literature about boolean satisfiability, the two calls to the $SAT$ function return a pair which consists first of whether the given function was satisfiable at all and, secondly, the found model, which in this case is discarded. There is no good algorithm that can tell whether a boolean formula is satisfiable or not without trying to find a model for said formula. 
+
+
+kann mit vorigem ansatz verbessert werden

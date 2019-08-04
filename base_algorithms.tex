@@ -1,0 +1,41 @@
+The algorithms that I investigated for this thesis can be grouped very broadly into two approaches, which I will describe in the following two sections.
+
+
+\section{Probing algorithms}
+You can define the backbone as all literals that occur with the same assignment in all models of it's problem, which implies that enforcing that variable to either True or False should make the formula unsatisfiable. This definition already leads to a simple algorithm that can calculate the backbone, by checking both assignments of every literal for whether it would make the formula unsatisfiable, see Algorithm 1. This algorithm is referenced in TODO ref BB paper
+\begin{algorithm}
+\caption{{\sc Iterative algorithm (two tests per variable)}}
+\DontPrintSemicolon
+\KwIn{A formula $F$ in CNF}
+\KwOut{All literals of the backbone of $F$ $\nu_r$}
+$\nu_r \gets \emptyset$\;
+\For{$x \in Var(F)$}{
+	$(outc_1,\nu) \gets SAT(F \cup \{x\})$\;
+	$(outc_2,\nu) \gets SAT(F \cup \{\neg x\})$\;
+	\If{$outc_1 = \bot \wedge outc_2 = \bot$}{
+		$return\; \emptyset$\; 
+	}
+	\ElseIf{$outc_1 = \bot$}{
+		$\nu_r = \nu_r \cup \{\neg x\}$\;
+		$F = F \cup \{\neg x\}$\;
+	}
+	\ElseIf{$outc_2 = \bot$}{
+		$\nu_r = \nu_r \cup \{x\}$\;
+		$F = F \cup \{x\}$\;
+	}
+	
+}
+\Return{$\nu_r$}\;
+
+\end{algorithm}
+
+As is commonly written in literature about boolean satisfiability, the two calls to the $SAT$ function return a pair which consists first of whether the given function was satisfiable at all and, secondly, the found model, which in this case is discarded. There is no good algorithm that can tell whether a boolean formula is satisfiable or not without trying to find a model for said formula. We will see after the next section how we can make use of these models.
+
+
+\section{Intersection algorithms}
+An alternative definition of the backbone is the intersection of all models. If a literal is not part of the backbone, there must exist a model that contains the negation of that literal.
+
+
+\section{Combining both approaches}
+
+BB

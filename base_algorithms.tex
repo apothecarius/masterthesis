@@ -1,7 +1,8 @@
+\chapter{Base Algorithms}
 The algorithms that I investigated for this thesis can be grouped very broadly into two approaches, which I will describe in the following two sections.
 
-
 \section{Enumeration algorithms}
+\subsection{Model Enumeration}
 A simple definition of the backbone is that it is the intersection of all models of it's formula. If a literal is not part of the backbone, there must exist a model that contains the negation of that literal. Therefore if we had a way to iterate over every single model of the formula and, starting with the set of both literals for every variable and removing every literal from that set that was missing in one of these models, that set would end up being the backbone of the formula. \cite{mjl10} as well as \cite{mjl15} list an algorithm that does exactly this. 
 
 \begin{algorithm} %ueber alle models iterieren
@@ -24,6 +25,8 @@ $\Return\; \nu_r$\;
 \end{algorithm}
 
 Here, found models are prevented from being found again by adding a blocking clause of said model and the algorithm terminates once all models are prohibited and the formula became unsatisfiable through this.
+
+\subsection{Upper Bound Reduction}
 
 Clearly, calculating every single model of a formula leaves room for optimization. Most models of a common boolean formula differ by small, independent differences that can just as well occur in other models. Therefore the intersection of only a handful of models can suffice to result in the backbone, as long as these models are chosen to be as different as possible. This was achieved in \cite{mjl15} as is described in algorithm 2.
 
@@ -54,10 +57,65 @@ Note that it is not particularly important whether the blocking clauses remain i
 
 This algorithm is implemented in the Sat4J library under the designation $IBB$. 
 
+\subsection{Preferences}
 
-TODO hier noch iwie prefbones0 einordnen
+
+\begin{algorithm}
+\caption{{\sc BB-pref: Backbone computation using pref-SAT}}
+\DontPrintSemicolon
+\KwIn{A formula $F$ in CNF}
+\KwOut{All literals of the backbone of $F$, $\nu_r$}
+
+$\nu_r \gets SAT(F) $\;
+$setPreferences(\{\neg l : l \in \nu_r\})$\;
+
+\InfiniteLoop{}{
+	$(\_,\nu) \gets prefSAT(F)$\;
+	\If{$\nu \supseteq \nu_r $}{
+		$\Return\; \nu_r$\;
+	}
+	$removePreferences(\{\neg l : l \in \nu_r \textbackslash \nu\})$\;
+	$\nu_r \gets \nu_r \cap \nu$\;
+}
+\end{algorithm}
+im unsat fall gibt es kein model, kann also nicht geschnitten werden
+drei zeilen im unsat fall erklären
+1. zur rückgabemenge hinzufügen
+2. literal nicht mehr prüfen
+3. backbone literal in formel aufnehmen (lernen)
+
+
+\begin{algorithm}
+\caption{{\sc BB-pref: Backbone computation using pref-SAT and blocking clause}}
+\DontPrintSemicolon
+\KwIn{A formula $F$ in CNF}
+\KwOut{All literals of the backbone of $F$, $\nu_r$}
+
+$\nu_r \gets SAT(F)$\;
+$setPreferences(\{\neg l : l \in \nu_r\})$\;
+
+\InfiniteLoop{}{
+	$bc \gets \bigvee _{l\in\nu_r}\neg l$\;
+	$F \gets F \cup \{bc\}$\;
+
+	$(outc,\nu) \gets prefSAT(F)$\;
+	\If{$outc = \bot$}{
+		$\Return\; \nu_r$\;
+	}
+	$removePreferences(\{\neg l : l \in \nu_r \textbackslash \nu\})$\;
+	$\nu_r \gets \nu_r \cap \nu$\;
+}
+
+\end{algorithm}
+
+
+
+
+
+
 
 \section{Iterative algorithms}
+\subsection{Testing every literal}
 Alternatively, you can define the backbone as all literals that occur with the same assignment in all models of it's problem, which implies that enforcing that variable to it's negation should make the formula unsatisfiable. This definition already leads to a simple algorithm that can calculate the backbone, by checking both assignments of every literal for whether it would make the formula unsatisfiable, see Algorithm 1. This algorithm is referenced in \cite{mjl10}
 \begin{algorithm}
 \caption{{\sc Iterative algorithm (two tests per variable)}}
@@ -86,6 +144,7 @@ $\nu_r \gets \emptyset$\;
 
 As is commonly written in literature about boolean satisfiability, the two calls to the $SAT$ function return a pair which consists first of whether the given function was satisfiable at all and, secondly, the found model, which in this case is discarded. There is no good algorithm that can tell whether a boolean formula is satisfiable or not without trying to find a model for said formula, but we can use it to greatly improve the algorithm above by combining this approach with that of the enumeration algorithms.
 
+\subsection{Combining with Enumeration}
 First observe that any model of $F$ would already reduce the set of literals to test by half, because for every assignment missing in the model, we know that it cannot be part of the backbone, so there is no need to test it. 
 
 This can be repeated with every further model that we find. The following algorithm is another one that is listed in both \cite{mjl10} and \cite{mjl15} and is implemented in the Sat4J library as $BB$
@@ -122,33 +181,3 @@ In the other case, we identified $l$ as a backbone literal. In that case it will
 
 
 
-\begin{algorithm}
-\caption{{\sc BB-pref: Backbone computation using pref-SAT}}
-\DontPrintSemicolon
-\KwIn{A formula $F$ in CNF}
-\KwOut{All literals of the backbone of $F$, $\nu_r$}
-
-$\nu \gets prefSAT(F)$\;
-$\nu_r \gets \nu $\;
-\For{$l \in B$}{
-	$setPreference(\neg l)$\;
-}
-\InfiniteLoop{}{
-	$\nu \gets prefSAT(F)$\;
-	\If{$\nu \supseteq \nu_r $}{
-		$\Return\; \nu_r$\;
-	}
-	\For{$l \in \nu_r \textbackslash \nu$}{
-		$removePreference(\neg l)$\;
-	}
-	$\nu_r \gets \nu_r \cap \nu$\;
-}
-\end{algorithm}
-
-
-
-im unsat fall gibt es kein model, kann also nicht geschnitten werden
-drei zeilen im unsat fall erklären
-1. zur rückgabemenge hinzufügen
-2. literal nicht mehr prüfen
-3. backbone literal in formel aufnehmen (lernen)

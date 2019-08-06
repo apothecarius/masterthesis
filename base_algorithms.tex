@@ -20,7 +20,7 @@ $\nu_r \gets \{ x | x \in Var(F) \} \cup \{ \neg x | x \in Var(F) \}$\;
 	$F \gets F \cup \omega_B$\;
 }
 $assert(\nu_r = \emptyset)$\;
-$return\; \nu_r$\;
+$\Return\; \nu_r$\;
 \end{algorithm}
 
 Here, found models are prevented from being found again by adding a blocking clause of said model and the algorithm terminates once all models are prohibited and the formula became unsatisfiable through this.
@@ -41,7 +41,7 @@ $(outc,\nu_r) \gets SAT(F)$\;
 	}
 	$\nu_r \gets \nu_r \cap \nu$\;
 }
-$return \; \nu_r$\;
+$\Return \; \nu_r$\;
 \end{algorithm}
 
 It generates an upper bound $\nu_r$ of the backbone by intersecting found models and inhibits this upper bound instead of individual models. This blocking clause is much more powerful, because it enforces not only that a new model is found, but also that this new model will reduce the upper bound estimation of the backbone in each iteration. 
@@ -86,7 +86,7 @@ $\nu_r \gets \emptyset$\;
 
 As is commonly written in literature about boolean satisfiability, the two calls to the $SAT$ function return a pair which consists first of whether the given function was satisfiable at all and, secondly, the found model, which in this case is discarded. There is no good algorithm that can tell whether a boolean formula is satisfiable or not without trying to find a model for said formula, but we can use it to greatly improve the algorithm above by combining this approach with that of the enumeration algorithms.
 
-First observe that any model of $F$ would already reduce the set of literals to test by half, because every literal in it obviously does not make the formula unsatisfiable. For every assignment missing in the model, we know that it cannot be part of the backbone, so there is no need to test it. 
+First observe that any model of $F$ would already reduce the set of literals to test by half, because for every assignment missing in the model, we know that it cannot be part of the backbone, so there is no need to test it. 
 
 This can be repeated with every further model that we find. The following algorithm is another one that is listed in both \cite{mjl10} and \cite{mjl15} and is implemented in the Sat4J library as $BB$
 
@@ -112,8 +112,39 @@ $\nu_r \gets \emptyset$\;
 	}
 	
 }
-$return \; \nu_r$\;
+$\Return \; \nu_r$\;
 \end{algorithm}
+
+Note that both possible results of the call to the sat solver are converted to useful information. In the else branch, the formula together with the blocked literal $l$ was still solvable. In this case $\nu$ is still a valid model for $F$, so we can search through it to look for more variables that don't need to be checked. Note that here $\nu$ must contain $\neg l$, as it was enforced.
+
+In the other case, we identified $l$ as a backbone literal. In that case it will be added to the returned set, removed from the set of literals to test and, lastly, added to the problem $F$, which increases performance in subsequent solving steps. However it would be even better, not only to reuse the learned backbone literals, but all learned clauses.
+
+
+
+
+\begin{algorithm}
+\caption{{\sc BB-pref: Backbone computation using pref-SAT}}
+\DontPrintSemicolon
+\KwIn{A formula $F$ in CNF}
+\KwOut{All literals of the backbone of $F$, $\nu_r$}
+
+$\nu \gets prefSAT(F)$\;
+$\nu_r \gets \nu $\;
+\For{$l \in B$}{
+	$setPreference(\neg l)$\;
+}
+\InfiniteLoop{}{
+	$\nu \gets prefSAT(F)$\;
+	\If{$\nu \supseteq \nu_r $}{
+		$\Return\; \nu_r$\;
+	}
+	\For{$l \in \nu_r \textbackslash \nu$}{
+		$removePreference(\neg l)$\;
+	}
+	$\nu_r \gets \nu_r \cap \nu$\;
+}
+\end{algorithm}
+
 
 
 im unsat fall gibt es kein model, kann also nicht geschnitten werden

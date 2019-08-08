@@ -1,9 +1,21 @@
-\section{Optimizations}
-\subsection{Reusing learned literals}
-	vor allem für prefsat
-\subsection{Model Reduction}
-	primimplikante
-	rotationen
-\subsection{Implied backbone literals}
-	Unit (küchlin bones)
-	satz aus chinesischem paper
+\chapter{Optimizations}
+The following chapter elaborates on methods to enhance the algorithms that were described in the previous chapter. Depending on the particular combination of algorithm and enhancement, applying the optimization can be be considered a no brainer. However, experimental results show that this is not true without exception and in individual cases we will give thoughts why that is. Other improvements can only be applied to some algorthms due to the data that is available.
+
+\section{Model Reduction}
+
+
+
+\subsection{Prime Implicant}
+TODO leberre primimplikantenreduktion beschreiben.
+
+\subsection{Rotations}
+
+
+There is a model reduction method that is even more power	
+
+\section{Identifying backbone literals}
+This section describes various ways that allow you to recognize backbone literals without an additional satisfiability check. Instead, the algorithms in this section use side effects of the CDCL algorithm and intermediary results and generally run no slower than in linear time complexity.
+\subsection{Axiomatic literals}
+The most straightforward method to quickly identify backbone literals is to scan the formula for clauses with only a single literal. Since these clauses have only one possible way to become satisfied, that assignment must be used in every model of the formula and therefore  
+\subsection{Unit Implication}
+\subsection{Implication through Cohabitation}

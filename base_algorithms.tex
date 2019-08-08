@@ -53,7 +53,7 @@ This is because what remains after the intersection of a handful of models, are 
 
 Eventually $\nu_r$ will be reduced to the backbone. This can be easily recognized, because the blocking clause of the backbone or any of it's subsets makes the formula unsatisfiable, except in the case that the formulas backbone would be empty. 
 
-Note that it is not particularly important whether the blocking clauses remain in $F$ or get replaced by the next blocking clause, because the new blocking clause $bc_{i+1}$ always subsumes the previous one $bc_i$, meaning that every solution that is prohibited by $bc_{i+1}$ is also prohibited by $bc_i$ and $F \cup \{bc_i , bc_{i+1}\}$ is equivalent to $F \cup \{bc_{i+1}\}$ concerning the set of models.
+Note that it is not particularly important for the algorithm whether the blocking clauses remain in $F$ or get replaced by the next blocking clause, because the new blocking clause $bc_{i+1}$ always subsumes the previous one $bc_i$, meaning that every solution that is prohibited by $bc_{i+1}$ is also prohibited by $bc_i$ and $F \cup \{bc_i , bc_{i+1}\}$ is equivalent to $F \cup \{bc_{i+1}\}$ concerning the set of models.
 
 This algorithm is implemented in the Sat4J library under the designation $IBB$. 
 
@@ -178,6 +178,25 @@ Note that both possible results of the call to the sat solver are converted to u
 
 In the other case, we identified $l$ as a backbone literal. In that case it will be added to the returned set, removed from the set of literals to test and, lastly, added to the problem $F$, which increases performance in subsequent solving steps. However it would be even better, not only to reuse the learned backbone literals, but all learned clauses.
 
+\subsubsection{Hidden disadvantage}
+
+You would think that the iterative approach is just an improvement over the model enumeration algorithm. However it has a hidden disadvantage over them, which stems from how the given problem $F$ is modified as part of the algorithm. Remember how we wrote in chapter 2.1.2 how it does not particularly matter whether the blocking clause is removed or stays. Actually it can make a slight difference to the performance of the individual sat solving calls. The CDCL algorithm develops learned clauses during it's runtime. These learned clauses do not change the set of models for the formula but make it easier to avoid partial assignments of variables that by themselves make the formula unsatisfiable 
+
+TODO beispiel, mindestens 4 variablen 
+
+Clause learning in CDCL happens through a process called resolvent building. Here, two contradicting assignments are evaluated for their reasons, eventually ending up with a set of variable assignment decisions that led to the contradiction which is subsequently prohibited by a learned blocking clause.
+
+TODO resolventen algorithmus \newline
+TODO resolventen bildchen 
+
+These learned clauses can be reused in subsequent sat calls and can improve the speed of the solver dramatically. They prevent contradictory variable assignments, specifically those that the sat solver ran into before and have a good chance to be made again if nothing prevents the solver from it. 
+
+However reusing learned clauses is not as easy for the $BB$ solver as for the $IBB$ solver. Learned clauses are based on a subset of the clauses in $F$. Their existence is virtual so to speak, implied through these base clauses, just not easy to recognize. Adding more clauses to the formula does not remove a learned clause, as the set of base clauses is untouched. At most it might be possible to subsume it with another learned clause. However if a clause is removed from $F$, it might be that the learned clause is no longer implied through the formula, therefore making it invalid. 
+\footnote{
+The most you could do would be to keep track which clauses went into the generation of each learned clause and then only discard those learned clauses that were completely unrelated from the clause that was deleted from $F$. And that might have to be done recursively, if one of the base clauses is itself a learned clause. The SAT4J framework simply discards all learned clauses of the formula when a clause is removed from it.}
+
+TODO beispiel formel die mit einer klausel weniger eine keine klausel implizieren
 
 
+In the $BB$ solver, except for the very first solving step, no formula that is solved is a subset of any other. Therefore the clauses that are learned in these solving steps must be discarded and cannot help the other solving steps. The $IBB$ solver on the other hand only adds further constraints, therefore it can reuse all it's learned clauses and speed up the model generation over time.
 

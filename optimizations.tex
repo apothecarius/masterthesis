@@ -3,19 +3,75 @@ The following chapter elaborates on methods to enhance the algorithms that were 
 
 \section{Model Reduction}
 
+The algorithms described in section 2 all boil down to testing for each variable whether there exist two models where one assigns the variable to $\top$ and the other to $\bot$. This section describes two strategies to reduce the model that is returned by the sat solver to a subset that tells us more for the purpose of calculating a backbone. Both methods are related to the concept of the $implicant$.
 
+An implicant is a set of assignments of the variables in the problem $F$ that still satisfies $F$. The difference to models is, that here it is allowed to leave variables undefined. Let's imagine a formula where every clause contains the literal $a$, amongst other literals. Then $(a)$ would be a simple implicant for this formula, because assigning $a$ to $\top$ is sufficient to satisfy each clause. However there may also be a different implicant that does not contain $a$ at all, satisfying the clauses in a different way. If a variable $v$ does not occur in an implicant $I$, we say that $v$ is optional in $I$.
+
+Having a single implicant $I$ that leaves some variables optional immediately tells us, that every possible combination of assignments of the optional literals can make a model, if we just add the assigned literals in $I$. You could say that an implicant implies a large set of models.
+
+Without any further information, a single implicant $I$ tells us, that every one of the variables that are missing in it cannot be part of the backbone.
+
+Starting with complete models, implicants can be subsets of other implicants, by removing more and more assignments that are not essential. This way you will eventually reach an implicant where all of it's assignments are required and removing any literal from it, would leave some clause unsatisfied. This would be called a prime implicant $I_\pi$.
 
 \subsection{Prime Implicant}
-TODO leberre primimplikantenreduktion beschreiben.
+\cite{dflbm13} describes an algorithm that allows to calculate the prime implicant from a model in linear time over the number of literals in the formula.
+
+
+fuer pi0 kann man die menge der literale nehmen die durch unit propagation ermittelt wurden. TODO beweisen
+
+\begin{algorithm}
+\caption{{\sc Base approach to compute a prime implicant }}
+\DontPrintSemicolon
+\KwIn{A formula $F$, a model $I_m$, $I_r$ containing some required literals in $I_m$}
+\KwOut{$I_r$, reduced to a primeimplicant of $F$, being a subset of $I_m$}
+\While{$\exists l \in I_m \textbackslash I_r$}{
+	\If{$\exists c \in F : Req(I_m,l,c)$}{
+		$I_r \gets I_r \cup \{l\}$\;
+	}
+	\Else{
+		$I_m \gets I_m \textbackslash \{l\}$\;
+	}
+}
+
+\Return{$I_r$}\;
+
+\end{algorithm}
+
+The function $Req(I_m,l,c)$ tells, whether the literal $l$, which is part of $I_m$ is required to satisfy c.
 
 \subsection{Rotations}
+There is a model reduction method that is more powerful than calculating the prime implicant. Even better, the concept is much simpler than calculating the prime implicant.
 
 
-There is a model reduction method that is even more power	
+
+
+
 
 \section{Identifying backbone literals}
-This section describes various ways that allow you to recognize backbone literals without an additional satisfiability check. Instead, the algorithms in this section use side effects of the CDCL algorithm and intermediary results and generally run no slower than in linear time complexity.
+This section describes various ways that allow you to recognize backbone literals without an additional satisfiability check. Knowing these backbone literals early can speed up the individual calls to the SAT solver, because enforcing the backbone literals prevents the solver from trying to find solutions containing the inverse of the backbone literals, which by definition don't exist. 
+%Furthermore the latter two subsections here work solely on the set of already identified backbone literals.
+
+
 \subsection{Axiomatic literals}
-The most straightforward method to quickly identify backbone literals is to scan the formula for clauses with only a single literal. Since these clauses have only one possible way to become satisfied, that assignment must be used in every model of the formula and therefore  
+The most straightforward method to quickly identify backbone literals is to scan the formula for clauses with only a single literal. Since these clauses have only one possible way to become satisfied, that assignment must be used in every model of the formula and is therefore backbone. It makes sense to do this check after every sat computation.
+
+
 \subsection{Unit Implication}
-\subsection{Implication through Cohabitation}
+
+yadayada
+
+bedingung: damit c hier angewandt werden kann müssen alle literale darin backbone sein und $n_c - 1$ davon müssen bekannt sein.
+
+
+We have tested this method in two solvers, $BB$ and a variant of $PrefBones$ that learns backbone literals only from clause learning as described in the previous subsection. This clearly showed that this method requires a critical mass of already known backbone literals to have a benefit, because as already stated, if there even exists a clause in $F$ where this method can be applied, you need to know the $n_c - 1$ other backbone literals in $c$ beforehand.
+
+The learned backbone literals alone can rarely supply this, before the $PrefBones$ algorithm terminates from other conditions. However the iterative approach of the $BB$ solver, testing every yet unidentified literal individually, is much faster at providing positively identified backbone literals that you need to imply other backbone literals through unit implication.
+
+TODO tabelle mit numUnitLits verglichen zwischen pb1e und kbb. Soll auch zwischen vonThore und satComb unterscheiden.
+
+\subsection{Implication through Cohabitation} TODO besserer name
+
+Gegeben den Fall, Literal +a wurde als teil des Backbones identifiziert.\newline
+Wenn ein literal +b existiert das in allen Klauseln auftritt die auch +a enthalten, dann ist -b im Backbone\newline
+Beweis: Angenommen -b wäre nicht im backbone, dann gäbe es eine lösung die +b enthält\newline
+Alle Klauseln die +b enthalten enthalten auch +a, also wäre +a optional\newline

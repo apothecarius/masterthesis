@@ -192,11 +192,12 @@ TODO resolventen bildchen
 These learned clauses can be reused in subsequent sat calls and can improve the speed of the solver dramatically. They prevent contradictory variable assignments, specifically those that the sat solver ran into before and have a good chance to be made again if nothing prevents the solver from it. 
 
 However reusing learned clauses is not as easy for the $BB$ solver as for the $IBB$ solver. Learned clauses are based on a subset of the clauses in $F$. Their existence is virtual so to speak, implied through these base clauses, just not easy to recognize. Adding more clauses to the formula does not remove a learned clause, as the set of base clauses is untouched. At most it might be possible to subsume it with another learned clause. However if a clause is removed from $F$, it might be that the learned clause is no longer implied through the formula, therefore making it invalid. 
-\footnote{
-The most you could do would be to keep track which clauses went into the generation of each learned clause and then only discard those learned clauses that were completely unrelated from the clause that was deleted from $F$. And that might have to be done recursively, if one of the base clauses is itself a learned clause. The SAT4J framework simply discards all learned clauses of the formula when a clause is removed from it.}
-
-TODO beispiel formel die mit einer klausel weniger eine keine klausel implizieren
 
 
-In the $BB$ solver, except for the very first solving step, no formula that is solved is a subset of any other. Therefore the clauses that are learned in these solving steps must be discarded and cannot help the other solving steps. The $IBB$ solver on the other hand only adds further constraints, therefore it can reuse all it's learned clauses and speed up the model generation over time.
+Example: Using the iterative approach on formula $F = \{(a,b,c)\}$ together with blocking clause $(\neg a)$ implies the clause $(b,c)$. CDCL would learn this clause if it were configured to assign $\bot$ in every decision and assign $\top$ only through unit implications. This learned clause must be discarded. Otherwise when we test with the blocking clause $(\neg b)$, together with $(b,c)$ it would imply $(c)$, making $c$ a backbone of $F$, which it clearly isn't.
+
+
+In the $BB$ solver, except for the very first solving step, no formula that is solved is a subset of any other, because every time a single different literal is enforced. Therefore the clauses that are learned in these solving steps must be discarded and cannot help the other solving steps \footnote{
+The most you could do would be to keep track which clauses went into the generation of each learned clause and then only discard those learned clauses that were completely unrelated from the clause that was deleted from $F$. And that might have to be done recursively, if one of the base clauses is itself a learned clause. The SAT4J framework simply discards all learned clauses of the formula when a clause is removed from it.}. 
+The $IBB$ solver on the other hand only adds further constraints, therefore it can reuse all it's learned clauses and speed up the model generation over time.
 

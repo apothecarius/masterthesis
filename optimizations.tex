@@ -37,7 +37,7 @@ fuer pi0 kann man die menge der literale nehmen die durch unit propagation ermit
 
 \end{algorithm}
 
-The function $Req(I_m,l,c)$ tells, whether the literal $l$, which is part of $I_m$ is required to satisfy c.
+The function $Req(I_m,l,c)$ tells, whether the assignment $l$ in the implicant $I_m$ is required to satisfy c. In other words, is $l$ the only literal in $I_m$ that also occurs in $c$.
 
 \subsection{Rotations}
 There is a model reduction method that is more powerful than calculating the prime implicant. Even better, the concept is much simpler than calculating the prime implicant.
@@ -47,13 +47,19 @@ There is a model reduction method that is more powerful than calculating the pri
 
 
 
-\section{Identifying backbone literals}
-This section describes various ways that allow you to recognize backbone literals without an additional satisfiability check. Knowing these backbone literals early can speed up the individual calls to the SAT solver, because enforcing the backbone literals prevents the solver from trying to find solutions containing the inverse of the backbone literals, which by definition don't exist. 
+\section{Cheap Identification of backbone literals}
+This section describes various ways that allow you to recognize backbone literals without an additional satisfiability check. Knowing these backbone literals early can speed up the individual calls to the SAT solver, because enforcing the backbone literals prevents the solver from trying to find solutions containing the inverse of the backbone literals, which by definition don't exist.
 %Furthermore the latter two subsections here work solely on the set of already identified backbone literals.
 
 
 \subsection{Axiomatic literals}
-The most straightforward method to quickly identify backbone literals is to scan the formula for clauses with only a single literal. Since these clauses have only one possible way to become satisfied, that assignment must be used in every model of the formula and is therefore backbone. It makes sense to do this check after every sat computation.
+The most straightforward method to quickly identify backbone literals is to scan the formula for clauses with only a single literal. Since these clauses have only one possible way to become satisfied, that assignment must be used in every model of the formula and is therefore backbone. It makes sense to do this check after every sat computation, as every different way that leads to a different model brings different learned clauses, that may sometimes consist of a single literal.
+
+However you have to make sure that you don't add learned literals to your returned backbone set if they were already disproven to be part of the backbone which you can tell from your current blocking clause.
+
+TODO beweisen oder rausnehmen.
+
+An expansion on this would be to look for pairs of clauses $(a,b)$, $(a,\neg b)$ for any two variables of the formula. The only way to fulfill this pair of clauses is to assign $a$ to $\top$. This scheme can theoretically be applied to any clause size, but then you would require a quadratically increasing number of clauses to determine a backbone which would first increase computation time and secondly decrease the chance that the necessary set of clauses was available.
 
 
 \subsection{Unit Implication}

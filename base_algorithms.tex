@@ -201,3 +201,4 @@ In the $BB$ solver, except for the very first solving step, no formula that is s
 The most you could do would be to keep track which clauses went into the generation of each learned clause and then only discard those learned clauses that were completely unrelated from the clause that was deleted from $F$. And that might have to be done recursively, if one of the base clauses is itself a learned clause. The SAT4J framework simply discards all learned clauses of the formula when a clause is removed from it.}. 
 The $IBB$ solver on the other hand only adds further constraints, therefore it can reuse all it's learned clauses and speed up the model generation over time.
 
+NOPE, alles falsch. BB behält in praxis gelernte klauseln. Einziger nachteil ist, dass unsat ergebnisse kein model zurückgeben und dadurch nicht die kandidaten schneiden

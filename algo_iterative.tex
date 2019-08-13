@@ -1,0 +1,88 @@
+\section{Iterative algorithms}
+\subsection{Testing every literal}
+Alternatively, you can define the backbone as all literals that occur with the same assignment in all models of it's problem, which implies that enforcing that variable to it's negation should make the formula unsatisfiable. This definition already leads to a simple algorithm that can calculate the backbone, by checking both assignments of every literal for whether it would make the formula unsatisfiable, see Algorithm 1. This algorithm is referenced in \cite{mjl10}
+\begin{algorithm}
+\caption{{\sc Iterative algorithm (two tests per variable)}}
+\DontPrintSemicolon
+\KwIn{A satisfiable formula $F$ in CNF}
+\KwOut{All literals of the backbone of $F$ $\nu_r$}
+$\nu_r \gets \emptyset$\;
+\For{$x \in Var(F)$}{
+	$(outc_1,\_) \gets SAT(F \cup \{x\})$\;
+	$(outc_2,\_) \gets SAT(F \cup \{\neg x\})$\;
+	$assert(outc_1 = \top \vee outc_2 = \top)$ \tcp*{Otherwise F would be unsatisfiable}
+%	\If{$outc_1 = \bot \wedge outc_2 = \bot$}{
+%		$return\; \emptyset$\; 	}
+	\ElseIf{$outc_1 = \bot$}{
+		$\nu_r = \nu_r \cup \{\neg x\}$\;
+		$F = F \cup \{\neg x\}$\;
+	}
+	\ElseIf{$outc_2 = \bot$}{
+		$\nu_r = \nu_r \cup \{x\}$\;
+		$F = F \cup \{x\}$\;
+	}
+	
+}
+\Return{$\nu_r$}\;
+\end{algorithm}
+
+As is commonly written in literature about boolean satisfiability, the two calls to the $SAT$ function return a pair which consists first of whether the given function was satisfiable at all and, secondly, the found model, which in this case is discarded. There is no good algorithm that can tell whether a boolean formula is satisfiable or not without trying to find a model for said formula, but we can use it to greatly improve the algorithm above by combining this approach with that of the enumeration algorithms.
+
+\subsection{Combining with Enumeration}
+First observe that any model of $F$ would already reduce the set of literals to test by half, because for every assignment missing in the model, we know that it cannot be part of the backbone, so there is no need to test it. 
+
+This can be repeated with every further model that we find. The following algorithm is another one that is listed in both \cite{mjl10} and \cite{mjl15} and is implemented in the Sat4J library as $BB$
+
+\begin{algorithm}
+\caption{{\sc Iterative algorithm (one test per variable)}}
+\DontPrintSemicolon
+\KwIn{A satisfiable formula $F$ in CNF}
+\KwOut{All literals of the backbone of $F$ $\nu_r$}
+
+$(outc,\nu) \gets SAT(F)$\;
+$\Lambda \gets \nu$\;
+$\nu_r \gets \emptyset$\;
+\While{$\Lambda \neq \emptyset$}{
+	$l \gets pick\; any\; literal\; from\; \Lambda$\;
+	$(outc,\nu) \gets SAT(F \cup \{\neg l\})$\;
+	\If{$outc = \bot$}{
+		$\nu_r \gets \nu_r \cup \{l\}$\;
+		$\Lambda \gets \Lambda \textbackslash \{l\} $\;
+		$F \gets F \cup \{l\}$\;
+	}
+	\Else{
+		$\Lambda \gets \Lambda \cap \nu$\;
+	}
+	
+}
+$\Return \; \nu_r$\;
+\end{algorithm}
+
+Note that both possible results of the call to the sat solver are converted to useful information. In the else branch, the formula together with the blocked literal $l$ was still solvable. In this case $\nu$ is still a valid model for $F$, so we can search through it to look for more variables that don't need to be checked. Note that here $\nu$ must contain $\neg l$, as it was enforced.
+
+In the other case, we identified $l$ as a backbone literal. In that case it will be added to the returned set, removed from the set of literals to test and, lastly, added to the problem $F$, which increases performance in subsequent solving steps. However it would be even better, not only to reuse the learned backbone literals, but all learned clauses.
+
+\subsubsection{Hidden disadvantage}
+
+You would think that the iterative approach is just an improvement over the model enumeration algorithm. However it has a hidden disadvantage over them, which stems from how the given problem $F$ is modified as part of the algorithm. Remember how we wrote in chapter 2.1.2 how it does not particularly matter whether the blocking clause is removed or stays. Actually it can make a slight difference to the performance of the individual sat solving calls. The CDCL algorithm develops learned clauses during it's runtime. These learned clauses do not change the set of models for the formula but make it easier to avoid partial assignments of variables that by themselves make the formula unsatisfiable 
+
+TODO beispiel, mindestens 4 variablen 
+
+Clause learning in CDCL happens through a process called resolvent building. Here, two contradicting assignments are evaluated for their reasons, eventually ending up with a set of variable assignment decisions that led to the contradiction which is subsequently prohibited by a learned blocking clause.
+
+TODO resolventen algorithmus \newline
+TODO resolventen bildchen 
+
+These learned clauses can be reused in subsequent sat calls and can improve the speed of the solver dramatically. They prevent contradictory variable assignments, specifically those that the sat solver ran into before and have a good chance to be made again if nothing prevents the solver from it. 
+
+However reusing learned clauses is not as easy for the $BB$ solver as for the $IBB$ solver. Learned clauses are based on a subset of the clauses in $F$. Their existence is virtual so to speak, implied through these base clauses, just not easy to recognize. Adding more clauses to the formula does not remove a learned clause, as the set of base clauses is untouched. At most it might be possible to subsume it with another learned clause. However if a clause is removed from $F$, it might be that the learned clause is no longer implied through the formula, therefore making it invalid. 
+
+
+Example: Using the iterative approach on formula $F = \{(a,b,c)\}$ together with blocking clause $(\neg a)$ implies the clause $(b,c)$. CDCL would learn this clause if it were configured to assign $\bot$ in every decision and assign $\top$ only through unit implications. This learned clause must be discarded. Otherwise when we test with the blocking clause $(\neg b)$, together with $(b,c)$ it would imply $(c)$, making $c$ a backbone of $F$, which it clearly isn't.
+
+
+In the $BB$ solver, except for the very first solving step, no formula that is solved is a subset of any other, because every time a single different literal is enforced. Therefore the clauses that are learned in these solving steps must be discarded and cannot help the other solving steps \footnote{
+The most you could do would be to keep track which clauses went into the generation of each learned clause and then only discard those learned clauses that were completely unrelated from the clause that was deleted from $F$. And that might have to be done recursively, if one of the base clauses is itself a learned clause. The SAT4J framework simply discards all learned clauses of the formula when a clause is removed from it.}. 
+The $IBB$ solver on the other hand only adds further constraints, therefore it can reuse all it's learned clauses and speed up the model generation over time.
+
+NOPE, alles falsch. BB behält in praxis gelernte klauseln. Einziger nachteil ist, dass unsat ergebnisse kein model zurückgeben und dadurch nicht die kandidaten schneiden

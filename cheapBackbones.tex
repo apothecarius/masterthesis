@@ -8,7 +8,11 @@ The most straightforward method to quickly identify backbone literals is to scan
 
 However, if you want to use this feature in each iteration, make sure that your learned clauses do not stem from the means in which you enforce different models, for example the blocking clauses in $IBB$ or the checked literal in $BB$. Otherwise, you might confuse the backbone literals of your original problem $F$ with . \footnote{A simple example: You find an implicant $\{a\}$ with only a single literal. Then you add the blocking clause $\{\neg a\}$. But in $F \cup \{\neg a\}$ $\neg a$ is suddenly a backbone literal.}
 
-BB schafft es irgendwie mit assumptions die gelernten klauseln sauber zu halten. wie keine ahnung. IBB löscht seine gelernten klauseln, pbb1x nicht funktioniert aber trotzdem
+The $BB$ solver manages by having the feature of $assumptions$. These assumptions are assignments that are tested on top of trying to solve the formula by first making these assumptions as decisions in the CDCL algorithm and calculating according unit propagations, before letting the CDCL algorithm run it's course ordinarily. Once a model was found, all the learned clauses are checked whether they are related to the assumptions, and if so, they must be discarded. This way, the assumptions will not have any long term effect. The $IBB$ on the other hand is implemented to discard all learned clauses after every iteration, which gives it a tremendous performance loss.
+
+TODO: IBB und prefbones sind ohne verlernte klauseln immer noch sound. Wieso??
+
+TODO Satire.pdf referenzieren
 
 An expansion on this would be to look for pairs of clauses $(a,b)$, $(a,\neg b)$ for any two variables of the formula. The only way to fulfill this pair of clauses is to assign $a$ to $\top$. This scheme can theoretically be applied to any clause size, but then you would require a quadratically increasing number of clauses to determine a backbone which would first increase computation time and secondly decrease the chance that the necessary set of clauses was available.
 

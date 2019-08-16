@@ -11,15 +11,11 @@ The exact terminology can differ depending on the paper and project that you rea
 
 
 
-The backbone is a problem specific set of literals that contains all literals that occur in every model of that problem. We can also say that a variable is not part of the backbone, if neither it's positive or it's negative assignment is in the backbone. If we have an unsatisfiable formula, it's backbone can be considered undefinable, which is why this thesis concerns itself only with satisfiable CNF formulas. (TODO ref unsat backbone, aber keine einigkeit drüber)
+The backbone is a problem specific set of literals that contains all literals that occur in every model of that problem. We can also say that a variable is not part of the backbone, if neither it's positive or it's negative assignment is in the backbone. If we have an unsatisfiable formula, it's backbone can be considered undefinable, which is why this thesis concerns itself only with satisfiable CNF formulas.
 
-Implikante/Primimplikante notwendig?
-
-subsumption erklären (to subsume)
-
-\subsection{Conflict Driven Clause Learning}
-08 15 sat solver, interna sind wichtig zu wissen um effekte die spaeter beschrieben werden zu verstehen
-erklärung der sat solver, was er zurückgibt, vlt sogar CDCL
+TODO Implikante/Primimplikante besser hier? derzeit in Model Reduction untergebracht.
 
 
-As is usually done in literature, we write calls to sat solvers such as CDCL in code listings as $(outc,\nu) = SAT(F)$. Here, two values are returned. $outc$ is a boolean value that simply states whether $F$ was satisfiable to begin with. Only if it equals to $\top$, the second return parameter $\nu$ can have a meaningful value, which would be the model that was found and satisfies $F$. In some of the algorithms listed in this thesis, one of the return parameters is not used at all. In that case we write $(\_,\nu) = SAT(F)$ or $(outc,\_) = SAT(F)$ to indicate that either $outc$ or $\nu$ is discarded.
+For the context of CNF formulas, on which this thesis focuses, the term ``subsumption'' should to be explained. A clause $c_1$ subsumes another clause $c_2$ of the same formula, if and only if $c_1 \subseteq c_2$, in prose if all the literals that occur in $c_1$ also occur in $c_2$\footnote
+{One can filibuster whether $c_1$ would have to be a true subset of $c_2$. If a formula has two occurences of the exact same clause, then one of the occurences would be redundant, so the same rule could be applied here as well. In practice it makes more sense to filter out duplicates of clauses before running any computation on the formula.}.
+If $c_1$ subsumes $c_2$ in formula $F$ then this means that you can remove $c_2$ from $F$ because in terms of satisfying models, $F\textbackslash \{c_2\}$ is equivalent to $F$ as $\{c_1\}$ is equivalent to $\{c_1,c_2\}$. This is because in this case an assignment that satisfies $c_1$ also satisfies $c_2$ automatically. There is no possible assignment that satisfies clause $c_1$ that doesn't satisfy it's subsuming clause $c_2$.

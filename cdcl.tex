@@ -1,0 +1,7 @@
+\subsection{CDCL}
+
+TODO 08 15 sat solver, interna sind wichtig zu wissen um effekte die spaeter beschrieben werden zu verstehen
+erklärung der sat solver, was er zurückgibt, vlt sogar CDCL
+
+
+As is usually done in literature, we write calls to sat solvers such as CDCL in code listings as $(outc,\nu) = SAT(F)$. Here, two values are returned. $outc$ is a boolean value that simply states whether $F$ was satisfiable to begin with. Only if it equals to $\top$, the second return parameter $\nu$ can have a meaningful value, which would be the model that was found and satisfies $F$. In some of the algorithms listed in this thesis, one of the return parameters is not used at all. In that case we write $(\_,\nu) = SAT(F)$ or $(outc,\_) = SAT(F)$ to indicate that either $outc$ or $\nu$ is discarded.

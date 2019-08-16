@@ -37,9 +37,20 @@ The learned backbone literals alone can rarely supply this, before the $PrefBone
 
 TODO tabelle mit numUnitLits verglichen zwischen pb1e und kbb. Soll auch zwischen vonThore und satComb unterscheiden.
 
-\subsection{Implication through Cohabitation} TODO besserer name
+\subsection{Implication through Neighborhood}
 
+TODO remove\newline
 Gegeben den Fall, Literal +a wurde als teil des Backbones identifiziert.\newline
 Wenn ein literal +b existiert das in allen Klauseln auftritt die auch +a enthalten, dann ist -b im Backbone\newline
 Beweis: Angenommen -b wäre nicht im backbone, dann gäbe es eine lösung die +b enthält\newline
 Alle Klauseln die +b enthalten enthalten auch +a, also wäre +a optional\newline
+
+Another method to recognize backbone literals from other ones is described in \cite{wbxcl16} and the rationale goes as follows:
+%\newtheorem{Printed output}
+\begin{lemma}
+Given a backbone literal $a$ and another literal $b$. If $b$ occurs in all clauses that also contain $a$, then $\neg b$ must be part of the backbone. 
+
+Proof: Assuming $\neg b$ was not in the backbone, then there would have to exist a model that contained $b$. Given that all clauses that contain $b$ also contain $a$, $a$ cannot be part of the backbone.
+\end{lemma}
+
+In other words, if we determine a new backbone literal, and all clauses that contain it, also contain another literal, then we can add the negation of the latter to our backbone set. 

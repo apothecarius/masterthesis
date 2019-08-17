@@ -1,7 +1,56 @@
 \subsection{CDCL}
 
-TODO 08 15 sat solver, interna sind wichtig zu wissen um effekte die spaeter beschrieben werden zu verstehen
-erklärung der sat solver, was er zurückgibt, vlt sogar CDCL
+TODO Urpaper von CDCL und selektionsheuristic
 
+All the methods to generate a backbone of a formula $F$ that are described in this thesis essentially rely on calculating various models of $F$, so it makes sense to describe a method to do that as well. The current state-of-the-art algorithm to do this is the $Conflict\;Driven\;Clause\;Learning$ algorithm, or $CDCL$ for short. 
+
+Here a $CDCL\;table$ is used as a special dataset, to store the state of the SAT solver. This table stores the succession of assignments with four values for each assignment.
+\begin{itemize}
+\item The $level$ of the assignment. This level increases with each decision and starts at 0, where unit assignments before any decision are stored.
+\item The affected variable.
+\item The value that the variable was assigned to.
+\item The reason for the assignment. This can be one of two cases, either $Unit$ or $Decision$. 
+\\
+$Unit$ assignments happen, when a clause has all but one of it's literals unsatisfied. Since all clauses have to be satisfied for a CNF formula to be satisfied, that last literal must be assigned a value that satisfies it and it's clause. Entries in the CDCL table that refer to a unit assignment also store a reference to the clause that required the assignment.
+\\
+$Decisions$ happen when no clause is in the unit state. In theory, in this case you are free to pick any variable and assign it either $\top$ or $\bot$. 
+\end{itemize}
+
+The solver will now fill the table with assignments, unit assignments if possible or decisions otherwise, until one of two things happens. Either the formula became satisfied\footnote{
+	In this case only an implicant is returned. If you want a complete model, you can keep making decisions until all variables are assigned and return the assignments after that. However once you have an implicant, you are free to assign the remaining variables to anything you want, as the formula is already satisfied and further assignments cannot change that.}
+ in which case we can return the assignments that are stored in the table.
+
+The other possibility is that you run into a contradiction. Here a clause requires that a variable is assigned a value $b$, but it is already assigned $\neg b$. Both of these assignments have a reason in the context of the path of assignments that was taken up to this point. By following the reasons of the unit assignments in the CDCL table you will end up with a set of decisions that led to the conflict. 
+
+TODO resolution erklären
+
+klausel lernen, tabelle bis dahin leeren yadiyadiya
+
+
+\begin{algorithm}
+\DontPrintSemicolon
+\KwIn{A formula $F$ in CNF}
+\KwOut{A CDCL table which implies an implicant for $F$, or $\perp$ if $F$ is not satisfiable}
+$level \gets 0$\;
+$table \gets emptyList$\;
+\While{$1$}{
+	$table.pushAll(F.getUnits())$\;
+	\If{$\exists\;conflicting\; assignment$}{
+		\If{$level = 0$}{\Return{$ \perp$}}
+		\Else{$level \gets backtrackAndLearn(F,table)$}
+	}\ElseIf{$F\;is\;fulfilled$}{
+		\Return{$table$}
+	}\Else{
+		$level++$\;
+		$l \gets any\;free\;variable$\;
+		$l.assign(either\; \top\; or\; \bot)$\;
+		$table.pushDecision(l)$\;
+	}
+}
+\caption{{\sc CDCL}}
+\end{algorithm}
+
+
+Concerning the decisions, depending on the particular formula, it is possible that some assignments make it easier to solve the formula than others and some decisions might lead to a completely unsatisfied clause where all of it's literals are unsatisfied. A lot of work has been done to prevent this by setting up heuristics that try to pick a variable and corresponding assignment that would lead to a satisfying model without complications.
 
 As is usually done in literature, we write calls to sat solvers such as CDCL in code listings as $(outc,\nu) = SAT(F)$. Here, two values are returned. $outc$ is a boolean value that simply states whether $F$ was satisfiable to begin with. Only if it equals to $\top$, the second return parameter $\nu$ can have a meaningful value, which would be the model that was found and satisfies $F$. In some of the algorithms listed in this thesis, one of the return parameters is not used at all. In that case we write $(\_,\nu) = SAT(F)$ or $(outc,\_) = SAT(F)$ to indicate that either $outc$ or $\nu$ is discarded.

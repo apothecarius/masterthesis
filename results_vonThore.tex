@@ -1,0 +1,45 @@
+\section{Industrial benchmark}
+
+Another benchmark I applied on the various backbone algorithms was a DINGSBUMS kindly supplied by Daimler AG. Here a single 
+
+
+tabelle 1 mit ersten ergebnissen
+
+\begin{table}[h!] %[tbp]
+
+\label{tab:vonThore1} %for referencing
+\begin{tabular}{l| c c c }
+&	$t_{calc}$(sec) &	$t_{sat}$(sec)	& NSatCalls \\
+\hline
+BB & 11.865 & 8.181 & 159098 \\
+IBB & 6.719 & 2.887 & 15494 \\
+KBB & 77.922 & 1.098 & 5528 \\
+KBB(pref) & 64.666 & 1.55 & 6540 \\
+PB0 & 3.458 & 1.557 & 6929 \\
+PB1 & 3.42 & 1.367 & 6523 \\
+PB1(noAmnes) & 3.436 & 1.403 & 6523 \\
+PB1(model) & 1.968 & 1.479 & 6523 \\
+PB1(invert) & 7.727 & 3.207 & 15234 \\
+PB1x & 7.191 & 2.869 & 15734 \\
+PB1a & 4.611 & 2.034 & 9322 \\
+PB1b & 7.278 & 2.958 & 15234 \\
+PB1c(50\%) & 4.921 & 2.139 & 9644 \\
+PB1c(5\%) & 6.621 & 2.703 & 13941 \\
+PB1d(50\%) & 4.288 & 1.735 & 7373 \\
+PB1d(5\%) & 5.403 & 2.051 & 11225 \\
+PB1e & 3.438 & 1.363 & 6379 \\
+PB1f & 3.218 & 1.363 & 6361 \\
+PB2(50\%) & 4.838 & 2.129 & 9320 \\
+PB2(5\%) & 4.841 & 2.152 & 9324 \\
+PB2(0.5\%) & 4.951 & 2.118 & 9324 \\
+PB3 & 263.907 & 1.386 & 4466 \\
+\end{tabular}
+\caption{First execution of industry application.}
+\end{table}
+
+pb3 interessant, weil niedrigste sat zeit überhaupt
+
+verbesserungen:
+- nicht brute force klauseln prüfen, sondern anhand des index für watched literal propagation
+- nur die literale rotieren die in der obermenge verbleiben
+- 

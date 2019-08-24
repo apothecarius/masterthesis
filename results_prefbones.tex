@@ -1,3 +1,24 @@
-\section{Variations of Preferences}
+\section{Tested Backbone algorithms}
 
-auflisten was für prefbones implementierungen ausprobiert wurden
+The following section lists the results for various backbone implementations. As this thesis focuses on the preferences approach, which is also not as thoroughly examined as other approaches, most of these variants are slight modifications of algorithm \ref{alg:blockPref}, where preferences are combined with blocking clauses.
+
+The first two algorithms are $BB$ (as listed in algorithm \ref{alg:bb}) and $IBB$ (algorithm \ref{alg:ibb}). The next algorithm (designated as $KBB$) is a variant of $BB$ that whenever a backbone literal was identified through iterative testing, unit implication as described in subsection \ref{subsec:unitImpl} is used on the set of known backbone literals, trying to identify more backbone literals in a cheap way\footnote{
+	Note that optimisations such as this one were sometimes implemented in a simple, brute-force manner for the sake of time. Here the number of easily identified literals in combination with the pure calculation time is more interesting than the overall time that includes the unit search time.
+}. 
+The following variant $KBB(Pref)$ additionally adds preferences to $KBB$. 
+
+Next is the original $bb-pref$ (see algorithm \ref{alg:pb0}) as described in \cite{PJ18}, designated as $PB0$. Next is my own variant of $Prefbones$ that uses blocking clauses (see algorithm \ref{alg:blockPref}). However by default it contains two optimizations.
+\begin{itemize}
+\item Instead of intersecting models, the result of the sat call is refined to a prime implicant. The results for the case where this optimization was omitted can be seen in $PB1(model)$.
+\item Preferences are $forgetting$. There is a test with this omitted as well, namely $PB1(noAmnes)$.
+\end{itemize}
+
+$PB1(invert)$ is a variant where the preferences are inverted, resulting in the sat solver trying to reproduce already found solutions.
+
+
+
+
+
+
+%22 benchmarks
+%auflisten was für prefbones implementierungen ausprobiert wurden

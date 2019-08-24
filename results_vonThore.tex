@@ -1,9 +1,12 @@
 \section{Industrial benchmark}
 
-Another benchmark I applied on the various backbone algorithms was a DINGSBUMS kindly supplied by Daimler AG. Here a single 
+Another benchmark I applied on the various backbone algorithms was a DINGSBUMS kindly supplied by Daimler AG. Here echtwelt zusammenhang beschreiben.
+
 
 
 tabelle 1 mit ersten ergebnissen
+
+ergebnisse sind über 407 beispiele gemittelt
 
 \begin{table}[h!] %[tbp]
 
@@ -34,12 +37,14 @@ PB2(5\%) & 4.841 & 2.152 & 9324 \\
 PB2(0.5\%) & 4.951 & 2.118 & 9324 \\
 PB3 & 263.907 & 1.386 & 4466 \\
 \end{tabular}
-\caption{First execution of industry application.}
+\caption{First execution of industry application. Values are not averaged, but summed up.}
 \end{table}
+
+Here we immediately see, that preferences give a much greater benefit 
 
 pb3 interessant, weil niedrigste sat zeit überhaupt
 
 verbesserungen:
-- nicht brute force klauseln prüfen, sondern anhand des index für watched literal propagation
+- nicht brute force klauseln prüfen, sondern anhand des index für watched literal propagation (notiz: monoclauses werden in sat4j nicht gelernt. Sollten stattdessen eh als assumptions übergeben werden)
 - nur die literale rotieren die in der obermenge verbleiben
-- 
+

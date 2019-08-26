@@ -5,15 +5,32 @@ The following section lists the results for various backbone implementations. As
 The first two algorithms are $BB$ (as listed in algorithm \ref{alg:bb}) and $IBB$ (algorithm \ref{alg:ibb}). The next algorithm (designated as $KBB$) is a variant of $BB$ that whenever a backbone literal was identified through iterative testing, unit implication as described in subsection \ref{subsec:unitImpl} is used on the set of known backbone literals, trying to identify more backbone literals in a cheap way\footnote{
 	Note that optimisations such as this one were sometimes implemented in a simple, brute-force manner for the sake of time. Here the number of easily identified literals in combination with the pure calculation time is more interesting than the overall time that includes the unit search time.
 }. 
-The following variant $KBB(Pref)$ additionally adds preferences to $KBB$. 
+The following variant $KBB(Pref)$ additionally adds preferences to $KBB$. Both differ further from $BB$, in that they reduce their model not to a prime implicant, but to the required assignments in said model.
+TODO KBB benutzt Rotationen (keine primimplikanten). reiner effekt der unit implikation verfälscht. Problem?
 
-Next is the original $bb-pref$ (see algorithm \ref{alg:pb0}) as described in \cite{PJ18}, designated as $PB0$. Next is my own variant of $Prefbones$ that uses blocking clauses (see algorithm \ref{alg:blockPref}). However by default it contains two optimizations.
+Next is the original $bb-pref$ (see algorithm \ref{alg:pb0}) as described in \cite{PJ18}, designated as $PB0$, followed by my own variant of $Prefbones$ that uses blocking clauses (see algorithm \ref{alg:blockPref}). However by default it contains two optimizations.
 \begin{itemize}
 \item Instead of intersecting models, the result of the sat call is refined to a prime implicant. The results for the case where this optimization was omitted can be seen in $PB1(model)$.
 \item Preferences are $forgetting$. There is a test with this omitted as well, namely $PB1(noAmnes)$.
 \end{itemize}
 
-$PB1(invert)$ is a variant where the preferences are inverted, resulting in the sat solver trying to reproduce already found solutions.
+The algorithms after that can also be described as slight modifications of $PB1$.
+\begin{itemize}
+	\item $PB1(invert)$ is a variant where the preferences are inverted, resulting in the sat solver trying to reproduce already found solutions. 
+	\item $PB1x$ simply deactivates the preferences. Algorithmically this makes $PB1x$ the same is $IBB$.
+	\item $PB1a$ removes the effect of selection order from the preferences. However, when one of the preferred literals is assigned, the assigned phase is chosen from the preferences.
+	\item $PB1b$ is the opposite of $PB1a$. The assigned value to a preferred literal is left to underlying heuristics, but preferred literals are picked for decisions.
+	\item $PB1c$ is configured in a way that only a handful of preferences are set in any point in time. It can be configured with a parameter $f \in ]0..1]$. The maximum number of preferred assignments in $PB1c$ is the number of variables in the formula multiplied with $f$. However, the particular order in which the subset is chosen is linear beginning at the first literal, so the set of preferences is often very similar over different sat calls.
+	\item To alleviate this, $PB1d$ contains an additional mechanism to ensure that the chosen subset of preferences is as different as possible in every sat computation.
+	\item $PB1e$ takes learned literals into account. These are put into set called $bb_{sub}$, which always contains a lower bound of the backbone. This allows two things. First you can omit preferences that would go against required backbone assignments, which would unnecessarily waste time. Secondly, you can add another abort condition. Instead of only stopping once the blocking clause makes the formula unsatisfiable, here you can also compare the backbones lower bound ($bb_{sub}$) with it's upper bound, which would be the intersection of previously found implicants. You can stop, once both upper and lower bound are the same and it is sufficient to compare their size to do this. This approach can potentially save the last sat computation.
+	TODO: unter umständen behält der sat solver sowieso gelernte literale, dann hätten andere präferenzen eh keinen effekt.
+	\item $PB1f$ expands upton $PB1e$ by initially running two satcalls, where one always assigns decided literals to $\top$ and the other to $\bot$. 
+\end{itemize}
+
+$PB2$ employs a different way to implement preferences. Instead of having a preferred and a remainder set of literals and first exhausting the preferred set, here only one order is set up. However the activity values that determine the order are manipulated by applying a constant factor $f$ to those literals that are preferred
+
+
+
 
 
 

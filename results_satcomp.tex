@@ -19,18 +19,18 @@ PB1(invert) & 164.994 & 164.992 & 11 \\
 PB1x & 18.564 & 18.562 & 8 \\
 PB1a & 154.091 & 154.089 & 7 \\
 PB1b & 144.028 & 144.026 & 6 \\
-PB1c & 119.571 & 119.569 & 6 \\
+PB1c(50\%) & 119.571 & 119.569 & 6 \\
 PB1c(5\%) & 141.334 & 141.332 & 6 \\
-PB1d & 131.602 & 131.6 & 6 \\
+PB1d(50\%) & 131.602 & 131.6 & 6 \\
 PB1d(5\%) & 148.734 & 148.732 & 6 \\
 PB1e & 143.675 & 142.621 & 6 \\
 PB1f & 224.335 & 224.334 & 6 \\
-PB2 & 228.267 & 228.264 & 8 \\
+PB2(50\%) & 228.267 & 228.264 & 8 \\
 PB2(5\%) & 182.26 & 182.258 & 8 \\
 PB2(0.5\%) & 165.892 & 165.89 & 8 \\
 PB3 & 157.297 & 157.249 & 5
 \end{tabular}
-\caption{Averages of 71 testfiles, mostly taken from sat competitions. The columns indicate: The full time that the calculation took in seconds; The time that was spent in the sat solver; The number of sat calls (all three values are averages). }
+\caption{Averages of 71 testfiles taken from sat competitions. The columns indicate: The full time that the calculation took in seconds; The time that was spent in the sat solver; The number of sat calls (all three values are averages). }
 \end{table}
 
 
@@ -124,7 +124,7 @@ fla-qhid-400-4.cnf & 359 & 392 & 400 & 137.879(33) & 134.525(392) \\
 \hline
 \end{tabular}
 \caption{Benchmark results for the sat competition files with a focus on the benefit of unit implication.
-Rows indicate: The number of backbone literals identified through unit implication; the actual number of backbone literals; the number of variables in the formula; Calculationtime and number of sat calls of the solver ($KBB$), the same of the $BB$ solver for comparison.}
+Rows indicate: The number of backbone literals identified through unit implication; the actual number of backbone literals; the number of variables in the formula; Calculationtime and number of sat calls of the solver ($KBB$), the same of the $BB$ solver for comparison. TODO mit dauer der unit analyse aufschreiben (oder alternativ reine sat zeit)}
 \end{table}
 
 Begründungsvermutung: Hauptzeit geht für wenige schwierige Literale drauf, die nicht per unit implikation gefunden werden können. Könnte experimentell festgestellt werden, dur

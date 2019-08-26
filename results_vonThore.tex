@@ -42,9 +42,18 @@ PB3 & 263.907 & 1.386 & 4466 \\
 
 Here we immediately see, that preferences give a much greater benefit 
 
-pb3 interessant, weil niedrigste sat zeit überhaupt
+pb3 interessant, weil niedrigste sat zeit und wenigsten sat calls überhaupt. Verliert wohl viel zeit mit drumrum also optimieren
 
 verbesserungen:
 - nicht brute force klauseln prüfen, sondern anhand des index für watched literal propagation (notiz: monoclauses werden in sat4j nicht gelernt. Sollten stattdessen eh als assumptions übergeben werden)
 - nur die literale rotieren die in der obermenge verbleiben
+- Außerdem: "bugfix" erzwungenes literal trat nicht in gelernten auf.
+
+-> kein weiterer sat aufruf und Gesamtlaufzeit von 0.3 Sekunden
+
+besonderheiten: 
+- absolut alle backbone literale sind nach dem ersten sat aufruf gelernt. (*mit technischen besonderheiten, nur wenn man blocking clauses nimmt und dann ausgenommen die in der blocking clause)
+- model minus rotationen wird jedes mal zu genau dem backbone (prim implikante reicht nicht ganz) (heißt nicht, dass nur eine primimplikante existiert, sonst wäre PB1 genauso gut)
+
+bedeutet auch: in diesem extremfall sind preferences unnötig
 

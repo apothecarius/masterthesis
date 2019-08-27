@@ -1,0 +1,57 @@
+\subsection{Preferences}
+\label{ss:prefs}
+This approach still leaves much of it's efficiency to chance. Theoretically the solver might return models with only the slightest differences from each other, when other models could reduce the set of backbone candidates much more. For example the blocking clause can be satisfied with only one literal in it being satisfied, but if we were to find a model that satisfies all literals in the blocking clause, we can immediately tell that the backbone is empty and we would be finished. So it would be a good approach for backbone computation if we could direct our sat solver to generate models that disprove as many of the literals in the blocking clause as possible. Precisely this has been described by \cite{PJ18}, but has also been proposed much earlier by \cite{kk01}. 
+
+\cite{PJ18} describe an algorithm called $BB-PREF$ or $Prefbones$, which makes use of a slightly modified SAT solver based on CDCL, which is called $prefSAT$ in the algorithm below. It can be configured with a set of preferred literals $prefs$. Typically, when the CDCL algorithm reaches the point where it has the freedom to decide the assignment of a variable, it consults a heuristic that tries to predict the best choice of variable and assignment to reach a model, so to speak, trying to predict assignments in the model that it tries to find. Instead, $prefSAT$ uses two separate instances of these heuristics $h_{pref}$ and $h_{tail}$, which by themselves may work just as the single heuristic used in the ordinary CDCL solver. The key difference in $prefSAT$ is, that $h_{pref}$, which contains the literals in $prefs$,  is consulted first for decisions, and only when all variables with a preferred assignment are already assigned, $h_{tail}$ is used to pick the most important literal, which only contains literals that are not preferred.
+
+
+\begin{algorithm}
+\caption{{\sc BB-pref: Backbone computation using pref-SAT}}
+\label{alg:pb0}
+\DontPrintSemicolon
+\KwIn{A satisfiable formula $F$ in CNF}
+\KwOut{All literals of the backbone of $F$, $\nu_r$}
+
+$(\_,\nu_r) \gets SAT(F) $\;
+%$setPreferences(\{\neg l : l \in \nu_r\})$\;
+
+\InfiniteLoop{}{
+	$prefs \gets \{\neg l : l \in \nu_r\}$\;
+	$(\_,\nu) \gets prefSAT(F,prefs)$\;
+	\If{$\nu \supseteq \nu_r $ }{
+		$\Return\; \nu_r$\tcp*{No preference was applied}
+	}
+	%$removePreferences(\{\neg l : l \in \nu_r \textbackslash \nu\})$\;
+
+	$\nu_r \gets \nu_r \cap \nu$\;
+}
+\end{algorithm}
+
+This algorithm also differs from $IBB$ in that it does not add blocking clauses, and that is also why it cannot use the case when $F$ becomes unsatisfiable to terminate the algorithm. Instead it relies on the preferences to be taken into account. Except for the case where a formula has only one model, CDCL must make at least one decision. That decision must come from $h_{pref}$, except for the case that CDCL learned axiomatic assignments for all variables in $prefs$. Depending on whether the learned value for the variables in $prefs$ contradicts all preferences it may take another call to $prefSAT$, but at the latest then no more changes will happen to $\nu_r$ and the algorithm terminates. The return condition also covers the case when the backbone turns out to be empty, because then $\nu_r$ was reduced to $\emptyset$ and that is a subset of every set.
+
+Note that the algorithm was written slightly different from what is listed in \cite{PJ18} to make the relation with common enumeration algorithms more apparent and also make it easier to read.
+
+The return condition makes this algorithm inflexible, as the preferences have to be taken into account without exception. If not, a model might be returned that terminates the algorithm prematurely, because it did not properly test a variable assignment, instead taking a shortcut to save time in the calculation of a model. Since the purpose of this thesis was to experiment with solvers and we were interested in the concrete effects of preferences by themselves on the backbone computation, we created a variation of Prefbones, that uses the previous approach of upper bound reduction, adding a blocking clause to $F$ in every iteration and terminating when $F$ would become unsatisfiable. This made the preferences algorithmically completely optional and allowed to experiment with many variations on the concept.
+
+\begin{algorithm}
+\caption{{\sc BB-pref: Backbone computation using pref-SAT and blocking clause}}
+\label{alg:blockPref}
+\DontPrintSemicolon
+\KwIn{A formula $F$ in CNF}
+\KwOut{All literals of the backbone of $F$, $\nu_r$}
+
+$(\_,\nu_r) \gets SAT(F)$\;
+%$setPreferences(\{\neg l : l \in \nu_r\})$\;
+
+\InfiniteLoop{}{
+	$bc \gets \bigvee _{l\in\nu_r}\neg l$\;
+	$F \gets F \cup \{bc\}$\;
+	$prefs \gets \{\neg l : l \in \nu_r\}$\;
+	$(outc,\nu) \gets prefSAT(F,prefs)$\;
+	\If{$outc = \bot$}{
+		$\Return\; \nu_r$\;
+	}
+	%$removePreferences(\{\neg l : l \in \nu_r \textbackslash \nu\})$\;
+	$\nu_r \gets \nu_r \cap \nu$\;
+}
+\end{algorithm}

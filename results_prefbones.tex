@@ -27,7 +27,10 @@ The algorithms after that can also be described as slight modifications of $PB1$
 	\item $PB1f$ expands upton $PB1e$ by initially running two satcalls, where one always assigns decided literals to $\top$ and the other to $\bot$. 
 \end{itemize}
 
-$PB2$ employs a different way to implement preferences. Instead of having a preferred and a remainder set of literals and first exhausting the preferred set, here only one order is set up. However the activity values that determine the order are manipulated by applying a constant factor $f$ to those literals that are preferred
+$PB2$ employs a different way to implement preferences. Instead of having a preferred and a remainder set of literals and first exhausting the preferred set, here only one order is set up. However the activity values that determine the order are manipulated by applying a constant factor $f$ to those literals that are preferred. The underlying idea is, that two variables are an equally good choice for a decision if their activity values are close, but if we have to pick one of the two, the one that is preferred is definitely to be preferred.\\
+TODO präferenz nur dann berücksichtigt, wenn auch die phase passt, muss man nochmal ausführen.
+
+$PB3$ reduces the models not to a prime implicant but to the set of required literals as described in section \ref{ss:rot}.
 
 
 

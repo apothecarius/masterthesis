@@ -45,13 +45,26 @@ The only assignments that you really have to test here are those that were decis
 The function $Req(I_m,l,c)$ tells, whether the assignment $l$ in the implicant $I_m$ is required to satisfy c. In other words, is $l$ the only literal in $I_m$ that also occurs in $c$.
 
 \subsection{Rotations}
-There is a model reduction method that is more powerful than calculating the prime implicant. Even better, the concept is much simpler than calculating the prime implicant. 
+\label{ss:rot}
+There is a model reduction method that is even more powerful than calculating the prime implicant. Even better, the concept is much simpler than calculating the prime implicant. 
 
-Any model of a CNF formula can contain multiple implicants and even prime implicants\footnote{As an example imagine any formula with only clauses of size two. This formula has at least two prime implicants $I_1$ and $I_2$ ) that you can generate by collecting either the first literal of every clause for $I_1$ or the second literal for $I_2$. If the literals in $I_1$ are disjunct from those in $I_2$ then you can build a model of the combination of $I_1$ and $I_2$.}
+Any model of a CNF formula can contain multiple implicants and even prime implicants\footnote{As an example imagine any formula with only clauses of size two, where the first literals are disjunct from the second literals. This formula has at least two prime implicants $I_1$ and $I_2$ that you can generate by collecting either the first literal of every clause for $I_1$ or the second literal for $I_2$. Since the literals in $I_1$ are disjunct from those in $I_2$, you can build a model of the combination of $I_1$ and $I_2$.}
 , so if we could find out from only a single model $M_0$ of $F$, which of these literals occured in all implicants that that model covered, with each model we could reduce the set of backbone candidates even more than with just one of it's prime implicants.
 
-Doing this is actually pretty simple. Instead of generating a small set various prime implicants, you check for each assignment $a$ in $M_0$, whether it is required in $M_0$, by checking whether $(M_0 \textbackslash a)$ is still an implicant that satisfies $F$. You can do this faster if you make use of the lookup table described in the previous subsection so that you only need to check affected clauses, since as you start from a known model, every unaffected clause should still be satisfied. However, tests with our implementation showed that the time that it takes to test an implicant by brute force, iterating over each clause and looking for a satisfied literal, was negligible, so there is hardly a benefit in something more complicated.
+Doing this is actually pretty simple. Instead of generating a small set of various prime implicants, you check for each assignment $a$ in $M_0$, whether it is required in $M_0$, by checking whether $(M_0 \textbackslash a)$ is still an implicant that satisfies $F$. If so, we know that $a$ is not part of the backbone, because we found an implicant without it.
 
+You can do this faster if you make use of the lookup table described in the previous subsection, where each literal is mapped to the set of clauses where it occurs. After all, you already know that $M_0$ satisfies $F$, so it is sufficient to check only the clauses that contain the tested literal $a$, whether they are satisfied in a different way in $M_0 \textbackslash \{a\}$. Unaffected clauses must still be satisfied without $a$.
+\\
+Whether this gives a performance benefit greatly depends on the structure of the formulas. I essentially used two benchmarks, one academic made of examples from the sat competitions and the other being a real-life example from the automobile industry. The academic one contained much fewer clauses (1.000-2.000) compared to the industrial (around 60.000), however the clauses of the academic benchmark contained three literals each, compared to two in the industrial one.  \\
+TODO individuelle vonThore benchmarks mit individuellen satcomp benchmarks vergleichen
+
+%The difference in performance was extreme. Whereas the academic benchmark spent almost all of it's time in the sat solver, for the industrial benchmark my experimental solver with brute-force model rotation spent around 190 times as much time to rotate literals as it did to calculate the model.
+
+%Clauses with many clauses that contain few literals 
+%vonThore: 60k zweier klauseln -> brute force scheiße
+%rest: 1k-2k 3er klauseln -> brute force ok
+
+The benefit of this approach depends on the particular example as well. If the individual models of a formula contain very few (prime-)implicants, then looking for rotatable literals might not give a benefit over calculating the prime implicants.
 
 \begin{algorithm}
 \caption{{\sc Literal rotation in models }}
@@ -65,7 +78,7 @@ $R \gets \emptyset$\;
 		$R \gets R \cup \{a\}$\;
 	}
 }
-\Return{$I_a$}\;
+\Return{$R$}\;
 
 \end{algorithm}
 

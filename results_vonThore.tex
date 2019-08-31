@@ -8,8 +8,7 @@ tabelle 1 mit ersten ergebnissen
 
 ergebnisse sind über 407 beispiele gemittelt
 
-\begin{table}[h!] %[tbp]
-
+\begin{wraptable}{r}{8cm} %[tbp]
 \label{tab:vonThore1} %for referencing
 \begin{tabular}{l| c c c }
 &	$t_{calc}$(sec) &	$t_{sat}$(sec)	& NSatCalls \\
@@ -38,11 +37,12 @@ PB2(0.5\%) & 4.951 & 2.118 & 9324 \\
 PB3 & 263.907 & 1.386 & 4466 \\
 \end{tabular}
 \caption{First execution of industry application. Values are not averaged, but summed up.}
-\end{table}
+\end{wraptable}
 
-Here we immediately see, that preferences give a much greater benefit 
+Here we immediately see, that preferences give a much greater benefit than in the benchmark with the files from the sat competition.
 
-pb3 interessant, weil niedrigste sat zeit und wenigsten sat calls überhaupt. Verliert wohl viel zeit mit drumrum also optimieren
+pb3 interessant, weil niedrigste sat zeit und wenigsten sat calls überhaupt. Verliert wohl viel zeit mit drumrum also optimieren.
+TODO pb1e anschauen, wieviele literale gelernt wurden und mit sat größe gegenüberstellen. (schnitt daraus)
 
 verbesserungen:
 - nicht brute force klauseln prüfen, sondern anhand des index für watched literal propagation (notiz: monoclauses werden in sat4j nicht gelernt. Sollten stattdessen eh als assumptions übergeben werden)
@@ -53,7 +53,7 @@ verbesserungen:
 
 besonderheiten: 
 - absolut alle backbone literale sind nach dem ersten sat aufruf gelernt. (*mit technischen besonderheiten, nur wenn man blocking clauses nimmt und dann ausgenommen die in der blocking clause)
-- model minus rotationen wird jedes mal zu genau dem backbone (prim implikante reicht nicht ganz) (heißt nicht, dass nur eine primimplikante existiert, sonst wäre PB1 genauso gut)
+- model minus rotationen wird jedes mal zu genau dem backbone (prim implikante reicht nicht ganz) (heißt nicht, dass nur eine primimplikante existiert, sonst wäre PB1 genauso gut) 
 
 bedeutet auch: in diesem extremfall sind preferences unnötig
 

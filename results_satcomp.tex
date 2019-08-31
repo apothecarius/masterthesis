@@ -1,6 +1,6 @@
 \section{SAT Competition Benchmark}
 
-einführung yadiyadiya benchmarks von sat competition bla bla
+For the first benchmark, I collected a set of 71 files from a SAT competition TODO welcher. The SAT competitions generally use problems that are difficult to solve compared to other problems of the same file size. This is in order to encourage development of solving strategies that reliably have good performance and not only for most of them. To save time during benchmarking, those files that took longer than around one minute for a single model computation were excluded, resulting in files that are generally around 30 kilobytes large. Additionally, problems where the duration for backbone computation averaged below one second were excluded, because here the small differences in the measurements could just as well be explained with external factors like the CPU throttling for a short time. To get meaningful testresults for such files, multiple testpasses should be conducted.
 
 \begin{table} %[tbp]
 \label{tab:satCompAvg} %for referencing
@@ -33,15 +33,17 @@ PB3 & 157.297 & 157.249 & 5
 \caption{Averages of 71 testfiles taken from sat competitions. The columns indicate: The full time that the calculation took in seconds; The time that was spent in the sat solver; The number of sat calls (all three values are averages). }
 \end{table}
 
+The averaged time to compute the backbones of these 71 testfiles can be seen in \ref{tab:satCompAvg}. To prove that various computation strategies are implemented as good as possible\footnote{e.g. no noteworthy timeloss during setup of preferences}, the second column shows the time that was only spent in the sat solver.
+
+Taking a look at this table, we can quickly see that for these instances, all solver that employed preferences as part of their algorithm performed much worth than those that did not\footnote{Which would be $BB$,$IBB$,$KBB$ and $PB1x$}.
 
 IBB hatte bug, darum bessere leistung von pb1x vgl IBB\\
 zweite tabelle zeigen, wenn blocking clause nicht entfernt wurde
 
 
-
 \subsection{Benefits of unit implication}
 
-
+This subsection evaluates the effects of trying to recognize backbone literals through unit implication as described in section \ref{subsec:unitImpl}. Table \ref{tab:satCompUnit} shows individual performance differences between the $BB$ solver supplied by Sat4J and my $KBB$ solver for comparison, as well as the overall number of variables, the backbone's size and the number of backbone literals identified through unit implication. The time columns also contain the number of sat calls that were comitted.
 
 \begin{table} %[tbp]
 \label{tab:satCompUnit} %for referencing
@@ -67,6 +69,7 @@ fla-komb-220-5.cnf & 179 & 204 & 220 & 0.196(28) & 0.218(207) \\
 fla-komb-240-2.cnf & 211 & 231 & 240 & 0.388(20) & 0.417(232) \\
 fla-komb-240-3.cnf & 202 & 232 & 240 & 0.53(31) & 0.564(233) \\
 fla-komb-240-5.cnf & 215 & 234 & 240 & 0.515(18) & 0.562(234) \\
+\iffalse
 fla-komb-260-1.cnf & 212 & 241 & 260 & 1.334(30) & 1.354(245) \\
 fla-komb-260-3.cnf & 224 & 253 & 260 & 2.096(28) & 2.145(254) \\
 fla-komb-260-4.cnf & 213 & 252 & 260 & 2.037(39) & 2.057(252) \\
@@ -83,7 +86,6 @@ fla-komb-320-5.cnf & 251 & 295 & 320 & 8.559(48) & 8.62(299) \\
 fla-komb-340-1.cnf & 299 & 328 & 340 & 5.429(30) & 5.447(330) \\
 fla-komb-340-2.cnf & 279 & 319 & 340 & 21.27(42) & 21.954(322) \\
 fla-komb-340-3.cnf & 300 & 330 & 340 & 14.334(30) & 14.401(330) \\
-\iffalse
 fla-komb-340-4.cnf & 277 & 313 & 340 & 24.642(38) & 25.372(315) \\
 fla-komb-340-5.cnf & 290 & 324 & 340 & 26.454(35) & 25.483(325) \\
 fla-komb-360-1.cnf & 305 & 342 & 360 & 11.2(39) & 11.639(344) \\
@@ -104,6 +106,7 @@ fla-qhid-220-5.cnf & 190 & 210 & 220 & 0.464(20) & 0.501(211) \\
 fla-qhid-240-3.cnf & 10 & 55 & 240 & 1.295(48) & 1.298(59) \\
 fla-qhid-240-5.cnf & 0 & 0 & 240 & 0.498(6) & 0.688(8) \\
 fla-qhid-260-1.cnf & 6 & 46 & 260 & 1.36(45) & 1.354(50) \\
+\fi
 fla-qhid-260-2.cnf & 232 & 257 & 260 & 0.892(25) & 0.947(257) \\
 fla-qhid-280-1.cnf & 1 & 15 & 280 & 5.136(20) & 5.665(22) \\
 fla-qhid-280-3.cnf & 251 & 274 & 280 & 1.49(22) & 1.547(275) \\
@@ -120,14 +123,21 @@ fla-qhid-360-5.cnf & 321 & 349 & 360 & 21.483(29) & 21.658(350) \\
 fla-qhid-380-1.cnf & 344 & 372 & 380 & 301.326(29) & 300.341(373) \\
 fla-qhid-400-3.cnf & 366 & 393 & 400 & 192.094(28) & 193.708(394) \\
 fla-qhid-400-4.cnf & 359 & 392 & 400 & 137.879(33) & 134.525(392) \\
-\fi
 \hline
 \end{tabular}
 \caption{Benchmark results for the sat competition files with a focus on the benefit of unit implication.
 Rows indicate: The number of backbone literals identified through unit implication; the actual number of backbone literals; the number of variables in the formula; Calculationtime and number of sat calls of the solver ($KBB$), the same of the $BB$ solver for comparison. TODO mit dauer der unit analyse aufschreiben (oder alternativ reine sat zeit)}
 \end{table}
 
+TODO aus tabelle alle rausfiltern, in denen literale gelernt wurden
+
+
+The results drunter und drüber, auf einzeldateien eingehen
+
 Begründungsvermutung: Hauptzeit geht für wenige schwierige Literale drauf, die nicht per unit implikation gefunden werden können. Könnte experimentell festgestellt werden, dur
+
+%brock dateigröße: 500kb, fla dateigrößen ~30kb
+
 
 reine sat zeit von kbb wurde auch gemessen: verlust durch suche liegt bei 0
 

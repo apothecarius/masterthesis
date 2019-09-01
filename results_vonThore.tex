@@ -7,8 +7,8 @@ Another benchmark I applied on the various backbone algorithms was a DINGSBUMS k
 tabelle 1 mit ersten ergebnissen
 
 ergebnisse sind über 407 beispiele gemittelt
-
-\begin{wraptable}{r}{8cm} %[tbp]
+\begin{table}
+%\begin{wraptable}{r}{8cm} %[tbp]
 \label{tab:vonThore1} %for referencing
 \begin{tabular}{l| c c c }
 &	$t_{calc}$(sec) &	$t_{sat}$(sec)	& NSatCalls \\
@@ -37,7 +37,8 @@ PB2(0.5\%) & 4.951 & 2.118 & 9324 \\
 PB3 & 263.907 & 1.386 & 4466 \\
 \end{tabular}
 \caption{First execution of industry application. Values are not averaged, but summed up.}
-\end{wraptable}
+%\end{wraptable}
+\end{table}
 
 Here we immediately see, that preferences give a much greater benefit than in the benchmark with the files from the sat competition.
 

@@ -1,5 +1,6 @@
 \section{Cheap Identification of backbone literals}
 This section describes various ways that allow you to recognize backbone literals without an additional satisfiability check. Knowing these backbone literals early can speed up the individual calls to the SAT solver, because enforcing the backbone literals prevents the solver from trying to find solutions containing the inverse of the backbone literals, which by definition don't exist.
+
 %Furthermore the latter two subsections here work solely on the set of already identified backbone literals.
 
 
@@ -24,6 +25,7 @@ Additionally, you can identify axiomatic literals if you check the table that is
 
 TODO tabelle mit wieviele literale dabei rausgefunden werden
 
+%\begin{wraptable}{r}{10cm}
 
 \subsection{Unit Implication}
 \label{subsec:unitImpl}
@@ -37,9 +39,8 @@ We have tested this method in two solvers, $BB$ and a variant of $PrefBones$ tha
 
 The learned backbone literals alone can rarely supply this, before the $PrefBones$ algorithm terminates from other conditions. However the iterative approach of the $BB$ solver, testing every yet unidentified literal individually, is much faster at providing positively identified backbone literals that you need to imply other backbone literals through unit implication.
 
-TODO tabelle mit numUnitLits verglichen zwischen pb1e und kbb. Soll auch zwischen vonThore und satComb unterscheiden.
-
 \subsection{Implication through Cooccurrence}
+\label{subsec:coocc}
 
 Another method to recognize backbone literals from other ones is described in \cite{wbxcl16} and the rationale goes as follows:
 %\newtheorem{Printed output}
@@ -58,8 +59,8 @@ dimacs-hanoi5 hat 47
 
 tabelle zum vergleich zwischen normalen KBB und KBB mit cooccurrence hinklatschen (je datei, nur implizierte backbone literale)
 
-\begin{wraptable}{r}{7cm}
-%\begin{table}[h!] %[tbp]
+%\begin{wraptable}{r}{7cm}
+\begin{table}[h!] %[tbp]
 \label{tab:coocBB} %for referencing
 \begin{tabular}{l| c c c }
 File& $n_{unit}$ & $n_{coocc}$\\
@@ -141,7 +142,8 @@ fla-qhid-400-4.cnf & 359 & 0 \\
 smallSatBomb.cnf & 0 & 0\\
 \end{tabular}
 \caption{Comparison of number of backbone literals identified through cooccurrence in comparison to the number identified through unit implication.}
-\end{wraptable}
+%\end{wraptable}
+\end{table}
 
 
 TODO überlegen, ob es sinnmacht überhaupt zwei variablen zu haben die in denselben klauseln auftauchen

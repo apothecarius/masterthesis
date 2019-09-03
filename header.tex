@@ -34,6 +34,7 @@
 %\usepackage{Myriad}
 
 % no page number on float pages, fixes problems with overlarge diagrams.
+
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 %\lhead{}
@@ -83,7 +84,14 @@
 \lstset{numbers=left, numberstyle=\tiny, basicstyle=\tiny, language=C++}
 \usepackage[ruled,linesnumbered,vlined]{algorithm2e}
 \SetKwFor{InfiniteLoop}{Repeat}{}{}
-%\usepackage{hyperref}
+\usepackage{hyperref}
+\hypersetup{
+	colorlinks,
+	citecolor=black,
+	filecolor=black,
+	linkcolor=black,
+	urlcolor=black
+}
 \usepackage{url}
 \usepackage{subfig}
 

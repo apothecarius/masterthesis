@@ -3,7 +3,6 @@
 For the first benchmark, I collected a set of 71 files from a SAT competition TODO welcher. The SAT competitions generally use problems that are difficult to solve compared to other problems of the same file size. This is in order to encourage development of solving strategies that reliably have good performance and not only for most of them. To save time during benchmarking, those files that took longer than around one minute for a single model computation were excluded, resulting in files that are generally around 30 kilobytes large. Additionally, problems where the duration for backbone computation averaged below one second were excluded, because here the small differences in the measurements could just as well be explained with external factors like the CPU throttling for a short time. To get meaningful testresults for such files, multiple testpasses should be conducted.
 
 \begin{table} %[tbp]
-\label{tab:satCompAvg} %for referencing
 \begin{tabular}{l| c c c }
  & $t_{full}$ & $t_{sat}$ & $n_{sat}$ \\
  \hline
@@ -31,6 +30,7 @@ PB2(0.5\%) & 165.892 & 165.89 & 8 \\
 PB3 & 157.297 & 157.249 & 5
 \end{tabular}
 \caption{Averages of 71 testfiles taken from sat competitions. The columns indicate: The full time that the calculation took in seconds; The time that was spent in the sat solver; The number of sat calls (all three values are averages). }
+\label{tab:satCompAvg} %for referencing
 \end{table}
 
 The averaged time to compute the backbones of these 71 testfiles can be seen in \ref{tab:satCompAvg}. To prove that various computation strategies are implemented as good as possible\footnote{e.g. no noteworthy timeloss during setup of preferences}, the second column shows the time that was only spent in the sat solver.
@@ -46,7 +46,6 @@ zweite tabelle zeigen, wenn blocking clause nicht entfernt wurde
 This subsection evaluates the effects of trying to recognize backbone literals through unit implication as described in section \ref{subsec:unitImpl}. Table \ref{tab:bbkbb} shows individual performance differences between the $BB$ solver supplied by Sat4J and my $KBB$ solver for comparison, as well as the backbone's size and the number of backbone literals identified through unit implication. The time columns also contain the number of sat calls that were comitted.\footnote{Most of the performance differences in table \ref{tab:bbkbb} can be explained with other reasons than actual algorithmic differences. $fla-barthel-220-4.cnf$ for example should not be faster with $KBB$ since here no backbone literal was determined through unit propagation. However I was able to reproduce this performance difference just through the order of what was called first, i.e. if the two solvers are called the other way around the timings are so as well. A possible explanation could be a power saving feature in modern processors.}
 
 \begin{table}[h!] %[tbp]
-\label{tab:bbkbb} %for referencing
 \begin{tabular}{l| c c c c }
 File & $t_{BB}(n_{sat})$ & $t_{KBB}(n_{sat})$ & $n_{unit}$ & $n_{backbone}$  \\
 \hline
@@ -68,6 +67,7 @@ smallSatBomb.cnf & 0.013(26) & 0.012(19) & 7 & 9 \\
 \caption{Benchmark results for a selection of files with a focus on the benefit of unit implication.
 Rows indicate: The number of backbone literals identified through unit implication; the actual number of backbone literals; Calculationtime and number of sat calls of the solvers $KBB$ (using unit implication) and $BB$ (not doing unit implication, otherwise the same).}
 %\end{wraptable}
+\label{tab:bbkbb} %for referencing
 \end{table}
 
 

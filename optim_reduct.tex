@@ -3,13 +3,11 @@ The following chapter elaborates on methods to enhance the algorithms that were 
 
 \section{Model Reduction}
 
-The algorithms described in section 2 all boil down to testing for each variable whether there exist two models where one assigns the variable to $\top$ and the other to $\bot$. This section describes two strategies to reduce the model that is returned by the sat solver to a subset that tells us more for the purpose of calculating a backbone. Both methods are related to the concept of the $implicant$.
-
-An implicant is a set of assignments of the variables in the problem $F$ that still satisfies $F$. The difference to models is, that here it is allowed to leave variables undefined. Let's imagine a formula where every clause contains the literal $a$, amongst other literals. Then $(a)$ would be a simple implicant for this formula, because assigning $a$ to $\top$ is sufficient to satisfy each clause. However there may also be a different implicant that does not contain $a$ at all, satisfying the clauses in a different way. If a variable $v$ does not occur in an implicant $I$, we say that $v$ is optional in $I$.
+The algorithms described in section 2 all boil down to testing for each variable whether there exist two models where one assigns the variable to $\top$ and the other to $\bot$. This section describes two strategies to reduce the model that is returned by the sat solver to a subset that tells us more for the purpose of calculating a backbone. Both methods are essentially about using implicants instead of models.
 
 Having a single implicant $I$ that leaves some variables optional immediately tells us, that every possible combination of assignments of the optional literals can make a model, if we just add the assigned literals in $I$. You could say that an implicant implies a large set of models.
 
-Without any further information, a single implicant $I$ tells us, that every one of the variables that are missing in it cannot be part of the backbone.
+Without any further information, a single implicant $I$ tells us, that every one of the optional variables in it cannot be part of the backbone.
 
 Starting with complete models, implicants can be subsets of other implicants, by removing more and more assignments that are not essential. This way you will eventually reach an implicant where all of it's assignments are required and removing any literal from it, would leave some clause unsatisfied. This would be called a prime implicant $I_\pi$.
 

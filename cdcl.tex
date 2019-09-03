@@ -23,11 +23,26 @@ The solver will now fill the table with assignments, unit assignments if possibl
 	In this case only an implicant is returned. If you want a complete model, you can keep making decisions until all variables are assigned and return the assignments after that. However once you have an implicant, you are free to assign the remaining variables to anything you want, as the formula is already satisfied and further assignments cannot change that.}
  in which case we can return the assignments that are stored in the table.
 
-The other possibility is that you run into a contradiction. Here a unit clause requires that a variable is assigned a value $b$, but it is already assigned $\neg b$. If the previous assignment has a reason (a unit clause), then some of the variables in that clause must be assigned differently(since it was unit then), so we can connect the reason for our conflict to other assignments. Repeating this we sometimes meet decisions instead of unit clauses as reason. Collecting these decisions, we end with the precise combination of assignment decisions that resulted in the conflict. This process is called $resolution$ and is visualized more precisely in figure TODO referenzieren. This set of decisions must now be taken back, by reversing the assignmnents up until the first of these decisions, as this path through the search tree (TODO reicht es nicht die erste decision wegzunehmen?) results in a conflict and will not end in models. 
-\\
-We also add the clause to our formula as a $learned\; clause$. This clause serves to prevent the particular combination of assignments that led to our conflict. The resulting formula will still be completely equivalent to before. It merely stores the information the we gained through analysis of our conflict to prevent it from happening again.
+The other possibility is that you run into a contradiction. Here a unit clause requires that a variable is assigned a value $b$, but it is already assigned $\neg b$. If the assignments have a reason (a unit clause), then some of the variables in these clauses must be assigned differently(since they were unit then), so we can connect the reasons for our conflict to other assignments. Repeating this we sometimes meet decisions instead of unit clauses as reason. Collecting these decisions, we end with the precise combination of assignment decisions that resulted in the conflict. 
 
-TODO Urpaper von CDCL und selektionsheuristic
+
+This process of following assignments through their reasons is called $resolution$ and can be briefly explained with the following formula:
+$$
+r_\lambda(c_1,c_2) = (c_1 \textbackslash \{\lambda\}) \cup (c_2 \textbackslash \{\neg \lambda\})
+$$
+The resolvent $r$ consists of all literals of the two clauses that are resolved, where in this case $c_1$ contains $\lambda$ and $c_2$ contains $\neg \lambda$. This precondition is given in this case, because $c_1$ is the reason for the assignment of $\lambda$ to $\top$ and $c_2$ the reason for assigning $\lambda$ to $\bot$.
+
+Once collected, this set of decisions must be taken back, by reversing the assignmnents up until the first of these decisions, as this path through the search tree (TODO reicht es nicht die erste decision wegzunehmen?) results in a conflict and will not end in models. 
+
+We also add the clause to our formula as a $learned\; clause$. This clause serves to prevent the particular combination of assignments that led to our conflict. The resulting formula will still be completely equivalent to before. It merely stores the information that we gained through analysis of our conflict to prevent it from happening again.
+
+However it is also possible that we end up with reasons for assignments that do not end in a decision. This would mean that all reasons were axiomatic assignments, for example when a formula contains a clause with only a single literal in it \footnote{A simple example: A formula contains the two clauses $\{a\}$ and $\{\neg a\}$. Resolving these two results in the empty set.}  .
+In this case the formula implies a contradiction and the clause that we would learn from this would be empty, unsatisfiable.
+
+
+
+
+%TODO Urpaper von CDCL und selektionsheuristic
 
 
 \begin{algorithm}
@@ -54,6 +69,6 @@ $table \gets emptyList$\;
 \end{algorithm}
 
 
-Concerning the decisions, depending on the particular formula, it is possible that some assignments make it easier to solve the formula than others and some decisions might lead to a completely unsatisfied clause where all of it's literals are unsatisfied. A lot of work has been done to prevent this by setting up heuristics that try to pick a variable and corresponding assignment that would lead to a satisfying model without complications. For this you would typically measure how often the variable was involved in conflicts and prefer to decide on such difficult variables. It is assumed that difficult formulas are so because of individual difficult variables. If you decide on these early, you have a 50-50 chance that you either found the correct assignment or at least learned a useful clause from a conflict.
+Concerning the decisions, depending on the particular formula, it is possible that some assignments make it easier to solve the formula than others and some decisions might lead to a completely unsatisfied clause where all of it's literals are unsatisfied. A lot of research has been done to prevent this by setting up heuristics that try to pick a variable and corresponding assignment that would lead to a satisfying model without complications. For this you would typically measure how often the variable was involved in conflicts and prefer to decide on such difficult variables. It is assumed that difficult formulas are so because of individual difficult variables. If you decide on these early, you have a 50-50 chance that you either found the correct assignment or at least learned a useful clause from a conflict.
 
-As is usually done in literature, we write calls to sat solvers such as CDCL in code listings as $(outc,\nu) = SAT(F)$. Here, two values are returned. $outc$ is a boolean value that simply states whether $F$ was satisfiable to begin with. Only if it equals to $\top$, the second return parameter $\nu$ can have a meaningful value, which would be the model that was found and satisfies $F$. In some of the algorithms listed in this thesis, one of the return parameters is not used at all. In that case we write $(\_,\nu) = SAT(F)$ or $(outc,\_) = SAT(F)$ to indicate that either $outc$ or $\nu$ is discarded.
+As is usually done in literature, calls to sat solvers such as CDCL in code listings are written as $(outc,\nu) = SAT(F)$. Here, two values are returned. $outc$ is a boolean value that simply states whether $F$ was satisfiable to begin with. Only if it equals to $\top$, the second return parameter $\nu$ can have a meaningful value, which would be the model that was found and satisfies $F$. In some of the algorithms listed in this thesis, one of the return parameters is not used at all. In that case I write $(\_,\nu) = SAT(F)$ or $(outc,\_) = SAT(F)$ to indicate that either $outc$ or $\nu$ is discarded.

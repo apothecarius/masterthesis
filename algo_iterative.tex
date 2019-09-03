@@ -1,6 +1,6 @@
 \section{Iterative algorithms}
 \subsection{Testing every literal}
-Alternatively, you can define the backbone as all literals that occur with the same assignment in all models of it's problem, which implies that enforcing that variable to it's negation should make the formula unsatisfiable. This definition already leads to a simple algorithm that can calculate the backbone, by checking both assignments of every literal for whether it would make the formula unsatisfiable, see Algorithm 1. This algorithm is referenced in \cite{mjl10}
+Alternatively, you can define the backbone as all literals that occur with the same assignment in all models of it's problem, which implies that enforcing a backbone literal to it's negation should make the formula unsatisfiable. This definition already leads to a simple algorithm that can calculate the backbone, by checking both assignments of every literal for whether it would make the formula unsatisfiable, see algorithm \ref{alg:iterTwo}. This algorithm is referenced in \cite{mjl10}
 \begin{algorithm}
 \caption{{\sc Iterative algorithm (two tests per variable)}}
 \DontPrintSemicolon
@@ -13,7 +13,7 @@ $\nu_r \gets \emptyset$\;
 	$assert(outc_1 = \top \vee outc_2 = \top)$ \tcp*{Otherwise F would be unsatisfiable}
 %	\If{$outc_1 = \bot \wedge outc_2 = \bot$}{
 %		$return\; \emptyset$\; 	}
-	\ElseIf{$outc_1 = \bot$}{
+	\If{$outc_1 = \bot$}{
 		$\nu_r = \nu_r \cup \{\neg x\}$\;
 		$F = F \cup \{\neg x\}$\;
 	}
@@ -24,18 +24,19 @@ $\nu_r \gets \emptyset$\;
 	
 }
 \Return{$\nu_r$}\;
+\label{alg:iterTwo}
 \end{algorithm}
 
-As is commonly written in literature about boolean satisfiability, the two calls to the $SAT$ function return a pair which consists first of whether the given function was satisfiable at all and, secondly, the found model, which in this case is discarded. There is no good algorithm that can tell whether a boolean formula is satisfiable or not without trying to find a model for said formula, but we can use it to greatly improve the algorithm above by combining this approach with that of the enumeration algorithms.
+%As is commonly written in literature about boolean satisfiability, the
+The two calls to the $SAT$ function return a pair which consists first of whether the given function was satisfiable at all and, secondly, the found model, which in this case is discarded. There is no good algorithm that can tell whether a boolean formula is satisfiable or not without trying to find a model for said formula, but we can use it to greatly improve the algorithm above by combining this approach with that of the enumeration algorithms.
 
 \subsection{Combining with Enumeration}
 First observe that any model of $F$ would already reduce the set of literals to test by half, because for every assignment missing in the model, we know that it cannot be part of the backbone, so there is no need to test it. 
 
-This can be repeated with every further model that we find. The following algorithm is another one that is listed in both \cite{mjl10} and \cite{mjl15} and is implemented in the Sat4J library as $BB$.
+This can be repeated with every further model that we find. The following algorithm \ref{alg:iterTwo} is another one that is listed in both \cite{mjl10} and \cite{mjl15} and is implemented in the Sat4J library as $BB$.
 
 \begin{algorithm}
 \caption{{\sc Iterative algorithm (one test per variable)}}
-\label{alg:bb}
 \DontPrintSemicolon
 \KwIn{A satisfiable formula $F$ in CNF}
 \KwOut{All literals of the backbone of $F$ $\nu_r$}
@@ -57,9 +58,10 @@ $\nu_r \gets \emptyset$\;
 	
 }
 $\Return \; \nu_r$\;
+\label{alg:bb}
 \end{algorithm}
 
-Note that both possible results of the call to the sat solver are converted to useful information. In the else branch, the formula together with the blocked literal $l$ was still solvable. In this case $\nu$ is still a valid model for $F$, so we can search through it to look for more variables that don't need to be checked. Note that here $\nu$ must contain $\neg l$, as it was enforced.
+Note that both possible results of the call to the sat solver are converted to useful information. In the else branch, the formula together with the blocked literal $l$ was still solvable. In this case $\nu$ is still a valid model for $F$, so we can search through it to look for more assignments that don't need to be checked. Note that here $\nu$ must contain $\neg l$, as it was enforced. Therefore $l$ will be removed from $\Lambda$ in this case as well.
 
 In the other case, we identified $l$ as a backbone literal. In that case it will be added to the returned set, removed from the set of literals to test and, lastly, added to the problem $F$, which increases performance in subsequent solving steps. However it would be even better, not only to reuse the learned backbone literals, but all learned clauses.
 

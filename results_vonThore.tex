@@ -2,45 +2,54 @@
 
 Another benchmark I applied on the various backbone algorithms was a DINGSBUMS kindly supplied by Daimler AG. Here echtwelt zusammenhang beschreiben.
 
+This benchmark is executed in the way that given the base formula $F$, for each variable $l$ in $F$, another formula $F_l = F \cup \{l\}$ is created. From these various formulas, individual backbones are calculated.
 
+What follows are experimental results with the same set of algorithms that were run on the files from the sat competition. Afterwards I will analyze the results and try to give a specialized algorithm that is optimized for this particular benchmark.
 
-tabelle 1 mit ersten ergebnissen
-
-ergebnisse sind über 407 beispiele gemittelt
-\begin{table}
+\begin{table}[ht]
 %\begin{wraptable}{r}{8cm} %[tbp]
 \label{tab:vonThore1} %for referencing
 \begin{tabular}{l| c c c }
 &	$t_{calc}$(sec) &	$t_{sat}$(sec)	& NSatCalls \\
 \hline
-BB & 11.865 & 8.181 & 159098 \\
-IBB & 6.719 & 2.887 & 15494 \\
-KBB & 77.922 & 1.098 & 5528 \\
-KBB(pref) & 64.666 & 1.55 & 6540 \\
-PB0 & 3.458 & 1.557 & 6929 \\
-PB1 & 3.42 & 1.367 & 6523 \\
-PB1(noAmnes) & 3.436 & 1.403 & 6523 \\
-PB1(model) & 1.968 & 1.479 & 6523 \\
-PB1(invert) & 7.727 & 3.207 & 15234 \\
-PB1x & 7.191 & 2.869 & 15734 \\
-PB1a & 4.611 & 2.034 & 9322 \\
-PB1b & 7.278 & 2.958 & 15234 \\
-PB1c(50\%) & 4.921 & 2.139 & 9644 \\
-PB1c(5\%) & 6.621 & 2.703 & 13941 \\
-PB1d(50\%) & 4.288 & 1.735 & 7373 \\
-PB1d(5\%) & 5.403 & 2.051 & 11225 \\
-PB1e & 3.438 & 1.363 & 6379 \\
-PB1f & 3.218 & 1.363 & 6361 \\
-PB2(50\%) & 4.838 & 2.129 & 9320 \\
-PB2(5\%) & 4.841 & 2.152 & 9324 \\
-PB2(0.5\%) & 4.951 & 2.118 & 9324 \\
-PB3 & 263.907 & 1.386 & 4466 \\
+BB & 12.197 & 7.937 & 159545 \\
+IBB & 7.215 & 2.722 & 15748 \\
+KBB & 14.252 & 2.222 & 15266 \\
+KBB(pref) & 11.265 & 1.33 & 6466 \\
+PB0 & 3.607 & 1.458 & 6531 \\
+PB1 & 3.945 & 1.566 & 6531 \\
+PB1(noAmnes) & 3.831 & 1.6 & 6531 \\
+PB1(model) & 2.129 & 1.608 & 6531 \\
+PB1(invert) & 8.16 & 3.262 & 15248 \\
+PB1x & 7.51 & 2.877 & 15748 \\
+PB1a & 4.858 & 2.079 & 9335 \\
+PB1b & 7.95 & 3.226 & 15248 \\
+PB1c & 5.533 & 2.3 & 9680 \\
+PB1c(5\%) & 7.11 & 2.842 & 13955 \\
+PB1d & 4.511 & 1.832 & 7386 \\
+PB1d(5\%) & 5.857 & 2.217 & 11238 \\
+PB1e & 3.547 & 1.398 & 6387 \\
+PB1f & 3.493 & 1.493 & 6369 \\
+PB2 & 5.325 & 2.41 & 9333 \\
+PB2(5\%) & 5.311 & 2.4 & 9337 \\
+PB2(0.5\%) & 5.282 & 2.356 & 9337 \\
+PB3 & 2.503 & 1.174 & 4471
 \end{tabular}
-\caption{First execution of industry application. Values are not averaged, but summed up.}
+\caption{First execution of industry application. Values are not averaged, but summed up over 407 different benchmarks.}
 %\end{wraptable}
 \end{table}
 
-Here we immediately see, that preferences give a much greater benefit than in the benchmark with the files from the sat competition.
+Here we immediately see, that preferences give a much greater benefit than in the benchmark with the files from the sat competition. However there are some more things that stand out:
+\begin{itemize}
+\item The fastest algorithm overall is the one that does not reduce the models at all. The number of sat calls is even exactly the same as that of that variant with prime implicant reduction. However the time that was spent in the sat solver is very similar, so the difference must be the time that was spent to reduce the model and the benefit, namely difference of literals in the model and it's prime implicant, is very small.
+\item However, the fastest implementation when it comes to pure sat solver time as well as number of sat calls, was $PB3$, which differs from the others in that it uses literal rotation to reduce models instead of prime implicant computation. Appearantly the models that occur in this formula contain many different prime implicants with little distance to the model.
+\item Another algorithm that worked well was $PB1e$ with a calculation time on third place after $PB1(model)$ and $PB3$. This variant makes use of learned literals so appearantly the backbone literals in this formula are easy to identify by checking the set of literals that the solver learns when it computes new models.\\
+In fact, on inspection, all literals that later turn out to be part of the backbone occur in this set after the very first sat call(with an exception of the forced literal).
+\item Another noteworthy algorithm is the $KBB$ algorithm that uses unit implication to identify backbone literals. The implementation of this algorithm was based on that of the $BB$ algorithm and here the number of sat calls with $KBB$ is a tenth of the number in the case of $BB$. However this advantage is not expressed equally strong when it comes to the time spent in the sat solver(around a fourth), which means that the identification through calculating a complete model can sometimes be more efficient than regularly checking unit implications.\\
+The overall computation time is even worse in comparison, meaning that the benefit through cheap backbone literal identification is less than the time that it takes to check the clauses for the unit case. It may be possible that this method requires an improvement in the way that the unit implication is implemented to make good use of the approach.
+\end{itemize}
+
+interessant sind: pb3 mit rotationen,pb1e mit gelernten (pb1f mit vorruns darüber hinaus nicht besser), KBB (suche schlecht implementiert)
 
 pb3 interessant, weil niedrigste sat zeit und wenigsten sat calls überhaupt. Verliert wohl viel zeit mit drumrum also optimieren.
 TODO pb1e anschauen, wieviele literale gelernt wurden und mit sat größe gegenüberstellen. (schnitt daraus)
@@ -58,3 +67,28 @@ besonderheiten:
 
 bedeutet auch: in diesem extremfall sind preferences unnötig
 
+\begin{algorithm}
+\caption{{\sc Specialized algorithm for industrial application}}
+\DontPrintSemicolon
+\KwIn{A satisfiable formula $F$ in CNF}
+\KwOut{All literals of the backbone of $F$}
+$(outc,mdl,learnt) \gets SAT(F)$\;
+$bb_u \gets required(mdl,F)$\;
+$bb_l \gets learnt$\;
+\While{$|bb_l| \neq |bb_u|$}{
+	\Do{$units \neq \emptyset$}{ 
+		$units \gets unitImplied(F,bb_l)$\;
+		$bb_l \gets bb_l \cup units$\;
+	}
+	$blocker \gets \bigvee _{l\in bb_u}\neg l$\;
+
+	$(outc,mdl,learnt) \gets SAT(F \cup blocker \cup bb_l)$\;
+	\If{$\neg outc$}{
+		\Return{$bb_u$}\;
+	}
+	$bb_u = bb_u \cap required(mdl,F)$\;
+	$bb_l = bb_l \cup learnt$\;
+}
+\Return{$bb_u$} %\tcp{Equivalent to $bb_l$}
+\label{alg:thoreSpecial}
+\end{algorithm}

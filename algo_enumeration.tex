@@ -53,6 +53,6 @@ Eventually $\nu_r$ will be reduced to the backbone. This can be easily recognize
 
 Note that it is not particularly important for the algorithm whether the blocking clauses remain in $F$ or get replaced by the next blocking clause, because the new blocking clause $bc_{i+1}$ always subsumes the previous one $bc_i$, meaning that every solution that is prohibited by $bc_{i+1}$ is also prohibited by $bc_i$ and $F \cup \{bc_i , bc_{i+1}\}$ is equivalent to $F \cup \{bc_{i+1}\}$ concerning the set of models.
 
-This algorithm is implemented in the Sat4J library under the designation $IBB$. 
+This algorithm is implemented in the Sat4J library under the designation $IBB$, except that prime implicants are used instead of models. For specifics on that see chapter \ref{ss:primeImplicant}. 
 
 

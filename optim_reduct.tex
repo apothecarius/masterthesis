@@ -1,5 +1,5 @@
 
-The following chapter elaborates on methods to enhance the algorithms that were described in the previous chapter. Depending on the particular combination of algorithm and enhancement, applying the optimization can be be considered a no brainer. However, experimental results show that this is not true without exception and in individual cases we will give thoughts why that is. Other improvements can only be applied to some algorthms due to the data that is available.
+The following chapter elaborates on methods to enhance the algorithms that were described in the previous chapter. Depending on the particular combination of algorithm and enhancement, applying the optimization can be be considered a no brainer. However, experimental results show that this is not true without exception and in individual cases we will give thoughts why that is. Other improvements can only be applied to some algorithms due to the data that is available.
 
 \section{Model Reduction}
 
@@ -12,6 +12,7 @@ Without any further information, a single implicant $I$ tells us, that every one
 Starting with complete models, implicants can be subsets of other implicants, by removing more and more assignments that are not essential. This way you will eventually reach an implicant where all of it's assignments are required and removing any literal from it, would leave some clause unsatisfied. This would be called a prime implicant $I_\pi$.
 
 \subsection{Prime Implicant}
+\label{ss:primeImplicant}
 \cite{dflbm13} describes an algorithm that allows to calculate the prime implicant from a model in linear time over the number of literal occurrences in the formula. This algorithm works best if you generate the model of a variable with the CDCL algorithm for multiple reasons.
 
 First, it takes advantage of data structures that you also need in a good implementation of CDCL, namely a lookup from each variable to all clauses that contain either literal of that variable. In CDCL this lookup table improves the performance of unit propagation, because you can check exactly the set of clauses that might be affected by the assignment to determine whether one of the clauses has become exhaustively unsatisfied or implies another assignment. Here, the lookup is used to determine whether a literal is required in the implicant that you are in the process of generating, by looking for clauses that only contain a single satisfying literal anymore, which then must be part of the prime implicant. You can even reuse the watched literals of the clauses, however you would have to change the way in which the propagate, since you take assignments away instead of adding them.

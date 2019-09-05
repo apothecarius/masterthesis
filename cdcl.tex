@@ -1,6 +1,6 @@
 \subsection{CDCL}
 
-All the methods to generate a backbone of a formula $F$ that are described in this thesis essentially rely on calculating various models of $F$, so it makes sense to describe a method to do that as well. The current state-of-the-art algorithm to do this is the $Conflict\;Driven\;Clause\;Learning$ algorithm, or $CDCL$ for short. 
+All the methods to generate a backbone of a formula $F$ that are described in this thesis essentially rely on calculating various models of $F$, so it makes sense to describe a method to do that as well. The current state-of-the-art algorithm to do this is the $Conflict\;Driven\;Clause\;Learning$ algorithm, or $CDCL$ for short. This algorithm was first published as $"GRASP"$ in \cite{GRASP}.
 
 Here a $CDCL\;table$ is used as a special dataset, to store the state of the SAT solver. This table stores the succession of assignments with four values for each assignment.
 \begin{itemize}
@@ -23,6 +23,12 @@ The solver will now fill the table with assignments, unit assignments if possibl
 	In this case only an implicant is returned. If you want a complete model, you can keep making decisions until all variables are assigned and return the assignments after that. However once you have an implicant, you are free to assign the remaining variables to anything you want, as the formula is already satisfied and further assignments cannot change that.}
  in which case we can return the assignments that are stored in the table.
 
+\begin{wrapfigure}{L}{8cm}
+\includegraphics[width=8cm]{reso}
+\caption{Example of a resolution. Shown is a formula, the content of the CDCL table at the point of conflict in variable $d$ and the resolution graph.}
+\label{fig:resolution}
+\end{wrapfigure}
+
 The other possibility is that you run into a contradiction. Here a unit clause requires that a variable is assigned a value $b$, but it is already assigned $\neg b$. If the assignments have a reason (a unit clause), then some of the variables in these clauses must be assigned differently(since they were unit then), so we can connect the reasons for our conflict to other assignments. Repeating this we sometimes meet decisions instead of unit clauses as reason. Collecting these decisions, we end with the precise combination of assignment decisions that resulted in the conflict. 
 
 
@@ -30,9 +36,13 @@ This process of following assignments through their reasons is called $resolutio
 $$
 r_\lambda(c_1,c_2) = (c_1 \textbackslash \{\lambda\}) \cup (c_2 \textbackslash \{\neg \lambda\})
 $$
-The resolvent $r$ consists of all literals of the two clauses that are resolved, where in this case $c_1$ contains $\lambda$ and $c_2$ contains $\neg \lambda$. This precondition is given in this case, because $c_1$ is the reason for the assignment of $\lambda$ to $\top$ and $c_2$ the reason for assigning $\lambda$ to $\bot$.
+The resolvent $r$ consists of all literals of the two clauses that are resolved, where in this case $c_1$ contains $\lambda$ and $c_2$ contains $\neg \lambda$. This precondition is given in this case, because $c_1$ is the reason for the assignment of $\lambda$ to $\top$ and $c_2$ the reason for assigning $\lambda$ to $\bot$. 
 
-Once collected, this set of decisions must be taken back, by reversing the assignmnents up until the first of these decisions, as this path through the search tree (TODO reicht es nicht die erste decision wegzunehmen?) results in a conflict and will not end in models. 
+Figure \ref{fig:resolution} shows this with an example, where a conflict in variable $d$ happened. First the clauses $\{b,\neg d\}$ and $\{c,b,d\}$ are resolved over the variable $d$. Then $b$ is extracted for the learned clause, as it's reason was a decision and not a unit clause. Finally $\{c\}$ and $\{\neg c\}$ are resolved over $c$, resulting in the empty set. The learned clause is $\{b\}$.\\
+An alternative resolution scheme would leave literals that stem from decisions in the working set until the end, but here they are extracted on first extraction. Otherwise, these literals would be inspected multiple times.
+
+
+Once collected, this set of decisions must be taken back, by reversing the assignmnents up until the first of these decisions, as this path through the search tree results in a conflict and will not end in models. 
 
 We also add the clause to our formula as a $learned\; clause$. This clause serves to prevent the particular combination of assignments that led to our conflict. The resulting formula will still be completely equivalent to before. It merely stores the information that we gained through analysis of our conflict to prevent it from happening again.
 
@@ -65,7 +75,7 @@ $table \gets emptyList$\;
 		$table.pushDecision(l)$\;
 	}
 }
-\caption{{\sc CDCL}}
+\caption{{\sc CDCL algorithm}}
 \end{algorithm}
 
 

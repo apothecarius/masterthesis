@@ -1,0 +1,7 @@
+\section{Assumptions}
+
+A sub problem of calculating backbones is to calculate a backbone under an assumption. This means, that we actually want to know the Backbone of $F \cup\{l\}$ where $F$ is our base formula and $l$ is some variable of $F$.
+
+The most straightforward way to implement this is to simply call the sat solver that we use with the same assumptions every time. However depending on the way that assumptions are implemented in your solver, the set of learned clauses may have to be discarded or at least filtered. Reusing learned clauses is very useful when you calculate a backbone through repeating calls to the SAT solver, as table \ref{tab:learnedIbb} shows.
+
+We can implement assumptions in two ways, either as added clauses or as decisions above root level. This section discusses which should be preferred when desigining a sat solver that should also be a good backbone generator. 

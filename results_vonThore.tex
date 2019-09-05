@@ -56,6 +56,7 @@ TODO pb1e anschauen, wieviele literale gelernt wurden und mit sat größe gegen�
 
 verbesserungen:
 - nicht brute force klauseln prüfen, sondern anhand des index für watched literal propagation (notiz: monoclauses werden in sat4j nicht gelernt. Sollten stattdessen eh als assumptions übergeben werden)
+%- außerdem: lits in bb_l muss man nicht prüfen ob notwendigerweise in bb_u
 - nur die literale rotieren die in der obermenge verbleiben
 - Außerdem: "bugfix" erzwungenes literal trat nicht in gelernten auf.
 
@@ -75,7 +76,7 @@ bedeutet auch: in diesem extremfall sind preferences unnötig
 $(outc,mdl,learnt) \gets SAT(F)$\;
 $bb_u \gets required(mdl,F)$\;
 $bb_l \gets learnt$\;
-\While{$|bb_l| \neq |bb_u|$}{
+\While{$bb_l \neq bb_u$}{
 	\Do{$units \neq \emptyset$}{ 
 		$units \gets unitImplied(F,bb_l)$\;
 		$bb_l \gets bb_l \cup units$\;
@@ -86,9 +87,14 @@ $bb_l \gets learnt$\;
 	\If{$\neg outc$}{
 		\Return{$bb_u$}\;
 	}
-	$bb_u = bb_u \cap required(mdl,F)$\;
 	$bb_l = bb_l \cup learnt$\;
+	$bb_u = bb_u \cap required(mdl,F,bb_l)$\;
 }
 \Return{$bb_u$} %\tcp{Equivalent to $bb_l$}
 \label{alg:thoreSpecial}
 \end{algorithm}
+
+%über algo:thoreSpecial
+%- gelernte klauseln muss man nicht extra hinzufügen, weil gelernte literale gelernt bleiben
+%- für $bb_l \neq bb_u$ muss man nur größe vergleichen, weil upper/lower bound desselben ziels
+%- 

@@ -1,8 +1,10 @@
 \section{Iterative algorithms}
+\label{sec:iterative}
 \subsection{Testing every literal}
 Alternatively, you can define the backbone as all literals that occur with the same assignment in all models of it's problem, which implies that enforcing a backbone literal to it's negation should make the formula unsatisfiable. This definition already leads to a simple algorithm that can calculate the backbone, by checking both assignments of every literal for whether it would make the formula unsatisfiable, see algorithm \ref{alg:iterTwo}. This algorithm is referenced in \cite{mjl10}
 \begin{algorithm}
 \caption{{\sc Iterative algorithm (two tests per variable)}}
+\label{alg:iterTwo}
 \DontPrintSemicolon
 \KwIn{A satisfiable formula $F$ in CNF}
 \KwOut{All literals of the backbone of $F$ $\nu_r$}
@@ -24,7 +26,6 @@ $\nu_r \gets \emptyset$\;
 	
 }
 \Return{$\nu_r$}\;
-\label{alg:iterTwo}
 \end{algorithm}
 
 %As is commonly written in literature about boolean satisfiability, the
@@ -33,10 +34,11 @@ The two calls to the $SAT$ function return a pair which consists first of whethe
 \subsection{Combining with Enumeration}
 First observe that any model of $F$ would already reduce the set of literals to test by half, because for every assignment missing in the model, we know that it cannot be part of the backbone, so there is no need to test it. 
 
-This can be repeated with every further model that we find. The following algorithm \ref{alg:iterTwo} is another one that is listed in both \cite{mjl10} and \cite{mjl15} and is implemented in the Sat4J library as $BB$.
+This can be repeated with every further model that we find. The following algorithm \ref{alg:bb} is another one that is listed in both \cite{mjl10} and \cite{mjl15} and is implemented in the Sat4J library as $BB$\footnote{With the exception of using prime implicants instead of models, similar to the $IBB$ algorithm.}.
 
 \begin{algorithm}
 \caption{{\sc Iterative algorithm (one test per variable)}}
+\label{alg:bb}
 \DontPrintSemicolon
 \KwIn{A satisfiable formula $F$ in CNF}
 \KwOut{All literals of the backbone of $F$ $\nu_r$}
@@ -58,34 +60,18 @@ $\nu_r \gets \emptyset$\;
 	
 }
 $\Return \; \nu_r$\;
-\label{alg:bb}
 \end{algorithm}
 
 Note that both possible results of the call to the sat solver are converted to useful information. In the else branch, the formula together with the blocked literal $l$ was still solvable. In this case $\nu$ is still a valid model for $F$, so we can search through it to look for more assignments that don't need to be checked. Note that here $\nu$ must contain $\neg l$, as it was enforced. Therefore $l$ will be removed from $\Lambda$ in this case as well.
 
 In the other case, we identified $l$ as a backbone literal. In that case it will be added to the returned set, removed from the set of literals to test and, lastly, added to the problem $F$, which increases performance in subsequent solving steps. However it would be even better, not only to reuse the learned backbone literals, but all learned clauses.
 
-It is possible to apply the concept of preferences described in section \ref{ss:prefs} to the iterative algorithms listed here. However, this is less beneficial than adding it to the enumeration approach of $IBB$, because in the $BB$ algorithm many sat calls are supposed to return $UNSAT$ to positively identify an assignment as backbone. However, this case does not give us a model, so the extra effort trying to find a more valuable model is often wasted here.
+It is possible to apply the concept of preferences described in section \ref{ss:prefs} to the iterative algorithms listed here. However, this is less beneficial than adding it to the enumeration approach of $IBB$, because in the $BB$ algorithm many sat calls are supposed to return $UNSAT$ to positively identify an assignment as backbone. However, this case does not give us a model, so the extra effort of trying to find a more valuable model is often wasted here.
 
-\subsubsection{Hidden disadvantage}
-
-You would think that the iterative approach is just an improvement over the model enumeration algorithm. However it has a hidden disadvantage over them, which stems from how the given problem $F$ is modified as part of the algorithm. Remember how we wrote in chapter 2.1.2 how it does not particularly matter whether the blocking clause is removed or stays. Actually it can make a slight difference to the performance of the individual sat solving calls. The CDCL algorithm develops learned clauses during it's runtime. These learned clauses do not change the set of models for the formula but make it easier to avoid partial assignments of variables that by themselves make the formula unsatisfiable 
-
-TODO duplikat, klausel lernen wird schon in disambiguation erklärt.
-TODO beispiel, mindestens 4 variablen 
-
-Clause learning in CDCL happens through a process called resolvent building. Here, two contradicting assignments are evaluated for their reasons, eventually ending up with a set of variable assignment decisions that led to the contradiction which is subsequently prohibited by a learned blocking clause.
-
-TODO resolventen algorithmus \newline
-TODO resolventen bildchen 
-
-These learned clauses can be reused in subsequent sat calls and can improve the speed of the solver dramatically. They prevent contradictory variable assignments, specifically those that the sat solver ran into before and have a good chance to be made again if nothing prevents the solver from it. 
-
-However reusing learned clauses is not as easy for the $BB$ solver as for the $IBB$ solver. Learned clauses are based on a subset of the clauses in $F$. Their existence is virtual so to speak, implied through these base clauses, just not easy to recognize. Adding more clauses to the formula does not remove a learned clause, as the set of base clauses is untouched. At most it might be possible to subsume it with another learned clause. However if a clause is removed from $F$, it might be that the learned clause is no longer implied through the formula, therefore making it invalid. 
+Another difficulty with the $BB$ algorithm in comparison to $IBB$ is that here it is more difficult to reuse learned clauses. These are based on a subset of the clauses in $F$. Their existence is virtual so to speak, implied through these base clauses but difficult to find. Adding more clauses to the formula does not remove a learned clause, as the set of base clauses is untouched. At most it might be possible to subsume it with another learned clause. However if a clause is removed from $F$, it might be that the learned clause is no longer implied through the formula, therefore making it invalid. 
 
 
 Example: Using the iterative approach on formula $F = \{(a,b,c)\}$ together with blocking clause $(\neg a)$ implies the clause $(b,c)$. CDCL would learn this clause if it were configured to assign $\bot$ in every decision and assign $\top$ only through unit implications. This learned clause must be discarded. Otherwise when we test with the blocking clause $(\neg b)$, together with $(b,c)$ it would imply $(c)$, making $c$ a backbone of $F$, which it clearly isn't.
 
-TODO BB behält gelernte klauseln ausser denen die was mit assumptions zu tun haben. IBB muss aber die ganze analyse nicht machen
 
 %In the $BB$ solver, except for the very first solving step, no formula that is solved is a subset of any other, because every time a single different literal is enforced. Therefore the clauses that are learned in these solving steps must be discarded and cannot help the other solving steps \footnote{The most you could do would be to keep track which clauses went into the generation of each learned clause and then only discard those learned clauses that were completely unrelated from the clause that was deleted from $F$. And that might have to be done recursively, if one of the base clauses is itself a learned clause. The SAT4J framework simply discards all learned clauses of the formula when a clause is removed from it.}. The $IBB$ solver on the other hand only adds further constraints, therefore it can reuse all it's learned clauses and speed up the model generation over time.

@@ -47,12 +47,15 @@ The function $Req(I_m,l,c)$ tells, whether the assignment $l$ in the implicant $
 \label{ss:rot}
 There is a model reduction method that is even more powerful than calculating the prime implicant. Even better, the concept is much simpler than calculating the prime implicant. 
 
-Any model of a CNF formula can contain multiple implicants and even prime implicants\footnote{As an example imagine any formula with only clauses of size two, where the first literals are disjunct from the second literals. This formula has at least two prime implicants $I_1$ and $I_2$ that you can generate by collecting either the first literal of every clause for $I_1$ or the second literal for $I_2$. Since the literals in $I_1$ are disjunct from those in $I_2$, you can build a model of the combination of $I_1$ and $I_2$.}
+Any model of a CNF formula can contain multiple implicants and even prime implicants\footnote
+	{As an example imagine any formula with only clauses of size two, where the first literals are disjunct from the second literals. This formula has at least two prime implicants $I_1$ and $I_2$ that you can generate by collecting either the first literal of every clause for $I_1$ or the second literal for $I_2$. Since the literals in $I_1$ are disjunct from those in $I_2$, you can build a model of the combination of $I_1$ and $I_2$.}
 , so if we could find out from only a single model $M_0$ of $F$, which of these literals occured in all implicants that that model covered, with each model we could reduce the set of backbone candidates even more than with just one of it's prime implicants.
 
-Doing this is actually pretty simple. Instead of generating a small set of various prime implicants, you check for each assignment $a$ in $M_0$, whether it is required in $M_0$, by checking whether $(M_0 \textbackslash a)$ is still an implicant that satisfies $F$. If so, we know that $a$ is not part of the backbone, because we found an implicant without it.
+Doing this is actually pretty simple. Instead of generating a small set of various prime implicants, you check for each assignment $a$ in $M_0$, whether it is required in $M_0$, by checking whether $(M_0 \textbackslash a)$ is still an implicant that satisfies $F$. If so, we know that $a$ is not part of the backbone, because we found an implicant without it. This approach was described in \cite{mjl15}.
 
-You can do this faster if you make use of the lookup table described in the previous subsection, where each literal is mapped to the set of clauses where it occurs. After all, you already know that $M_0$ satisfies $F$, so it is sufficient to check only the clauses that contain the tested literal $a$, whether they are satisfied in a different way in $M_0 \textbackslash \{a\}$. Unaffected clauses must still be satisfied without $a$.
+You can do this reduction faster if you make use of the lookup table described in the previous subsection, where each literal is mapped to the set of clauses where it occurs. After all, you already know that $M_0$ satisfies $F$, so it is sufficient to check only the clauses that contain the tested literal $a$, whether they are satisfied in a different way in $M_0 \textbackslash \{a\}$. Unaffected clauses must still be satisfied without $a$.
+
+Additionally, if you happen to use a computation strategy, where you have a set of positively identifed backbone literals (for example an iterative algorithm as described in section \ref{sec:iterative}, or when you make use of axiomatic literals as described in the next section), then of course these don't have to be tested either.
 
 %Whether this gives a performance benefit greatly depends on the structure of the formulas. I essentially used two benchmarks, one academic made of examples from the sat competitions and the other being a real-life example from the automobile industry. The academic one contained much fewer clauses (1.000-2.000) compared to the industrial (around 60.000), however the clauses of the academic benchmark contained three literals each, compared to two in the industrial one.  \\
 %TODO individuelle vonThore benchmarks mit individuellen satcomp benchmarks vergleichen
@@ -83,4 +86,3 @@ The benefit of this approach depends on the particular example. If the individua
 
 %This gives you the information that we would otherwise generate from all implicants that were contained in M.
 
-TODO braucht es ein paper zu referenzieren, ich meine ich hatte noch eins

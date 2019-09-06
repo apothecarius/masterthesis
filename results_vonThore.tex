@@ -1,14 +1,9 @@
 \section{Industrial benchmark}
 
-Another benchmark I applied on the various backbone algorithms was a DINGSBUMS kindly supplied by Daimler AG. Here echtwelt zusammenhang beschreiben.
+%\end{table}
 
-This benchmark is executed in the way that given the base formula $F$, for each variable $l$ in $F$, another formula $F_l = F \cup \{l\}$ is created. From these various formulas, individual backbones are calculated.
-
-What follows are experimental results with the same set of algorithms that were run on the files from the sat competition. Afterwards I will analyze the results and try to give a specialized algorithm that is optimized for this particular benchmark.
-
-\begin{table}[ht]
-%\begin{wraptable}{r}{8cm} %[tbp]
-\label{tab:vonThore1} %for referencing
+\begin{wraptable}{R}{8cm}
+%\begin{table}[tbp]
 \begin{tabular}{l| c c c }
 &	$t_{calc}$(sec) &	$t_{sat}$(sec)	& NSatCalls \\
 \hline
@@ -36,37 +31,41 @@ PB2(0.5\%) & 5.282 & 2.356 & 9337 \\
 PB3 & 2.503 & 1.174 & 4471
 \end{tabular}
 \caption{First execution of industry application. Values are not averaged, but summed up over 407 different benchmarks.}
-%\end{wraptable}
-\end{table}
+\label{tab:vonThore1} %for referencing
+\end{wraptable}
 
-Here we immediately see, that preferences give a much greater benefit than in the benchmark with the files from the sat competition. However there are some more things that stand out:
+Another benchmark I applied on the various backbone algorithms was a formula for a real world application from the automobile industry. The purpose of this formula $F_{conf}$ was to describe a product in the context of options or features available to the customer. Some of these options can be combined, others exclude or require each other. Most of the variables in $F_{conf}$ correspond to a boolean parameter that is set to $\top$ if the associated feature is requested by the customer. If the formula would become unsatisfiable under such assumptions equal to the requested configuration, then the combination of these features would be impossible. $F_{conf}$ further contains a small set of additional variables to model more complex relationships between options.
+
+The particular use case that I examined was to find the implications in the formula, i.e. if a customer requests feature $a$, would he also have to pick feature $b$. A primitive way to calculate this would be to iterate over all possible pairs of features \footnote{Minus permutations and pairs with the same feature twice} and check for satisfiability of $F_{conf}$ under the condition that $a$ is $\top$ and $b$ is $\bot$. If this was unsatisfiable, then $a$ would imply $b$. However, with 407 literals to choose from, you would have to do 82,621 sat calls. 
+
+A more efficient approach is to only go over the 407 options once and for each variable $a$ of them calculate the backbone of $F_{conf} \cup \{a\}$ or in other words $F_{conf}$ under the assumption $a$. If a feature $b$ occurs in all models when $a$ is assumed, then $a$ implies $b$ in some way.
+
+Table \ref{tab:vonThore1} lists experimental results with the same set of algorithms that were run on the files from the sat competition. After analyzing performance results, I try to give a specialized algorithm that is optimized for this particular benchmark.
+
+We immediately see, that preferences give a much greater benefit than in the benchmark with the files from the sat competition. However there are some more things that stand out:
 \begin{itemize}
 \item The fastest algorithm overall is the one that does not reduce the models at all. The number of sat calls is even exactly the same as that of that variant with prime implicant reduction. However the time that was spent in the sat solver is very similar, so the difference must be the time that was spent to reduce the model and the benefit, namely difference of literals in the model and it's prime implicant, is very small.
-\item However, the fastest implementation when it comes to pure sat solver time as well as number of sat calls, was $PB3$, which differs from the others in that it uses literal rotation to reduce models instead of prime implicant computation. Appearantly the models that occur in this formula contain many different prime implicants with little distance to the model.
-\item Another algorithm that worked well was $PB1e$ with a calculation time on third place after $PB1(model)$ and $PB3$. This variant makes use of learned literals so appearantly the backbone literals in this formula are easy to identify by checking the set of literals that the solver learns when it computes new models.\\
-In fact, on inspection, all literals that later turn out to be part of the backbone occur in this set after the very first sat call(with an exception of the forced literal).
-\item Another noteworthy algorithm is the $KBB$ algorithm that uses unit implication to identify backbone literals. The implementation of this algorithm was based on that of the $BB$ algorithm and here the number of sat calls with $KBB$ is a tenth of the number in the case of $BB$. However this advantage is not expressed equally strong when it comes to the time spent in the sat solver(around a fourth), which means that the identification through calculating a complete model can sometimes be more efficient than regularly checking unit implications.\\
-The overall computation time is even worse in comparison, meaning that the benefit through cheap backbone literal identification is less than the time that it takes to check the clauses for the unit case. It may be possible that this method requires an improvement in the way that the unit implication is implemented to make good use of the approach.
+\item However, the fastest implementation when it comes to pure sat solver time as well as number of sat calls, was $PB3$, which differs from the others in that it uses literal rotation to reduce models instead of prime implicant computation. Apparantly the models that occur in this formula contain many different prime implicants with little distance to the model.\\
+A previous variant of this algorithm took around 250 seconds to compute overall. This version did not use the lookup from literal to containing clauses (as described in later paragraphs in section section \ref{ss:rot}), but iterated over all clauses in the formula. Such a drastic effect of an efficient implementation did not occur for the sat competition benchmark.\\
+This has primarily two reasons. First, the number of sat calls per instance is twice as much in this benchmark compared to those from the sat competitions\footnote{The 4471 calls span over 407 problem instances.}, therefore the model reduction happens twice as often. Secondly, the formula of this benchmark is much larger than those from the sat competition, with the filesize being around twenty times as large. Therefore there are much more clauses to search through.
+\item The two algorithms in third place of overall computation time were $PB1e$ and $PB1f$. Both of these make use of learned literals so appearantly the backbone literals in this formula are easy to identify by checking the set of literals that the solver learns when it computes new models.\\
+In fact, on inspection, all literals that later turn out to be part of the backbone occur in this set after the very first sat call(with an exception of the forced literal, which can be extracted by searching the formula for clauses with only one literal).
+\item Another noteworthy algorithm is the $KBB$ algorithm that uses unit implication to identify backbone literals. The implementation of this algorithm was based on that of the $BB$ algorithm and here the number of sat calls with $KBB$ is a tenth of the number in the case of $BB$. However this advantage is not expressed equally strong when it comes to the time spent in the sat solver(around a fourth), which means that the identification through calculating a new model can sometimes be more efficient than regularly checking unit implications.\\
+The overall computation time is even worse in comparison, meaning that the benefit through cheap backbone literal identification is less than the time that it takes to check the clauses for the unit case. It may be possible that this method requires an improved implementation. The search for clauses where the unit implication for backbone literals applies could be implemented in a similar way as was used to calculate required and rotatable assignments, using the lookup from variables to clauses where they occur (see section \ref{ss:rot})
 \end{itemize}
-
-interessant sind: pb3 mit rotationen,pb1e mit gelernten (pb1f mit vorruns darüber hinaus nicht besser), KBB (suche schlecht implementiert)
-
-pb3 interessant, weil niedrigste sat zeit und wenigsten sat calls überhaupt. Verliert wohl viel zeit mit drumrum also optimieren.
-TODO pb1e anschauen, wieviele literale gelernt wurden und mit sat größe gegenüberstellen. (schnitt daraus)
 
 verbesserungen:
 - nicht brute force klauseln prüfen, sondern anhand des index für watched literal propagation (notiz: monoclauses werden in sat4j nicht gelernt. Sollten stattdessen eh als assumptions übergeben werden)
 %- außerdem: lits in bb_l muss man nicht prüfen ob notwendigerweise in bb_u
 - nur die literale rotieren die in der obermenge verbleiben
 - Außerdem: "bugfix" erzwungenes literal trat nicht in gelernten auf.
-
--> kein weiterer sat aufruf und Gesamtlaufzeit von 0.3 Sekunden
+- präferenzen nutzen
 
 besonderheiten: 
 - absolut alle backbone literale sind nach dem ersten sat aufruf gelernt. (*mit technischen besonderheiten, nur wenn man blocking clauses nimmt und dann ausgenommen die in der blocking clause)
-- model minus rotationen wird jedes mal zu genau dem backbone (prim implikante reicht nicht ganz) (heißt nicht, dass nur eine primimplikante existiert, sonst wäre PB1 genauso gut) 
 
-bedeutet auch: in diesem extremfall sind preferences unnötig
+Line \ref{algo:kbbDoWhileStart} bis Line \ref{algo:kbbDoWhileEnd} do while breche ab sobald nix neues gefunden wird. unitImplied gibt nur neue zurück
+
 
 \begin{algorithm}
 \caption{{\sc Specialized algorithm for industrial application}}
@@ -77,13 +76,15 @@ $(outc,mdl,learnt) \gets SAT(F)$\;
 $bb_u \gets required(mdl,F)$\;
 $bb_l \gets learnt$\;
 \While{$bb_l \neq bb_u$}{
-	\Do{$units \neq \emptyset$}{ 
-		$units \gets unitImplied(F,bb_l)$\;
-		$bb_l \gets bb_l \cup units$\;
+	\Do{$unitBackbones \neq \emptyset$}{
+	\label{algo:kbbDoWhileStart}
+		$unitBackbones \gets unitImplied(F,bb_l)$\;
+		$bb_l \gets bb_l \cup unitBackbones$\;
 	}
+	\label{algo:kbbDoWhileEnd}
 	$blocker \gets \bigvee _{l\in bb_u}\neg l$\;
-
-	$(outc,mdl,learnt) \gets SAT(F \cup blocker \cup bb_l)$\;
+	$prefs \gets \{\neg l : l \in bb_u \}$\;
+	$(outc,mdl,learnt) \gets prefSAT(F \cup blocker \cup bb_l, prefs)$\;
 	\If{$\neg outc$}{
 		\Return{$bb_u$}\;
 	}
@@ -98,3 +99,5 @@ $bb_l \gets learnt$\;
 %- gelernte klauseln muss man nicht extra hinzufügen, weil gelernte literale gelernt bleiben
 %- für $bb_l \neq bb_u$ muss man nur größe vergleichen, weil upper/lower bound desselben ziels
 %- 
+
+besondere bedeutung für diesen benchmark: wiederverwendung von gelernten klauseln über unterschiedliche literale

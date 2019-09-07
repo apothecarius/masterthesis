@@ -7,28 +7,26 @@
 \begin{tabular}{l| c c c }
 &	$t_{calc}$(sec) &	$t_{sat}$(sec)	& NSatCalls \\
 \hline
-BB & 12.197 & 7.937 & 159545 \\
-IBB & 7.215 & 2.722 & 15748 \\
-KBB & 14.252 & 2.222 & 15266 \\
-KBB(pref) & 11.265 & 1.33 & 6466 \\
-PB0 & 3.607 & 1.458 & 6531 \\
-PB1 & 3.945 & 1.566 & 6531 \\
-PB1(noAmnes) & 3.831 & 1.6 & 6531 \\
-PB1(model) & 2.129 & 1.608 & 6531 \\
-PB1(invert) & 8.16 & 3.262 & 15248 \\
-PB1x & 7.51 & 2.877 & 15748 \\
-PB1a & 4.858 & 2.079 & 9335 \\
-PB1b & 7.95 & 3.226 & 15248 \\
-PB1c & 5.533 & 2.3 & 9680 \\
-PB1c(5\%) & 7.11 & 2.842 & 13955 \\
-PB1d & 4.511 & 1.832 & 7386 \\
-PB1d(5\%) & 5.857 & 2.217 & 11238 \\
-PB1e & 3.547 & 1.398 & 6387 \\
-PB1f & 3.493 & 1.493 & 6369 \\
-PB2 & 5.325 & 2.41 & 9333 \\
-PB2(5\%) & 5.311 & 2.4 & 9337 \\
-PB2(0.5\%) & 5.282 & 2.356 & 9337 \\
-PB3 & 2.503 & 1.174 & 4471
+BB & 11.117 & 7.235 & 159545 \\
+IBB & 6.353 & 2.316 & 15748 \\
+KBB & 13.747 & 2.11 & 15266 \\
+PB0 & 3.659 & 1.469 & 6531 \\
+PB1 & 3.918 & 1.611 & 6531 \\
+PB1(amnes) & 4.067 & 1.682 & 6531 \\
+PB1(model) & 2.148 & 1.59 & 6531 \\
+%PB1(invert) & 8.154 & 3.26 & 15248 \\
+PB1x & 7.596 & 2.94 & 15748 \\
+PB1a & 5.096 & 2.112 & 9335 \\
+PB1b & 7.754 & 3.199 & 15248 \\
+PB1c & 5.376 & 2.248 & 9680 \\
+PB1c(5\%) & 7.026 & 2.693 & 13955 \\
+PB1d & 4.464 & 1.804 & 7386 \\
+PB1e & 3.524 & 1.354 & 6387 \\
+PB1f & 3.603 & 1.526 & 6369 \\
+PB2 & 8.341 & 3.457 & 15752 \\
+PB2(5\%) & 8.313 & 3.484 & 15752 \\
+PB2(0.5\%) & 8.364 & 3.529 & 15752 \\
+PB3 & 3.872 & 1.204 & 4471 \\
 \end{tabular}
 \caption{First execution of industry application. Values are not averaged, but summed up over 407 different benchmarks.}
 \label{tab:vonThore1} %for referencing
@@ -44,7 +42,7 @@ Table \ref{tab:vonThore1} lists experimental results with the same set of algori
 
 We immediately see, that preferences give a much greater benefit than in the benchmark with the files from the sat competition. However there are some more things that stand out:
 \begin{itemize}
-\item The fastest algorithm overall is the one that does not reduce the models at all. The number of sat calls is even exactly the same as that of that variant with prime implicant reduction. However the time that was spent in the sat solver is very similar, so the difference must be the time that was spent to reduce the model and the benefit, namely difference of literals in the model and it's prime implicant, is very small.
+\item The fastest algorithm overall is the one that does not reduce the models at all. The number of sat calls is even exactly the same as that of that variant with prime implicant reduction. However the time that was spent in the sat solver is very similar to that execution with prime implicant reduction ($PB1$), so the difference must be the time that was spent to reduce the model and the benefit, namely the number of optional literals in the prime implicant, was very small.
 \item However, the fastest implementation when it comes to pure sat solver time as well as number of sat calls, was $PB3$, which differs from the others in that it uses literal rotation to reduce models instead of prime implicant computation. Apparantly the models that occur in this formula contain many different prime implicants with little distance to the model.\\
 A previous variant of this algorithm took around 250 seconds to compute overall. This version did not use the lookup from literal to containing clauses (as described in later paragraphs in section section \ref{ss:rot}), but iterated over all clauses in the formula. Such a drastic effect of an efficient implementation did not occur for the sat competition benchmark.\\
 This has primarily two reasons. First, the number of sat calls per instance is twice as much in this benchmark compared to those from the sat competitions\footnote{The 4471 calls span over 407 problem instances.}, therefore the model reduction happens twice as often. Secondly, the formula of this benchmark is much larger than those from the sat competition, with the filesize being around twenty times as large. Therefore there are much more clauses to search through.

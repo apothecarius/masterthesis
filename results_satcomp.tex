@@ -14,7 +14,7 @@ PB0 & 57.177 & 57.175 & 5 \\
 PB1 & 131.063 & 131.061 & 5 \\
 PB1(noAmnes) & 171.183 & 171.182 & 4 \\
 PB1(model) & 116.853 & 116.852 & 6 \\
-PB1(invert) & 164.994 & 164.992 & 11 \\
+%PB1(invert) & 164.994 & 164.992 & 11 \\
 PB1x & 18.564 & 18.562 & 8 \\
 PB1a & 154.091 & 154.089 & 7 \\
 PB1b & 144.028 & 144.026 & 6 \\
@@ -44,6 +44,20 @@ zweite tabelle zeigen, wenn blocking clause nicht entfernt wurde
 Table \ref{tab:satCompAvg} shows a strong performance difference between PB0 and PB1.
 
 TODO grieu beispiel rauspicken (letzter sat call)
+
+\begin{wraptable}{R}{7cm} %[tbp]
+\begin{tabular}{l| c c c c}
+& $t_{full}$ & $t_{sat}$ & $t_{last}$ & $n_{sat}$ \\
+\hline			
+PB0 & 1005.756 & 1005.753 & 810.946 & 3 \\
+PB1 & 6741.638 & 6741.635 & 6594.098 & 2 \\
+IBB & 584.737 & 584.619 & TODO & 2 \\
+\end{tabular}
+\caption{Comparison of runtime of file $grieu-vmpc-s05-27$ . $t_{last}$ shows the time that the very last sat call took.}
+\label{tab:tLastGrieu} %for referencing
+\end{wraptable}
+
+stammt daher, dass zuletzt unsat errechnet wird. vonThore hat das problem nicht (selten überhaupt eine millisekunde gebraucht für letzten aufruf)
 
 \subsection{Benefits of unit implication}
 

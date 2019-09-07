@@ -1,5 +1,35 @@
+As is stated in \cite{PJ18}, the concept of preferences has not experienced much research. That is why I experimented a lot with various modifications on the concept for the purpose of this thesis.
+
+All of the following modifications were implemented ontop of algorithm \ref{alg:blockPref} ($PB1$). Algorithm \ref{alg:pb0} (PB0) depends on that all available preferences are taken into account strictly, so there is not much space to experiment there. 
+
+
 \section{Forgetting preferences}
-\section{Inverted Preferences}
+During the course of solving a CNF formula, many conflicting assignments occur which must be resolved through backtracking. This means that some assignments need to be taken back. Looking at this from the other direction, it can very well happen, that the same variable can occur in decisions multiple times over such a calculation. If a variable assignment is even slightly involved in a conflict, then, lacking any further knowledge, it is a good strategy to simply try it's negation in the future. It is not guaranteed, but simply more likely that the other assignment resolves the conflict that occurred with the previous assignment.
+
+The default way in that preferences are implemented stands in the way of this. If you tell the SAT solver to always assign the same boolean value to a specific variable, then the strategy above cannot be applied. That is why I have implemented an option to $PB1$ where preferences are forgotten after the first time when they are taken into account. This means that when a variable is selected for decision, it is removed from the primary heap that is consulted first for this selection\footnote{
+	In the Sat4J library, what decides the order of decisions and what decides the value assigned in these decisions are actually two separate data structures. That means that this removal must be written in two separate places.
+}. 
+
+The secondary heap always contains all used variables for selection, but in the default configuration the preferred variables would already be assigned at the point in time when it is consulted. Here this means, that once forgotten, the preferred variables can still occur in decisions after they were reverted through backtracking. 
+
+The most important effect of this strategy is, that the solver quickly falls back to a default behaviour when it turns out that the formula is difficult to solve.
 
 \section{Subsets}
-\subsection{Disjunct subsets}
+
+
+auf 2 arten implementiert, einfach so und disjunkt
+
+%\section{Inverted Preferences}
+%dropped the topic of inverted preferences
+
+\section{Adjustable Preferences}
+During benchmarking it showed itself, that all solvers that did not employ any preferences at all were the fastest ones when it came to difficult formulas. So it might be interesting to test some algorithm that can be configured with a floating point number, where a ground value of $0.0$ would be equivalent to having no preferences at all and then allowing to enable preferences in very small increments.
+
+To do this, I implemented a different kind of preference strategy. Here, you can pass a floating point number $f$ between $0.0$ and $1.0$ in addition to the set of preferred variables. When a decision happens in the CDCL algorithm, the selection heuristic sorts all variables by an activity value, which is typically based on how often it was involved in conflicts TODO noch weitere sachen?. Then the resulting array is scanned, beginning with the variable with the lowest activity until one is found that is not yet assigned. 
+
+Here this activity value is multiplied with $1-f$ during this sorting step where a variable is preferred. Therefore, if you pass $0$ as value for $f$, the order that is returned from sorting the activities would be completely unaffected and very small values of $f$ would only affect the selection heuristic if a preferred value was already deemed very important but only in second or third place with a small distance to the first one. 
+
+However, this factor $f$ can only influence the order of variables for decisions. Which value is then assigned (the so called "phase") can not be weighted\footnote{Except if there was a heuristic for that, which can give a confidence value}. That is why the default strategy for deciding the phase was left in place. 
+
+The purpose of this scheme was to see, whether benefits of preferences would rise up faster than the drawbacks with very low values of $f$.
+

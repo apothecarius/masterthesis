@@ -40,6 +40,96 @@ Taking a look at this table, we can quickly see that for these instances, all so
 IBB hatte bug, darum bessere leistung von pb1x vgl IBB\\
 zweite tabelle zeigen, wenn blocking clause nicht entfernt wurde
 
+\subsection{Importance of reusing learned clauses}
+Table \ref{tab:learnedIbb} shows a comparison of individual benchmarks to highlight the importance of reusing learned clauses. While working with the $Sat4J$ library I noticed that the $IBB$ backbone algorithm was accidentally configured in a way that learned clauses would always be discarded between SAT computations. However, these learned clauses are still valid in later iterations of the $IBB$ algorithm. The only difference that the formula goes through during this algorithm, is that the blocking clause that ensures a new model repeatedly looses some of it's literals. As long as the set of solutions for a formula is only reduced, the learned clauses of that formula stay valid.\footnote{Example: With a formula without any clauses but three variablesyy $a$,$b$ and $c$ you can create eight models. With only the clause $\{a\}$ in your formula you can have four models, with only the clause $\{a \lor b\}$ you can have 6 models, with only the clause $\{a\lor b \lor c\}$ you can have 7 models.}
+
+\begin{wraptable}{R}{8cm}
+\begin{tabular}{l| c c }
+File & $t_{keep}$ & $t_{discard}$ \\
+\hline
+brock400-2.cnf & 0.233 & 0.252 \\
+dimacs-hanoi5.cnf & 1.41 & 1.596 \\
+grieu-vmpc-s05-25.cnf & 71.945 & 78.964 \\
+grieu-vmpc-s05-27.cnf & 554.52 & 648.697 \\
+%johnson8-2-4.cnf & 0.001 & 0.001 \\
+fla-barthel-200-2.cnf & 0.634 & 6.019 \\
+fla-barthel-200-3.cnf & 0.619 & 2.16 \\
+fla-barthel-220-1.cnf & 2.511 & 9.572 \\
+fla-barthel-220-2.cnf & 7.497 & 17.759 \\
+fla-barthel-220-4.cnf & 2.24 & 14.113 \\
+fla-barthel-240-2.cnf & 3.632 & 50.552 \\
+fla-komb-200-3.cnf & 0.236 & 0.301 \\
+fla-komb-200-5.cnf & 0.114 & 0.276 \\
+\iffalse
+fla-komb-220-1.cnf & 0.293 & 0.475 \\
+fla-komb-220-3.cnf & 0.229 & 0.466 \\
+fla-komb-220-4.cnf & 0.129 & 0.217 \\
+fla-komb-220-5.cnf & 0.167 & 0.247 \\
+fla-komb-240-2.cnf & 0.326 & 0.413 \\
+fla-komb-240-3.cnf & 0.395 & 0.392 \\
+fla-komb-240-5.cnf & 0.478 & 0.481 \\
+fla-komb-260-1.cnf & 1.518 & 3.032 \\
+fla-komb-260-3.cnf & 1.964 & 3.093 \\
+fla-komb-260-4.cnf & 1.452 & 1.469 \\
+fla-komb-280-1.cnf & 3.625 & 4.384 \\
+fla-komb-280-3.cnf & 0.926 & 2.375 \\
+fla-komb-280-4.cnf & 1.438 & 1.442 \\
+fla-komb-280-5.cnf & 2.678 & 4.124 \\
+fla-komb-300-3.cnf & 3.46 & 8.989 \\
+fla-komb-300-4.cnf & 2.72 & 5.816 \\
+fla-komb-300-5.cnf & 2.095 & 2.092 \\
+fla-komb-320-2.cnf & 2.649 & 4.34 \\
+fla-komb-320-3.cnf & 10.821 & 10.135 \\
+fla-komb-320-5.cnf & 8.367 & 15.784 \\
+fla-komb-340-1.cnf & 4.453 & 7.647 \\
+fla-komb-340-2.cnf & 10.553 & 18.844 \\
+fla-komb-340-3.cnf & 9.665 & 9.619 \\
+fla-komb-340-4.cnf & 19.507 & 30.767 \\
+fla-komb-340-5.cnf & 11.085 & 16.571 \\
+fla-komb-360-1.cnf & 9.639 & 11.066 \\
+fla-komb-360-4.cnf & 13.362 & 22.839 \\
+fla-komb-360-5.cnf & 19.295 & 35.347 \\
+fla-komb-380-2.cnf & 41.745 & 89.802 \\
+fla-komb-380-3.cnf & 43.062 & 59.364 \\
+fla-komb-380-4.cnf & 105.37 & 179.518 \\
+fla-komb-380-5.cnf & 57.441 & 107.179 \\
+fla-qhid-200-1.cnf & 0.063 & 0.063 \\
+fla-qhid-200-2.cnf & 0.127 & 0.122 \\
+fla-qhid-200-4.cnf & 0.198 & 0.201 \\
+fla-qhid-200-5.cnf & 0.162 & 0.163 \\
+fla-qhid-220-2.cnf & 0.356 & 0.525 \\
+fla-qhid-220-3.cnf & 0.231 & 0.355 \\
+fla-qhid-220-4.cnf & 0.34 & 0.412 \\
+fla-qhid-220-5.cnf & 0.399 & 0.504 \\
+fla-qhid-240-3.cnf & 1.035 & 3.079 \\
+fla-qhid-240-5.cnf & 0.624 & 0.724 \\
+fla-qhid-260-1.cnf & 0.838 & 2.389 \\
+fla-qhid-260-2.cnf & 0.602 & 0.613 \\
+fla-qhid-280-1.cnf & 2.948 & 18.6 \\
+fla-qhid-280-3.cnf & 1.592 & 2.516 \\
+fla-qhid-300-1.cnf & 2.103 & 2.108 \\
+fla-qhid-300-4.cnf & 3.385 & 3.741 \\
+\fi
+fla-qhid-320-1.cnf & 6.61 & 6.575 \\
+fla-qhid-320-2.cnf & 9.227 & 101.17 \\
+fla-qhid-320-5.cnf & 7.861 & 7.962 \\
+fla-qhid-340-2.cnf & 11.922 & 13.688 \\
+fla-qhid-340-3.cnf & 11.796 & 17.157 \\
+fla-qhid-340-4.cnf & 9.454 & 9.297 \\
+fla-qhid-360-1.cnf & 39.998 & 39.797 \\
+fla-qhid-360-5.cnf & 10.698 & 10.849 \\
+fla-qhid-380-1.cnf & 189.895 & 249.003 \\
+fla-qhid-400-3.cnf & 83.098 & 130.834 \\
+fla-qhid-400-4.cnf & 55.213 & 52.811 \\
+smallSatBomb.cnf & 0.011 & 0.022 \\
+\end{tabular}
+\caption{Backbone computation time of the $IBB$ algorithm, once with keeping learned clauses ($t_{keep}$) and once discarding learned clauses between every sat call($t_{discard}$)}
+\label{tab:learnedIbb} %for referencing
+\end{wraptable}
+
+The information contained in learned clauses is very valuable, as it prevents the solver from repeating invalid combinations of assignments that might even be likely to occur again. But if already learned clauses can guide the SAT solver away from possible conflicts, it could ideally return a model without any backtracking.
+
+
 \subsection{Comparison of PB0 with PB1}
 Table \ref{tab:satCompAvg} shows a strong performance difference between PB0 and PB1.
 

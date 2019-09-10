@@ -36,124 +36,148 @@ Additionally, you can identify axiomatic literals if you check the table that is
 
 TODO tabelle mit wieviele literale dabei rausgefunden werden
 
-%\begin{wraptable}{r}{10cm}
 \fi
 \subsection{Unit Implication}
 \label{subsec:unitImpl}
 
-yadayada
+When you have some backbone literals identified, there are some methods that you can apply on this set, which can potentially expand it without a complete model calculation. 
 
-bedingung: damit c hier angewandt werden kann müssen alle literale darin backbone sein und $n_c - 1$ davon müssen bekannt sein.
+One method becomes obvious, if you recall the CDCL algorithm, specifically unit propagation. Suppose you have a clause where all but one of it's variables turned out to be part of the backbone, however all of them with the exact opposite sign from that in the clause, so that the clause is still not satisfied by them. In this case you are forced to assign the remaining literal in a way that it does satisfy the clause and you have to do this in every possible model, since what forces you to do that are backbone literals. Therefore, this unit implied assignment is in the backbone.
+
+An efficient algorithm for this would be as follows: Keep a counter for each of the clauses in your formula that indicates the number of not satisfying backbone literals in said clause. When you identify a new backbone literal, increment all the counters where that literal occurs in negation. You can drop the counter completely for clauses where the newly identified backbone literal occurs with the same sign so that it satisfies the clause\footnote{
+	In fact, you could remove the whole clause from your formula, since it will always be satisfied through the backbone literal. You could say, it get's subsumed by a clause with only the backbone literal.}.
+If the counter reaches the length of it's clause minus one, then you know that to satisfy this particular clause, the remaining literal in it has to be in the backbone. In this case you can compare it's literals with your current inventory of backbone literals to identify the remaining one. This algorithm should be done inbetween every SAT computation with only those backbone literals that were identified in the last iteration.
+
+\iffalse
+fuer den fall dass platz generiert werden muss: den obigen algorithmus nochmal formell aufschreiben.
+\begin{algorithm}
+\caption{{\sc Iterative algorithm (two tests per variable)}}
+\label{alg:iterTwo}
+\DontPrintSemicolon
+\KwIn{A satisfiable formula $F$ in CNF}
+\KwOut{All literals of the backbone of $F$ $\nu_r$}
 
 
-We have tested this method in two solvers, $BB$ and a variant of $PrefBones$ that learns backbone literals only from clause learning as described in the previous subsection. This clearly showed that this method requires a critical mass of already known backbone literals to have a benefit, because as already stated, if there even exists a clause in $F$ where this method can be applied, you need to know the $n_c - 1$ other backbone literals in $c$ beforehand.
+\Return{$\nu_r$}\;
+\end{algorithm}
+\fi
 
-The learned backbone literals alone can rarely supply this, before the $PrefBones$ algorithm terminates from other conditions. However the iterative approach of the $BB$ solver, testing every yet unidentified literal individually, is much faster at providing positively identified backbone literals that you need to imply other backbone literals through unit implication.
+Without an efficient implementation, this search for unit implied backbone literals might consume a lot of time. If you try to find the backbone of a formula where the computation takes many SAT calls which each return relatively quickly, the time spent to search for unit implied backbone literals can actually exceed the time spent in the SAT solver if it's implemented inefficiently.
+
+I have tested this method in two solvers, $BB$ and a variant of $PB1$ that identifies backbone literals only through the learned literals. The tested files were from a SAT competition. Here it showed, that for the method described in this section it is important to supply a sufficient number of already known backbone literals for it to have a positive impact on runtime. The learned backbone literals alone could rarely supply this, before the $PrefBones$ algorithm terminated from other conditions. However the iterative approach of the $BB$ solver, testing every yet unidentified literal individually, was much faster at providing positively identified backbone literals that you would need to imply other backbone literals through unit implication.
+
+%TODO tabelle mit unit implikation von pb1e hervorzaubern
+
+For further investigation on this method see section \ref{ss:result_unit}.
+
+%This clearly showed that this method requires a critical mass of already known backbone literals to have a benefit, because as already stated, if there even exists a clause in $F$ where this method can be applied, you need to know the $n_c - 1$ other backbone literals in $c$ beforehand.
+
+
+
+
 
 \subsection{Implication through Cooccurrence}
 \label{subsec:coocc}
+
+%\begin{wraptable}{r}{7cm}
 Another method to recognize backbone literals from other ones is described in \cite{wbxcl16} and the rationale goes as follows:
+
 %\newtheorem{Printed output}
 \begin{lemma}
 Given a backbone literal $a$ and another literal $b$. If $b$ occurs in all clauses that also contain $a$, then $\neg b$ must be part of the backbone. 
 
 Proof: Assuming $\neg b$ was not in the backbone, then there would have to exist a model that contained $b$. Given that all clauses that contain $b$ also contain $a$, $a$ cannot be part of the backbone.
 \end{lemma}
+\begin{wraptable}{l}{8cm}
+%\begin{wraptable}[31]{l}{8cm} % first optional parameter defines height of wraptable to avoid too much vertical space to be eaten away.
+\begin{tabular}{l| c c c }
+File& $n_{unit}$ & $n_{coocc}$ & $n_{var}$\\
+\hline
+brock400-2.cnf & 0 & 0 & 400 \\
+dimacs-hanoi5.cnf & 1465 & 47 & 1931 \\
+grieu-vmpc-s05-25.cnf & 565 & 0 & 625 \\
+grieu-vmpc-s05-27.cnf & 142 & 0 & 729 \\
+johnson8-2-4.cnf & 0 & 0 & 28 \\
+fla-barthel-200-2.cnf & 33 & 0 & 200 \\
+fla-barthel-200-3.cnf & 43 & 0 & 200 \\
+fla-barthel-220-1.cnf & 149 & 0 & 220 \\
+fla-barthel-220-2.cnf & 0 & 0 & 220 \\
+fla-barthel-220-4.cnf & 0 & 0 & 220 \\
+fla-barthel-240-2.cnf & 61 & 0 & 240 \\
+\iffalse
+fla-komb-200-3.cnf & 166 & 0 & 200 \\
+fla-komb-200-5.cnf & 166 & 0 & 200 \\
+fla-komb-220-1.cnf & 190 & 0 & 220 \\
+fla-komb-220-3.cnf & 187 & 0 & 220 \\
+fla-komb-220-4.cnf & 188 & 0 & 220 \\
+fla-komb-220-5.cnf & 179 & 3 & 220 \\
+fla-komb-240-2.cnf & 211 & 0 & 240 \\
+fla-komb-240-3.cnf & 202 & 0 & 240 \\
+fla-komb-240-5.cnf & 215 & 0 & 240 \\
+fla-komb-260-1.cnf & 212 & 2 & 260 \\
+fla-komb-260-3.cnf & 224 & 2 & 260 \\
+fla-komb-260-4.cnf & 213 & 0 & 260 \\
+fla-komb-280-1.cnf & 244 & 0 & 280 \\
+fla-komb-280-3.cnf & 240 & 0 & 280 \\
+fla-komb-280-4.cnf & 245 & 0 & 280 \\
+fla-komb-280-5.cnf & 224 & 0 & 280 \\
+fla-komb-300-3.cnf & 238 & 1 & 300 \\
+fla-komb-300-4.cnf & 256 & 2 & 300 \\
+fla-komb-300-5.cnf & 272 & 0 & 300 \\
+fla-komb-320-2.cnf & 280 & 0 & 320 \\
+fla-komb-320-3.cnf & 257 & 0 & 320 \\
+fla-komb-320-5.cnf & 251 & 0 & 320 \\
+fla-komb-340-1.cnf & 299 & 0 & 340 \\
+fla-komb-340-2.cnf & 279 & 0 & 340 \\
+fla-komb-340-3.cnf & 300 & 1 & 340 \\
+fla-komb-340-4.cnf & 277 & 0 & 340 \\
+fla-komb-340-5.cnf & 290 & 0 & 340 \\
+fla-komb-360-1.cnf & 305 & 2 & 360 \\
+fla-komb-360-4.cnf & 291 & 0 & 360 \\
+fla-komb-360-5.cnf & 319 & 0 & 360 \\
+fla-komb-380-2.cnf & 330 & 1 & 380 \\
+fla-komb-380-3.cnf & 320 & 2 & 380 \\
+fla-komb-380-4.cnf & 322 & 1 & 380 \\
+fla-komb-380-5.cnf & 314 & 0 & 380 \\
+fla-qhid-200-1.cnf & 185 & 0 & 200 \\
+fla-qhid-200-2.cnf & 182 & 0 & 200 \\
+fla-qhid-200-4.cnf & 181 & 0 & 200 \\
+fla-qhid-200-5.cnf & 183 & 0 & 200 \\
+fla-qhid-220-2.cnf & 190 & 0 & 220 \\
+fla-qhid-220-3.cnf & 197 & 0 & 220 \\
+fla-qhid-220-4.cnf & 197 & 0 & 220 \\
+fla-qhid-220-5.cnf & 190 & 0 & 220 \\
+fla-qhid-240-3.cnf & 10 & 0 & 240 \\
+fla-qhid-240-5.cnf & 0 & 0 & 240 \\
+fla-qhid-260-1.cnf & 6 & 0 & 260 \\
+fla-qhid-260-2.cnf & 232 & 0 & 260 \\
+fla-qhid-280-1.cnf & 1 & 0 & 280 \\
+fla-qhid-280-3.cnf & 251 & 2 & 280 \\
+\fi
+fla-qhid-300-1.cnf & 260 & 0 & 300 \\
+fla-qhid-300-4.cnf & 270 & 0 & 300 \\
+fla-qhid-320-1.cnf & 296 & 0 & 320 \\
+fla-qhid-320-2.cnf & 0 & 0 & 320 \\
+fla-qhid-320-5.cnf & 283 & 2 & 320 \\
+fla-qhid-340-2.cnf & 310 & 0 & 340 \\
+fla-qhid-340-3.cnf & 309 & 3 & 340 \\
+fla-qhid-340-4.cnf & 301 & 4 & 340 \\
+fla-qhid-360-1.cnf & 326 & 0 & 360 \\
+fla-qhid-360-5.cnf & 321 & 0 & 360 \\
+fla-qhid-380-1.cnf & 344 & 2 & 380 \\
+fla-qhid-400-3.cnf & 366 & 0 & 400 \\
+fla-qhid-400-4.cnf & 359 & 0 & 400 \\
+smallSatBomb.cnf & 0 & 0 & 264 \\
+\end{tabular}
+\caption{Comparison of number of backbone literals identified through cooccurrence in comparison to the number identified through unit implication.}
+\label{tab:coocBB}
+\end{wraptable}
 
 In other words, if we determine a new backbone literal, and all clauses that contain it also contain another literal, then we can add the negation of the latter to our backbone set. 
 
-bisschen dazu schreibseln. Diskussion unit case ist ja auch selten
+However this strategy does not seem to be very effective, at least for the benchmark that I tested it on. Table \ref{tab:coocBB} shows the number of literals that were identified through this method in comparison to those that were identifed through unit implication and the number of variables in the formula. It is probably very rare that a variables always occurs together with another
 
-refinedEssentials benchmark hat selten überhaupt irgendwelche damit festgestellt, höchstens 4, bei zwischen 200 und 400 variablen
-dimacs-hanoi5 hat 47
-
-tabelle zum vergleich zwischen normalen KBB und KBB mit cooccurrence hinklatschen (je datei, nur implizierte backbone literale)
-
-%\begin{wraptable}{r}{7cm}
-\begin{wraptable}{L}{7cm} %[tbp]
-\label{tab:coocBB} %for referencing
-\begin{tabular}{l| c c c }
-File& $n_{unit}$ & $n_{coocc}$\\
-\hline
-brock400-2.cnf & 0 & 0 \\
-dimacs-hanoi5.cnf & 1465 & 47 \\
-grieu-vmpc-s05-25.cnf & 565 & 0 \\
-grieu-vmpc-s05-27.cnf & 142 & 0 \\
-johnson8-2-4.cnf & 0 & 0 \\
-fla-barthel-200-2.cnf & 33 & 0 \\
-fla-barthel-200-3.cnf & 43 & 0 \\
-fla-barthel-220-1.cnf & 149 & 0 \\
-fla-barthel-220-2.cnf & 0 & 0 \\
-fla-barthel-220-4.cnf & 0 & 0 \\
-fla-barthel-240-2.cnf & 61 & 0 \\
-\iffalse
-fla-komb-200-3.cnf & 166 & 0 \\
-fla-komb-200-5.cnf & 166 & 0 \\
-fla-komb-220-1.cnf & 190 & 0 \\
-fla-komb-220-3.cnf & 187 & 0 \\
-fla-komb-220-4.cnf & 188 & 0 \\
-fla-komb-220-5.cnf & 179 & 3 \\
-fla-komb-240-2.cnf & 211 & 0 \\
-fla-komb-240-3.cnf & 202 & 0 \\
-fla-komb-240-5.cnf & 215 & 0 \\
-fla-komb-260-1.cnf & 212 & 2 \\
-fla-komb-260-3.cnf & 224 & 2 \\
-fla-komb-260-4.cnf & 213 & 0 \\
-fla-komb-280-1.cnf & 244 & 0 \\
-fla-komb-280-3.cnf & 240 & 0 \\
-fla-komb-280-4.cnf & 245 & 0 \\
-fla-komb-280-5.cnf & 224 & 0 \\
-fla-komb-300-3.cnf & 238 & 1 \\
-fla-komb-300-4.cnf & 256 & 2 \\
-fla-komb-300-5.cnf & 272 & 0 \\
-fla-komb-320-2.cnf & 280 & 0 \\
-fla-komb-320-3.cnf & 257 & 0 \\
-fla-komb-320-5.cnf & 251 & 0 \\
-fla-komb-340-1.cnf & 299 & 0 \\
-fla-komb-340-2.cnf & 279 & 0 \\
-fla-komb-340-3.cnf & 300 & 1 \\
-fla-komb-340-4.cnf & 277 & 0 \\
-fla-komb-340-5.cnf & 290 & 0 \\
-fla-komb-360-1.cnf & 305 & 2 \\
-fla-komb-360-4.cnf & 291 & 0 \\
-fla-komb-360-5.cnf & 319 & 0 \\
-fla-komb-380-2.cnf & 330 & 1 \\
-fla-komb-380-3.cnf & 320 & 2 \\
-fla-komb-380-4.cnf & 322 & 1 \\
-fla-komb-380-5.cnf & 314 & 0 \\
-fla-qhid-200-1.cnf & 185 & 0 \\
-fla-qhid-200-2.cnf & 182 & 0 \\
-fla-qhid-200-4.cnf & 181 & 0 \\
-fla-qhid-200-5.cnf & 183 & 0 \\
-fla-qhid-220-2.cnf & 190 & 0 \\
-fla-qhid-220-3.cnf & 197 & 0 \\
-fla-qhid-220-4.cnf & 197 & 0 \\
-fla-qhid-220-5.cnf & 190 & 0 \\
-fla-qhid-240-3.cnf & 10 & 0 \\
-fla-qhid-240-5.cnf & 0 & 0 \\
-fla-qhid-260-1.cnf & 6 & 0 \\
-fla-qhid-260-2.cnf & 232 & 0 \\
-fla-qhid-280-1.cnf & 1 & 0 \\
-fla-qhid-280-3.cnf & 251 & 2 \\
-fla-qhid-300-1.cnf & 260 & 0 \\
-fla-qhid-300-4.cnf & 270 & 0 \\
-fla-qhid-320-1.cnf & 296 & 0 \\
-\fi
-fla-qhid-320-2.cnf & 0 & 0 \\
-fla-qhid-320-5.cnf & 283 & 2 \\
-fla-qhid-340-2.cnf & 310 & 0 \\
-fla-qhid-340-3.cnf & 309 & 3 \\
-fla-qhid-340-4.cnf & 301 & 4 \\
-fla-qhid-360-1.cnf & 326 & 0 \\
-fla-qhid-360-5.cnf & 321 & 0 \\
-fla-qhid-380-1.cnf & 344 & 2 \\
-fla-qhid-400-3.cnf & 366 & 0 \\
-fla-qhid-400-4.cnf & 359 & 0 \\
-smallSatBomb.cnf & 0 & 0\\
-\end{tabular}
-\caption{Comparison of number of backbone literals identified through cooccurrence in comparison to the number identified through unit implication.}
-%\end{wraptable}
-\end{wraptable}
+%TODO Thore fragen, ob kapitel so wertvoll und ob die nicht theoretisch subsumiert werden müssten
 
 
-TODO überlegen, ob es sinnmacht überhaupt zwei variablen zu haben die in denselben klauseln auftauchen
+

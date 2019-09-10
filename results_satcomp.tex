@@ -2,40 +2,37 @@
 
 For the first benchmark, I collected a set of 71 files from a SAT competition TODO welcher. The SAT competitions generally use problems that are difficult to solve compared to other problems of the same file size. This is in order to encourage development of solving strategies that reliably have good performance and not only for most of them. To save time during benchmarking, those files that took longer than around one minute for a single model computation were excluded, resulting in files that are generally around 30 kilobytes large. Additionally, problems where the duration for backbone computation averaged below one second were excluded, because here the small differences in the measurements could just as well be explained with external factors like the CPU throttling for a short time. To get meaningful testresults for such files, multiple testpasses should be conducted.
 
-\begin{wraptable}{r}{9cm} %[tbp]
+\begin{wraptable}{r}{7cm} %[tbp]
 \begin{tabular}{l| c c c }
  & $t_{full}$ & $t_{sat}$ & $n_{sat}$ \\
  \hline
-BB & 25.767 & 25.765 & 275 \\
-IBB & 27.086 & 27.07 & 7 \\
-KBB & 25.454 & 25.29 & 42 \\
-KBB(pref) & 54.729 & 54.619 & 39 \\
-PB0 & 57.177 & 57.175 & 5 \\
-PB1 & 131.063 & 131.061 & 5 \\
-PB1(noAmnes) & 171.183 & 171.182 & 4 \\
-PB1(model) & 116.853 & 116.852 & 6 \\
-%PB1(invert) & 164.994 & 164.992 & 11 \\
-PB1x & 18.564 & 18.562 & 8 \\
-PB1a & 154.091 & 154.089 & 7 \\
-PB1b & 144.028 & 144.026 & 6 \\
-PB1c(50\%) & 119.571 & 119.569 & 6 \\
-PB1c(5\%) & 141.334 & 141.332 & 6 \\
-PB1d(50\%) & 131.602 & 131.6 & 6 \\
-PB1d(5\%) & 148.734 & 148.732 & 6 \\
-PB1e & 143.675 & 142.621 & 6 \\
-PB1f & 224.335 & 224.334 & 6 \\
-PB2(50\%) & 228.267 & 228.264 & 8 \\
-PB2(5\%) & 182.26 & 182.258 & 8 \\
-PB2(0.5\%) & 165.892 & 165.89 & 8 \\
-PB3 & 157.297 & 157.249 & 5
+BB & 8.63 & 8.628 & 254 \\
+IBB & 4.946 & 4.944 & 9 \\
+KBB & 8.713 & 8.687 & 36 \\
+PB0 & 31.78 & 31.779 & 4 \\
+PB1 & 17.49 & 17.488 & 5 \\
+PB1(amnes) & 10.867 & 10.865 & 6 \\
+PB1(model) & 25.794 & 25.793 & 5 \\
+PB1x & 5.064 & 5.062 & 9 \\
+PB1a & 11.241 & 11.239 & 8 \\
+PB1b & 9.785 & 9.783 & 6 \\
+PB1c & 25.312 & 25.311 & 5 \\
+PB1c(5\%) & 1064.097 & 1064.095 & 6 \\
+PB1d & 26.746 & 26.745 & 5 \\
+PB1e & 17.187 & 16.591 & 6 \\
+PB1f & 15.971 & 15.97 & 6 \\
+PB2 & 10.135 & 10.133 & 10 \\
+PB2(5\%) & 5.232 & 5.229 & 9 \\
+PB2(0.5\%) & 5.251 & 5.249 & 9 \\
+PB3 & 20.927 & 20.922 & 4 \\
 \end{tabular}
-\caption{Averages of 71 testfiles taken from sat competitions. The columns indicate: The full time that the calculation took in seconds; The time that was spent in the sat solver; The number of sat calls (all three values are averages). }
+\caption{Averages of 64 testfiles taken from sat competitions. The columns indicate: The full time that the calculation took in seconds; The time that was spent in the sat solver; The number of sat calls (all three values are averages). }
 \label{tab:satCompAvg} %for referencing
 \end{wraptable}
 
 The averaged time to compute the backbones of these 71 testfiles can be seen in \ref{tab:satCompAvg}. To prove that various computation strategies are implemented as good as possible\footnote{e.g. no noteworthy timeloss during setup of preferences}, the second column shows the time that was only spent in the sat solver.
 
-Taking a look at this table, we can quickly see that for these instances, all solver that employed preferences as part of their algorithm performed much worth than those that did not\footnote{Which would be $BB$,$IBB$,$KBB$ and $PB1x$}.
+Taking a look at this table, we can quickly see that for these instances, all solver that employed preferences as part of their algorithm performed much worse than those that did not\footnote{Which would be $BB$,$IBB$,$KBB$ and $PB1x$}.
 
 IBB hatte bug, darum bessere leistung von pb1x vgl IBB\\
 zweite tabelle zeigen, wenn blocking clause nicht entfernt wurde
@@ -141,7 +138,7 @@ TODO grieu beispiel rauspicken (letzter sat call)
 \hline			
 PB0 & 1005.756 & 1005.753 & 810.946 & 3 \\
 PB1 & 6741.638 & 6741.635 & 6594.098 & 2 \\
-IBB & 584.737 & 584.619 & TODO & 2 \\
+IBB & 556.815 & 556.719 & 361.825 & 2 \\
 \end{tabular}
 \caption{Comparison of runtime of file $grieu-vmpc-s05-27$ . $t_{last}$ shows the time that the very last sat call took.}
 \label{tab:tLastGrieu} %for referencing
@@ -150,7 +147,7 @@ IBB & 584.737 & 584.619 & TODO & 2 \\
 stammt daher, dass zuletzt unsat errechnet wird. vonThore hat das problem nicht (selten überhaupt eine millisekunde gebraucht für letzten aufruf)
 
 \subsection{Benefits of unit implication}
-
+\label{ss:result_unit}
 This subsection evaluates the effects of trying to recognize backbone literals through unit implication as described in section \ref{subsec:unitImpl}. Table \ref{tab:bbkbb} shows individual performance differences between the $BB$ solver supplied by Sat4J and my $KBB$ solver for comparison, as well as the backbone's size and the number of backbone literals identified through unit implication. The time columns also contain the number of sat calls that were comitted.\footnote{Most of the performance differences in table \ref{tab:bbkbb} can be explained with other reasons than actual algorithmic differences. $fla-barthel-220-4.cnf$ for example should not be faster with $KBB$ since here no backbone literal was determined through unit propagation. However I was able to reproduce this performance difference just through the order of what was called first, i.e. if the two solvers are called the other way around the timings are so as well. A possible explanation could be a power saving feature in modern processors.}
 
 \begin{table} %[tbp]

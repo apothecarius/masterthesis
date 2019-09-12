@@ -1,6 +1,33 @@
 \section{Tested Backbone algorithms}
 
-The following section lists the results for various backbone implementations. As this thesis focuses on the preferences approach, which is also not as thoroughly examined as other approaches, most of these variants are slight modifications of algorithm \ref{alg:blockPref}, where preferences are combined with blocking clauses.
+This chapter contains a couple of benchmarks that were all tested against a series of backbone algorithms. There is a slight focus on the preferences approach. Since this is not as thoroughly examined as other approaches in literature, most of these variants are slight modifications of algorithm \ref{alg:blockPref}, where preferences are combined with blocking clauses.
+
+For clarity, the used benchmarks are listed here. All algorithms unless otherwise stated reduce the models that they find to prime implicants with the method described in section \ref{ss:primeImplicant}.
+\begin{itemize}
+	%\setlength\itemsep{0.2em}
+\item \textbf{BB}: Sat4J implementation of algorithm \ref{alg:bb}.
+\item \textbf{IBB}: Sat4J implementation of algorithm \ref{alg:ibb}.
+\item \textbf{KBB}: Algorithm $BB$ in combination with unit implication as described in section \ref{subsec:unitImpl}. 
+\item \textbf{PB0}: $PrefBones$ after \cite{PJ18}. See algorithm \ref{alg:pb0}.
+\item \textbf{PB1}: $PrefBones$ with blocking clause. See algorithm \ref{alg:blockPref}.
+\item \textbf{PB1(amnes)}: $PB1$ with forgetting preferences as described in section \ref{sec:amnesPrefs}.
+\item \textbf{PB1(model)}: $PB1$ without any model reduction.
+\item \textbf{PB1x}: $PB1$ without preferences. Structurally identical with $IBB$\footnote{There are slight differences in the performance measurements between these two implementations. These probably stem from differences in the implementation. The differences divided by the number of sat calls is relatively comparable, implying that the two implementations scale comparably.}
+\item \textbf{PB1a}: TODO nötig?
+\item \textbf{PB1b}: $PB1$ where preferences can only affect the selection order. Given for the purpose of comparison with $PB2$.
+\item \textbf{PB1c}: $PB1$ with a limited number of preferences, as described in section \ref{sec:subsets}.
+\item \textbf{PB1d}: Like $PB1c$, but with more diverse preferences in each iteration.
+\item \textbf{PB1e}: $PB1$ in combination with approaching upper and lower bounds as described in section \ref{sec:upperLower}. The lower bound is made up of learned literals.
+\item \textbf{PB1f}: Based on $PB1e$, but sollte eigenltich weg
+\item \textbf{PB2}: Uses scalable preferences as described in section \ref{sec:nudging}.
+\item \textbf{PB3}: $PB1$ with model reduction through rotation. TODO rename
+\end{itemize}
+
+
+\iffalse
+
+
+
 
 The first two algorithms are $BB$ (as listed in algorithm \ref{alg:bb}) and $IBB$ (algorithm \ref{alg:ibb}). The next algorithm (designated as $KBB$) is a variant of $BB$ that whenever a backbone literal was identified through iterative testing, unit implication as described in subsection \ref{subsec:unitImpl} is used on the set of known backbone literals, trying to identify more backbone literals in a cheap way\footnote{
 	Note that optimisations such as this one were sometimes implemented in a simple, brute-force manner for the sake of time. Here the number of easily identified literals in combination with the pure calculation time is more interesting than the overall time that includes the unit search time.
@@ -34,7 +61,7 @@ $PB3$ reduces the models not to a prime implicant but to the set of required lit
 
 
 
-
+\fi
 
 
 

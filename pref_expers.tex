@@ -4,6 +4,7 @@ All of the following modifications were implemented ontop of algorithm \ref{alg:
 
 
 \section{Forgetting preferences}
+\label{sec:amnesPrefs}
 During the course of solving a CNF formula with the CDCL algorithm, many assignment conflicts occur which must be resolved through backtracking. This means that some assignments need to be taken back. Looking at this from the other direction, it can very well happen, that the same variable can occur in decisions multiple times over such a calculation. If a variable assignment is even slightly involved in a conflict, then, lacking any further knowledge, it is a good strategy to simply try it's negation in the future. It is not guaranteed, but simply more likely that the other assignment resolves the conflict that occurred with the previous assignment. 
 
 The default way in that preferences are implemented stands in the way of this. If you tell the SAT solver to always assign the same boolean value to a specific variable, then the strategy above cannot be applied. That is why I have implemented an option to $PB1$ where preferences are forgotten after the first time when they are taken into account. This means that when a variable is selected for a decision, it is removed from the primary heap that is consulted first for this selection\footnote{
@@ -17,6 +18,7 @@ The most important effect of this strategy is, that the solver quickly falls bac
 It is quite likely that a formula contains models that are relevant for the backbone, because they contain the only occurence of some literal. However, if they contradict the current set of preferred literals in many other places, giving these preferences to the SAT solver can actually make it difficult to find said model.
 
 \section{Subsets}
+\label{sec:subsets}
 During benchmarking it showed itself, that all solvers that did not employ any preferences at all were the fastest ones when it came to difficult formulas. So it might be interesting to test some algorithm that can be configured with a floating point number, where a ground value of $0.0$ would be equivalent to having no preferences at all and then allowing to enable preferences in very small increments.
 
 The simplest way to do this would be to restrict the number of preferences that could be set for each SAT call. The parameter above is multiplied with the number of variables in the formula and then the number of preferred literals is pruned in each iteration to have at most that size, without of course discarding the set of assignments that has yet to be tested.
@@ -31,6 +33,7 @@ Aside from the straightforward implementation, I also created a variant, where e
 %dropped the topic of inverted preferences
 
 \section{Nudging}
+\label{sec:nudging}
 The previous approach to scalable preferences still works against the decision heuristic because before the SAT solver even starts, the preferred variables are chosen. What subset of the preferred variables would be easiest for the solver to take into account cannot be said upfront. Therefore it should be much more efficient to "nudge" the existing decision heuristic in the direction of the preferences while it's running.
 
 To do this, I implemented a different kind of preference strategy. Here, similar to the previous method, you can pass a floating point number $f$ between $0.0$ and $1.0$ in addition to the set of preferred variables. When a decision happens in the CDCL algorithm, the selection heuristic sorts all variables by an activity value, which is typically based on how often it was involved in conflicts. Then the resulting array is scanned, beginning with the variable with the lowest activity until one is found that is not yet assigned. 
@@ -44,9 +47,9 @@ However, this factor $f$ can only influence the order of variables for decisions
 The purpose of this scheme was to see, whether benefits of preferences would rise up faster than the drawbacks with very low values of $f$.
 
 \section{Approaching lower and upper bounds}
+\label{sec:upperLower}
 I also tried an idea that was shortly mentioned in \cite[Chapter 3.4]{mjl10}: \blockquote{Another approach consists of executing enumeration and iteration based algorithms in parallel, since enumeration refines upper bounds on the size of the backbone, and iteration refines lower bounds. Such algorithm could terminate as soon as both bounds become equal.}
 
-TODO fertig machen pb1e geht so, vonThore funktioniert damit super.
-...
-In fact, you could say that the $BB$ algorithm matches this concept, since it reduces the set of literals to further examine with every found model.
+You could argue that $BB$ (see algorithm \ref{alg:bb}) matches this concept, since it reduces the set of literals to further examine with every found model. It removes both the identified backbone literals and the found models from the set of literals to test and once that becomes empty, it terminates.
 
+However, since \cite{mjl10} also lists the $BB$ algorithm, the authors probably ment to run two different algorithms concurrently. Still, making use of both approaches makes sense, so I tried this out in combination with preferences, by checking the set of learned literals in each iteration, as proposed in section \ref{subsec:axiomatic}.

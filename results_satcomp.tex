@@ -144,7 +144,7 @@ IBB & 556.815 & 556.719 & 361.825 & 2 \\
 \end{wraptable}
 Table \ref{tab:satCompAvg} shows a strong performance difference between PB0 and PB1.
 
-TODO grieu beispiel rauspicken (letzter sat call)
+ grieu beispiel rauspicken (letzter sat call)
 
 
 stammt daher, dass zuletzt unsat errechnet wird. vonThore hat das problem nicht (selten überhaupt eine millisekunde gebraucht für letzten aufruf)
@@ -178,10 +178,9 @@ smallSatBomb.cnf & 0.01[26] & 0.01(0.01)[19] & 7 & 9 \\
 \end{tabular}
 \caption{Benchmark results for a selection of files with a focus on the benefit of unit implication.
 Rows indicate: Calculation time and number of SAT calls for the $BB$ solver  ; Calculation time, time spent in SAT solver and number of SAT calls for the $KBB$ solver ; Number of backbone literals identified through unit implication (in $KBB$) ; Number of backbone variables in formula.}
-\label{tab:bbkbb} %for referencing
+\label{tab:bbkbb}
 \end{table}
 
-%\footnote{}
 Table \ref{tab:bbkbb}\footnote{
 	In this table the pure sat calculation time for the $BB$ column is missing. The $BB$ algorithm actually spends almost no time outside of the SAT solver in the case of the listed formulas.\\
 	Most of the performance differences in this table can be explained with other reasons than actual algorithmic differences. $fla-barthel-220-4.cnf$ for example should not be faster with $KBB$ since here no backbone literal was determined through unit propagation. However I was able to reproduce this performance difference just through the order of what was called first, i.e. if the two solvers are called the other way around the difference in timing between the first and second call are the same. A possible explanation could be a power saving feature in modern processors.
@@ -190,7 +189,7 @@ shows individual performance differences between the $BB$ solver supplied by Sat
 
 This indicates that the effect from scanning for unit implied backbone literals also appears in the $BB$ solver, only not quite as obvious. When you look at line \ref{algo:bb:learn} of algorithm \ref{alg:bb}, you see that $BB$ actually takes identified backbone literals up into the formula to speed up the solving process. Now imagine what happens, if the unit implication case happens during the course of the $BB$ algorithm. You have a clause that is not satisfied, even though all but one of it's literals are already assigned through the learned backbone literals. When $BB$ tests the last of that clauses literals with an assumption against the last one, the clause becomes immediately unsatisfied\footnote{Remember that $BB$ tests by trying to disprove a potential backbone literal.}, proving the last remaining literal in the clause is part of the backbone. 
 
-The results of the next chapter paint a different picture. Here the pure SAT time of $KBB$ is actually smaller than that of $BB$, however even $BB$ looses around a third of it's calculation time outside of pure SAT calls. This could be explained by the much higher number of SAT calls for this benchmark and the overhead that comes with preparations and cleanups for a SAT call, which appearantly became relevant at that point. Given good conditions (like in that benchmark) $KBB$ can identify many backbone literals in a single search, which also requires less data structures around it compared to a complete SAT computation.
+The results of the next chapter paint a slightly different picture. Here the pure SAT time of $KBB$ is actually smaller than that of $BB$, however even $BB$ looses around a third of it's calculation time outside of pure SAT calls. This could be explained by the much higher number of SAT calls for this benchmark and the overhead that comes with preparations and cleanups for a SAT call, which appearantly became relevant at that point. Given good conditions (like in that benchmark) $KBB$ can identify many backbone literals in a single search, which also requires less data structures around it compared to a complete SAT computation.
 
 \subsection{Benefits of forgetting preferences}
 schlechte ergebnisse von PB1c (0.05) vgl run2 mit run3 (run3 hat kein default vergessen)

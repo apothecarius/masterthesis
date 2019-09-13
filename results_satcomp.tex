@@ -1,6 +1,6 @@
 \section{SAT Competition Benchmark}
 
-For the first benchmark, I collected a set of 71 files from a SAT competition TODO welcher. The SAT competitions generally use problems that are difficult to solve compared to other problems of the same file size. This is in order to encourage development of solving strategies that reliably have good performance and not only for most of them. To save time during benchmarking, those files that took longer than around one minute for a single model computation were excluded, resulting in files that are generally around 30 kilobytes large. Additionally, problems where the duration for backbone computation averaged below one second were excluded, because here the small differences in the measurements could just as well be explained with external factors like the CPU throttling for a short time. To get meaningful testresults for such files, multiple testpasses should be conducted.
+For the first benchmark, I collected a set of 64 files from a SAT competition TODO welcher. The SAT competitions generally use problems that are difficult to solve compared to other problems of the same file size. This is in order to encourage development of solving strategies that reliably have good performance and not only for most of them. To save time during benchmarking, those files that took longer than around one minute for a single model computation were excluded, resulting in files that are generally around 30 kilobytes large. Additionally, problems where the duration for backbone computation averaged below one second were excluded, because here the small differences in the measurements could just as well be explained with external factors like the CPU throttling for a short time. To get meaningful testresults for such files, multiple testpasses should be conducted.
 
 \begin{wraptable}{r}{7cm} %[tbp]
 \begin{tabular}{l| c c c }
@@ -30,12 +30,14 @@ PB3 & 20.927 & 20.922 & 4 \\
 \label{tab:satCompAvg} %for referencing
 \end{wraptable}
 
-The averaged time to compute the backbones of these 71 testfiles can be seen in \ref{tab:satCompAvg}. To prove that various computation strategies are implemented as good as possible\footnote{e.g. no noteworthy timeloss during setup of preferences}, the second column shows the time that was only spent in the sat solver.
+The averaged time to compute the backbones of these 64 testfiles can be seen in \ref{tab:satCompAvg}. To prove that various computation strategies are implemented as good as possible\footnote{e.g. no noteworthy timeloss during setup of preferences}, the second column shows the time that was only spent in the sat solver.
 
-Taking a look at this table, we can quickly see that for these instances, all solver that employed preferences as part of their algorithm performed much worse than those that did not\footnote{Which would be $BB$,$IBB$,$KBB$ and $PB1x$}.
+Taking a look at this table, we can quickly see that for these instances, all solvers that employed preferences as part of their algorithm performed much worse than those that did not\footnote{Which would be $BB$,$IBB$,$KBB$ and $PB1x$}.
 
-IBB hatte bug, darum bessere leistung von pb1x vgl IBB\\
-zweite tabelle zeigen, wenn blocking clause nicht entfernt wurde
+%You can also see a vague inverse correlation between the number of sat calls and the calculation time. wenige sat calls heissen nicht automatische wenig rechenzeit, womöglich aber auch nur weil hier eine schwierige datei ist.
+
+%TODO IBB hatte bug, darum bessere leistung von pb1x vgl IBB\\
+%zweite tabelle zeigen, wenn blocking clause nicht entfernt wurde
 
 \subsection{Importance of reusing learned clauses}
 Table \ref{tab:learnedIbb} shows a comparison of individual benchmarks to highlight the importance of reusing learned clauses. While working with the $Sat4J$ library I noticed that the $IBB$ backbone algorithm was accidentally configured in a way that learned clauses would always be discarded between SAT computations. However, these learned clauses are still valid in later iterations of the $IBB$ algorithm. The only difference that the formula goes through during this algorithm, is that the blocking clause that ensures a new model repeatedly looses some of it's literals. As long as the set of solutions for a formula is only reduced, the learned clauses of that formula stay valid.\footnote{Example: With a formula without any clauses but three variablesyy $a$,$b$ and $c$ you can create eight models. With only the clause $\{a\}$ in your formula you can have four models, with only the clause $\{a \lor b\}$ you can have 6 models, with only the clause $\{a\lor b \lor c\}$ you can have 7 models.}
@@ -126,13 +128,10 @@ smallSatBomb.cnf & 0.011 & 0.022 \\
 
 The information contained in learned clauses is very valuable, as it prevents the solver from repeating invalid combinations of assignments that might even be likely to occur again. But if already learned clauses can guide the SAT solver away from possible conflicts, it could ideally return a model without any backtracking.
 
-
+\iffalse
 \subsection{Comparison of PB0 with PB1}
-Table \ref{tab:satCompAvg} shows a strong performance difference between PB0 and PB1.
 
-TODO grieu beispiel rauspicken (letzter sat call)
-
-\begin{wraptable}{R}{7cm} %[tbp]
+\begin{wraptable}[7]{r}{7cm} %[tbp]
 \begin{tabular}{l| c c c c}
 & $t_{full}$ & $t_{sat}$ & $t_{last}$ & $n_{sat}$ \\
 \hline			
@@ -143,52 +142,55 @@ IBB & 556.815 & 556.719 & 361.825 & 2 \\
 \caption{Comparison of runtime of file $grieu-vmpc-s05-27$ . $t_{last}$ shows the time that the very last sat call took.}
 \label{tab:tLastGrieu} %for referencing
 \end{wraptable}
+Table \ref{tab:satCompAvg} shows a strong performance difference between PB0 and PB1.
+
+TODO grieu beispiel rauspicken (letzter sat call)
+
 
 stammt daher, dass zuletzt unsat errechnet wird. vonThore hat das problem nicht (selten überhaupt eine millisekunde gebraucht für letzten aufruf)
+\fi
+
 
 \subsection{Benefits of unit implication}
 \label{ss:result_unit}
-This section evaluates the effects of trying to recognize backbone literals through unit implication as described in section \ref{subsec:unitImpl}. Table \ref{tab:bbkbb} shows individual performance differences between the $BB$ solver supplied by Sat4J and my $KBB$ solver for comparison, as well as the backbone's size and the number of backbone literals identified through unit implication. The time columns also contain the number of sat calls that were comitted.\footnote{Most of the performance differences in table \ref{tab:bbkbb} can be explained with other reasons than actual algorithmic differences. $fla-barthel-220-4.cnf$ for example should not be faster with $KBB$ since here no backbone literal was determined through unit propagation. However I was able to reproduce this performance difference just through the order of what was called first, i.e. if the two solvers are called the other way around the timings are so as well. A possible explanation could be a power saving feature in modern processors.}
+This section evaluates the effects of trying to recognize backbone literals through unit implication as described in section \ref{subsec:unitImpl}. Table \ref{tab:satCompAvg} interestingly shows no performance benefit for this technique, even though the number of sat calls is much smaller.
+
+
 
 \begin{table} %[tbp]
 \begin{tabular}{l| c c c c }
-File & $t_{BB}(n_{sat})$ & $t_{KBB}(n_{sat})$ & $n_{unit}$ & $n_{backbone}$  \\
+File & $t_{BB}[n_{sat}]$ & $t_{KBB}(t_{sat})[n_{sat}]$ & $n_{unit}$ & $n_{backbone}$  \\
 \hline
-brock400-2.cnf & 0.041(254) & 0.038(254) & 0 & 0 \\
-fla-komb-400-3.cnf & 1276.712(381) & 1241.124(45) & 336 & 379 \\
-dimacs-hanoi5.cnf & 1.944(1931) & 1.836(281) & 1650 & 1931 \\
-vonThore42.cnf & 0.018(398) & 0.014(51) & 345 & 346 \\
-grieu-vmpc-s05-27.cnf & 261.091(678) & 281.083(536) & 142 & 677 \\
-fla-komb-360-4.cnf & 14.937(337) & 14.936(45) & 292 & 333 \\
-fla-qhid-360-1.cnf & 74.964(355) & 76.032(29) & 326 & 355 \\
-grieu-vmpc-s05-25.cnf & 182.837(625) & 179.914(51) & 574 & 625 \\
-fla-qhid-360-5.cnf & 20.678(350) & 20.892(29) & 321 & 349 \\
-fla-barthel-220-4.cnf & 3.553(32) & 2.741(32) & 0 & 6 \\
-9012345.cnf & 4.181(1483) & 6.734(813) & 670 & 1478 \\
-fla-barthel-220-2.cnf & 8.183(23) & 8.109(23) & 0 & 4 \\
-1098765.cnf & 1.208(938) & 1.291(493) & 444 & 921 \\
-smallSatBomb.cnf & 0.013(26) & 0.012(19) & 7 & 9 \\
+brock400-2.cnf & 0.04[254] & 0.04(0.03)[254] & 0 & 0 \\
+fla-komb-400-3.cnf & 1276.71[381] & 1241.12(1241.11)[45] & 336 & 379 \\
+dimacs-hanoi5.cnf & 1.94[1931] & 1.84(1.23)[281] & 1650 & 1931 \\
+vonThore42.cnf & 0.02[398] & 0.01(0.01)[51] & 345 & 346 \\
+grieu-vmpc-s05-27.cnf & 261.09[678] & 281.08(277.1)[536] & 142 & 677 \\
+fla-komb-360-4.cnf & 14.94[337] & 14.94(14.9)[45] & 292 & 333 \\
+fla-qhid-360-1.cnf & 74.96[355] & 76.03(76.03)[29] & 326 & 355 \\
+grieu-vmpc-s05-25.cnf & 182.84[625] & 179.91(179.44)[51] & 574 & 625 \\
+fla-qhid-360-5.cnf & 20.68[350] & 20.89(20.89)[29] & 321 & 349 \\
+fla-barthel-220-4.cnf & 3.55[32] & 2.74(2.73)[32] & 0 & 6 \\
+9012345.cnf & 4.18[1483] & 6.73(5.92)[813] & 670 & 1478 \\
+fla-barthel-220-2.cnf & 8.18[23] & 8.11(8.11)[23] & 0 & 4 \\
+1098765.cnf & 1.21[938] & 1.29(0.83)[493] & 444 & 921 \\
+smallSatBomb.cnf & 0.01[26] & 0.01(0.01)[19] & 7 & 9 \\
 \end{tabular}
 \caption{Benchmark results for a selection of files with a focus on the benefit of unit implication.
-Rows indicate: The number of backbone literals identified through unit implication; the actual number of backbone literals; Calculationtime and number of sat calls of the solvers $KBB$ (using unit implication) and $BB$ (not doing unit implication, otherwise the same).}
-%\end{wraptable}
+Rows indicate: Calculation time and number of SAT calls for the $BB$ solver  ; Calculation time, time spent in SAT solver and number of SAT calls for the $KBB$ solver ; Number of backbone literals identified through unit implication (in $KBB$) ; Number of backbone variables in formula.}
 \label{tab:bbkbb} %for referencing
 \end{table}
 
+%\footnote{}
+Table \ref{tab:bbkbb}\footnote{
+	In this table the pure sat calculation time for the $BB$ column is missing. The $BB$ algorithm actually spends almost no time outside of the SAT solver in the case of the listed formulas.\\
+	Most of the performance differences in this table can be explained with other reasons than actual algorithmic differences. $fla-barthel-220-4.cnf$ for example should not be faster with $KBB$ since here no backbone literal was determined through unit propagation. However I was able to reproduce this performance difference just through the order of what was called first, i.e. if the two solvers are called the other way around the difference in timing between the first and second call are the same. A possible explanation could be a power saving feature in modern processors.
+	} 
+shows individual performance differences between the $BB$ solver supplied by Sat4J and my own $KBB$ solver for comparison, as well as the backbone's size and the number of backbone literals identified through unit implication. The time columns also contain the number of sat calls that were comitted. It's content matches the results of table \ref{tab:satCompAvg}. Occasional cases where $KBB$ trumps in performance over $BB$ get balanced out by cases where this is the other way round, but the number of sat calls is always better with the $KBB$ algorithm. And this is true in spite of the fact that almost all identifications happened through unit implication. 
 
+This indicates that the effect from scanning for unit implied backbone literals also appears in the $BB$ solver, only not quite as obvious. When you look at line \ref{algo:bb:learn} of algorithm \ref{alg:bb}, you see that $BB$ actually takes identified backbone literals up into the formula to speed up the solving process. Now imagine what happens, if the unit implication case happens during the course of the $BB$ algorithm. You have a clause that is not satisfied, even though all but one of it's literals are already assigned through the learned backbone literals. When $BB$ tests the last of that clauses literals with an assumption against the last one, the clause becomes immediately unsatisfied\footnote{Remember that $BB$ tests by trying to disprove a potential backbone literal.}, proving the last remaining literal in the clause is part of the backbone. 
 
-The results drunter und drüber, auf einzeldateien eingehen
-
-Begründungsvermutung: Hauptzeit geht für wenige schwierige Literale drauf, die nicht per unit implikation gefunden werden können. Könnte experimentell festgestellt werden, dur
-
-%brock dateigröße: 500kb, fla dateigrößen ~30kb
-
-
-reine sat zeit von kbb wurde auch gemessen: verlust durch suche liegt bei 0
-
-%grieu-vmpc-s05-27 ist interessant beim vgl zwischen pb0 und pb1 (letzter satcall frisst tonnenweise zeit -> unsat bedingung kann teuer sein)
-
-
+The results of the next chapter paint a different picture. Here the pure SAT time of $KBB$ is actually smaller than that of $BB$, however even $BB$ looses around a third of it's calculation time outside of pure SAT calls. This could be explained by the much higher number of SAT calls for this benchmark and the overhead that comes with preparations and cleanups for a SAT call, which appearantly became relevant at that point. Given good conditions (like in that benchmark) $KBB$ can identify many backbone literals in a single search, which also requires less data structures around it compared to a complete SAT computation.
 
 \subsection{Benefits of forgetting preferences}
 schlechte ergebnisse von PB1c (0.05) vgl run2 mit run3 (run3 hat kein default vergessen)

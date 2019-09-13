@@ -1,6 +1,6 @@
 \section{Industrial benchmark}
 
-%\end{table}
+TODO strukturieren
 
 \begin{wraptable}{R}{8cm}
 %\begin{table}[tbp]
@@ -39,6 +39,7 @@ The particular use case that I examined was to find the implications in the form
 and check for satisfiability of $F_{conf}$ under the condition that $a$ is $\top$ and $b$ is $\bot$. If this was unsatisfiable, then $a$ would imply $b$. However, with 407 literals to choose from, you would have to do 165,649 sat calls. 
 
 A more efficient approach is to only go over the 407 options once and for each variable $a$ of them calculate the backbone of $F_{conf} \cup \{a\}$ or in other words $F_{conf}$ under the assumption $a$. If a feature $b$ occurs in all models when $a$ is assumed, then $a$ implies $b$ in some way.
+
 
 Table \ref{tab:vonThore1} lists experimental results with the same set of algorithms that were run on the files from the sat competition. After analyzing performance results, I try to give a specialized algorithm that is optimized for this particular benchmark.
 

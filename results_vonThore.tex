@@ -1,8 +1,6 @@
 \section{Industrial benchmark}
 
-TODO strukturieren
-
-\begin{wraptable}{R}{8cm}
+\begin{wraptable}[25]{R}{8cm}
 %\begin{table}[tbp]
 \begin{tabular}{l| c c c }
 &	$t_{calc}$(sec) &	$t_{sat}$(sec)	& NSatCalls \\
@@ -32,28 +30,34 @@ PB3 & 3.872 & 1.204 & 4471 \\
 \label{tab:vonThore1} %for referencing
 \end{wraptable}
 
-Another benchmark I applied on the various backbone algorithms was a formula for a real world application from the automobile industry. The purpose of this formula $F_{conf}$ was to describe a product in the context of options or features available to the customer. Some of these options can be combined, others exclude or require each other. Most of the variables in $F_{conf}$ correspond to a boolean parameter that is set to $\top$ if the associated feature is requested by the customer. If the formula would become unsatisfiable under such assumptions equal to the requested configuration, then the combination of these features would be impossible. $F_{conf}$ further contains a small set of additional variables to model more complex relationships between options.
+Another benchmark I applied the various backbone algorithms to, was a formula for a real world application from the automobile industry. The purpose of this formula $F_{conf}$ was to describe a product in the context of options or features available to the customer. Some of these options can be combined, others exclude or require each other. Most of the variables in $F_{conf}$ correspond to a boolean parameter that is set to $\top$ if the associated feature is requested by the customer. If the formula would become unsatisfiable under such assumptions equal to the requested configuration, then the combination of these features would be impossible. $F_{conf}$ further contains a small set of additional variables to model more complex relationships between options.
 
 The particular use case that I examined was to find the implications in the formula, i.e. if a customer requests feature $a$, would he also have to pick feature $b$. A primitive way to calculate this would be to iterate over all possible pairs of features 
 %\footnote{Minus permutations and pairs with the same feature twice}
-and check for satisfiability of $F_{conf}$ under the condition that $a$ is $\top$ and $b$ is $\bot$. If this was unsatisfiable, then $a$ would imply $b$. However, with 407 literals to choose from, you would have to do 165,649 sat calls. 
+and check for satisfiability of $F_{conf}$ under the condition that $a$ is $\top$ and $b$ is $\bot$. If this was unsatisfiable, then $a$ would imply $b$. However, with 407 literals to choose from, you would have to do 165,242\footnote{407 times 406} sat calls. 
 
 A more efficient approach is to only go over the 407 options once and for each variable $a$ of them calculate the backbone of $F_{conf} \cup \{a\}$ or in other words $F_{conf}$ under the assumption $a$. If a feature $b$ occurs in all models when $a$ is assumed, then $a$ implies $b$ in some way.
 
+\subsection{Performance measurement and Discussion}
 
-Table \ref{tab:vonThore1} lists experimental results with the same set of algorithms that were run on the files from the sat competition. After analyzing performance results, I try to give a specialized algorithm that is optimized for this particular benchmark.
+Table \ref{tab:vonThore1} lists experimental results with the same set of algorithms that were run on the files from the SAT competition. After having analyzed these performance results, I will try to give a specialized algorithm that is optimized for this particular benchmark in the next section.
 
-We immediately see, that preferences give a much greater benefit than in the benchmark with the files from the sat competition. However there are some more things that stand out:
+We immediately see, that preferences give a much greater benefit than in the previous benchmark with the files from the SAT competition. However there are some more things that stand out:
 \begin{itemize}
-\item The fastest algorithm overall is the one that does not reduce the models at all. The number of sat calls is even exactly the same as that of that variant with prime implicant reduction. However the time that was spent in the sat solver is very similar to that execution with prime implicant reduction ($PB1$), so the difference must be the time that was spent to reduce the model and the benefit, namely the number of optional literals in the prime implicant, was very small.
-\item However, the fastest implementation when it comes to pure sat solver time as well as number of sat calls, was $PB3$, which differs from the others in that it uses literal rotation to reduce models instead of prime implicant computation. Apparantly the models that occur in this formula contain many different prime implicants with little distance to the model.\\
-A previous variant of this algorithm took around 250 seconds to compute overall. This version did not use the lookup from literal to containing clauses (as described in later paragraphs in section section \ref{ss:rot}), but iterated over all clauses in the formula. Such a drastic effect of an efficient implementation did not occur for the sat competition benchmark.\\
-This has primarily two reasons. First, the number of sat calls per instance is twice as much in this benchmark compared to those from the sat competitions\footnote{The 4471 calls span over 407 problem instances.}, therefore the model reduction happens twice as often. Secondly, the formula of this benchmark is much larger than those from the sat competition, with the filesize being around twenty times as large. Therefore there are much more clauses to search through.
+\item The fastest algorithm overall is the one that does not reduce the models at all. The number of SAT calls is even exactly the same as that of that variant with prime implicant reduction. However the time that was spent in the SAT solver is very similar to that execution with prime implicant reduction ($PB1$), so the difference must be the time that was spent to reduce the model and the benefit, namely the number of optional literals in the prime implicant, was very small.
+\item However, the fastest implementation when it comes to pure SAT solver time as well as number of SAT calls, was $PB3$, which differs from the others in that it uses literal rotation to reduce models instead of prime implicant computation. Apparantly the models that occur in this formula actually do contain many optional assignments. However these are spread over many different prime implicants with little distance to the model.\\
+A previous variant of this algorithm took around 250 seconds to compute overall. This version did not use the lookup from literal to containing clauses (as described in later paragraphs in section \ref{ss:rot}), but iterated over all clauses in the formula. Such a drastic effect of an efficient implementation did not occur for the SAT competition benchmark.\\
+This has primarily two reasons. First, the number of SAT calls per instance is twice as much in this benchmark compared to those from the SAT competitions\footnote{The 4471 calls span over 407 problem instances.}, therefore the model reduction happens twice as often. Secondly, the formula of this benchmark is much larger than those from the SAT competition, with the filesize being around twenty times as large. Therefore there are much more clauses to search through.
 \item The two algorithms in third place of overall computation time were $PB1e$ and $PB1f$. Both of these make use of learned literals so appearantly the backbone literals in this formula are easy to identify by checking the set of literals that the solver learns when it computes new models.\\
-In fact, on inspection, all literals that later turn out to be part of the backbone occur in this set after the very first sat call(with an exception of the forced literal, which can be extracted by searching the formula for clauses with only one literal).
-\item Another noteworthy algorithm is the $KBB$ algorithm that uses unit implication to identify backbone literals. The implementation of this algorithm was based on that of the $BB$ algorithm and here the number of sat calls with $KBB$ is a tenth of the number in the case of $BB$. However this advantage is not expressed equally strong when it comes to the time spent in the sat solver(around a fourth), which means that the identification through calculating a new model can sometimes be more efficient than regularly checking unit implications.\\
-The overall computation time is even worse in comparison, meaning that the benefit through cheap backbone literal identification is less than the time that it takes to check the clauses for the unit case. It may be possible that this method requires an improved implementation. The search for clauses where the unit implication for backbone literals applies could be implemented in a similar way as was used to calculate required and rotatable assignments, using the lookup from variables to clauses where they occur (see section \ref{ss:rot})
+In fact, on inspection, all literals that later turn out to be part of the backbone occur in this set after the very first SAT call(with an exception of the forced literal, which can be extracted by searching the formula for clauses with only one literal).
+\item Another noteworthy algorithm is the $KBB$ algorithm that uses unit implication to identify backbone literals. The implementation of this algorithm was based on that of the $BB$ algorithm and here the number of SAT calls with $KBB$ is a tenth of the number in the case of $BB$. However this advantage is not expressed equally strong when it comes to the time spent in the SAT solver(around a fourth), which means that the identification through calculating a new model can sometimes be more efficient than regularly checking unit implications.\\
+Finally, the overall computation time of $KBB$ is actually worse than that of $BB$, meaning that the benefit through cheap backbone literal identification is less than the time that it takes to check the clauses for the unit case. It may be possible that this method requires an improved implementation. The search for clauses where the unit implication for backbone literals applies could be implemented in a similar way as was used to calculate required and rotatable assignments, using the lookup from variables to clauses where they occur (see section \ref{ss:rot})
 \end{itemize}
+
+\subsection{Specialized algorithm}
+With the findings from the last section 
+
+TODO schreiben
 
 verbesserungen:
 - nicht brute force klauseln prüfen, sondern anhand des index für watched literal propagation (notiz: monoclauses werden in sat4j nicht gelernt. Sollten stattdessen eh als assumptions übergeben werden)
@@ -66,8 +70,6 @@ besonderheiten:
 - absolut alle backbone literale sind nach dem ersten sat aufruf gelernt. (*mit technischen besonderheiten, nur wenn man blocking clauses nimmt und dann ausgenommen die in der blocking clause)
 
 Line \ref{algo:kbbDoWhileStart} bis Line \ref{algo:kbbDoWhileEnd} do while breche ab sobald nix neues gefunden wird. unitImplied gibt nur neue zurück
-
-
 \begin{algorithm}
 \caption{{\sc Specialized algorithm for industrial application}}
 \DontPrintSemicolon
@@ -102,3 +104,27 @@ $bb_l \gets learnt$\;
 %- 
 
 besondere bedeutung für diesen benchmark: wiederverwendung von gelernten klauseln über unterschiedliche literale
+
+\subsection{Reuse of backbone information}
+\begin{wraptable}{r}{4.5cm}
+%\begin{table}[tbp]
+\begin{tabular}{l|  c c }
+Strategy & $t_{complete}$ & $n_{sat}$ \\
+\hline
+$BB$ & 123.321 & 1337 \\
+$BB_{pre}$ & 321.123 & 3117 \\
+$IBB$ & 123.321 & 1337 \\
+$IBB_{pre}$ & 321.123 & 3117 \\
+$PB0$ & 123.321 & 1337 \\
+$PB0_{pre}$ & 321.123 & 3117 \\
+$PB4$ & 123.321 & 1337 \\
+$PB4_{pre}$ & 321.123 & 3117 \\
+\end{tabular}
+\end{wraptable}
+The special structure of this use case should allow us to reuse information between the computations. If we can determine backbone literals of the base formula $F_{conf}$, then we can safely assume, that all of these are part of any restricted formula $F_{conf} \cup \{a\}$. This is because, when we add any clause to a CNF formula, it's set of models can only shrink, no new model can be induced through an additional clause. This implies that an assignment that didn't occur in the models before will also not appear in the new smaller set of models, in turn implying that if a a variable always occured with the same assignment in $F_{conf}$, it will also do so in $F_{conf} \cup \{a\}$.
+
+This means, that a lot of work that otherwise would have to be repeated for all the tested literals can be computed once and just be reused.
+
+TODO tabelle mit und ohne pre run
+{BB, IBB, PB0, PB4}x {mit prerun / ohne}
+

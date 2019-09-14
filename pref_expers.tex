@@ -8,7 +8,7 @@ All of the following modifications were implemented ontop of algorithm \ref{alg:
 During the course of solving a CNF formula with the CDCL algorithm, many assignment conflicts occur which must be resolved through backtracking. This means that some assignments need to be taken back. Looking at this from the other direction, it can very well happen, that the same variable can occur in decisions multiple times over such a calculation. If a variable assignment is even slightly involved in a conflict, then, lacking any further knowledge, it is a good strategy to simply try it's negation in the future. It is not guaranteed, but simply more likely that the other assignment resolves the conflict that occurred with the previous assignment. 
 
 The default way in that preferences are implemented stands in the way of this. If you tell the SAT solver to always assign the same boolean value to a specific variable, then the strategy above cannot be applied. That is why I have implemented an option to $PB1$ where preferences are forgotten after the first time when they are taken into account. This means that when a variable is selected for a decision, it is removed from the primary heap that is consulted first for this selection\footnote{
-	In the Sat4J library, what decides the order of decisions and what decides the value assigned in these decisions are actually two separate data structures. This means that this removal must be written in two separate places.
+	In the $Sat4J$ library, what decides the order of decisions and what decides the value assigned in these decisions are actually two separate data structures. This means that this removal must be written in two separate places.
 }. 
 
 The secondary heap always contains all used variables for selection, but in the default configuration where preferences are not forgotten the preferred variables would already be assigned at the point in time when it is consulted. Here this means, that once a preference was forgotten, the associated variables can still occur in decisions after they were reverted through backtracking and can potentially be assigned a different value. 
@@ -23,7 +23,7 @@ During benchmarking it showed itself, that all solvers that did not employ any p
 
 The simplest way to do this would be to restrict the number of preferences that could be set for each SAT call. The parameter above is multiplied with the number of variables in the formula and then the number of preferred literals is pruned in each iteration to have at most that size, without of course discarding the set of assignments that has yet to be tested.
 
-Aside from the straightforward implementation, I also created a variant, where extra care is taken to use different subsets for the preferences for each sat call. To do this, all preferences given to the SAT solver are remembered and not picked again until all of them were tried once. At this point the memory of previously used preferences is cleared so that it builds up again.
+Aside from the straightforward implementation, I also created a variant, where extra care is taken to use different subsets for the preferences for each SAT call. To do this, all preferences given to the SAT solver are remembered and not picked again until all of them were tried once. At this point the memory of previously used preferences is cleared so that it builds up again.
 
 
 %Some preferences are difficult to take into account, but it is still possible that they will eventually disappear through model reduction, without spending too much time on finding a model with them. TODO irgendwo unterbringen
@@ -50,6 +50,6 @@ The purpose of this scheme was to see, whether benefits of preferences would ris
 \label{sec:upperLower}
 I also tried an idea that was shortly mentioned in \cite[Chapter 3.4]{mjl10}: \blockquote{Another approach consists of executing enumeration and iteration based algorithms in parallel, since enumeration refines upper bounds on the size of the backbone, and iteration refines lower bounds. Such algorithm could terminate as soon as both bounds become equal.}
 
-You could argue that $BB$ (see algorithm \ref{alg:bb}) matches this concept, since it reduces the set of literals to further examine with every found model. It removes both the identified backbone literals and the found models from the set of literals to test and once that becomes empty, it terminates.
+You could argue that $BB$ (see algorithm \ref{alg:bb}) matches this concept, since it reduces the set of literals to further examine with every found model, while simultaneously checking individual literals. It removes both the identified backbone literals and the found models from the set of literals to test and once that becomes empty, it terminates.
 
 However, since \cite{mjl10} also lists the $BB$ algorithm, the authors probably ment to run two different algorithms concurrently. Still, making use of both approaches makes sense, so I tried this out in combination with preferences, by checking the set of learned literals in each iteration, as proposed in section \ref{subsec:axiomatic}.

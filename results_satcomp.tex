@@ -1,7 +1,4 @@
 \section{SAT Competition Benchmark}
-
-For the first benchmark, I collected a set of 64 files from a SAT competition TODO welcher. The SAT competitions generally use problems that are difficult to solve compared to other problems of the same file size. This is in order to encourage development of solving strategies that reliably have good performance and not only for most of them. To save time during benchmarking, those files that took longer than around one minute for a single model computation were excluded, resulting in files that are generally around 30 kilobytes large. Additionally, problems where the duration for backbone computation averaged below one second were excluded, because here the small differences in the measurements could just as well be explained with external factors like the CPU throttling for a short time. To get meaningful testresults for such files, multiple testpasses should be conducted.
-
 \begin{wraptable}{r}{7cm} %[tbp]
 \begin{tabular}{l| c c c }
  & $t_{full}$ & $t_{sat}$ & $n_{sat}$ \\
@@ -30,9 +27,14 @@ PB3 & 20.927 & 20.922 & 4 \\
 \label{tab:satCompAvg} %for referencing
 \end{wraptable}
 
+For the first benchmark, I collected a set of 64 files from the 2017 SAT competition\footnote{
+To be more precise the $essential$ folder from the $incremental$ package, available at \url{https://baldur.iti.kit.edu/sat-competition-2017/benchmarks/incremental.zip}
+}. The SAT competitions generally use problems that are difficult to solve compared to other problems of the same file size. This is in order to encourage development of solving strategies that reliably have good performance and not only for most of them. To save time during benchmarking, those files that took longer than around one minute for a single model computation were excluded, resulting in files that are generally around 30 kilobytes large. Additionally, problems where the duration for backbone computation averaged below one second were excluded, because here the small differences in the measurements could just as well be explained with external factors like the CPU throttling for a short time. To get meaningful testresults for such files, multiple testpasses should be conducted.
+
+
 The averaged time to compute the backbones of these 64 testfiles can be seen in \ref{tab:satCompAvg}. To prove that various computation strategies are implemented as good as possible\footnote{e.g. no noteworthy timeloss during setup of preferences}, the second column shows the time that was only spent in the sat solver.
 
-Taking a look at this table, we can quickly see that for these instances, all solvers that employed preferences as part of their algorithm performed much worse than those that did not\footnote{Which would be $BB$,$IBB$,$KBB$ and $PB1x$}.
+Taking a look at this table, we can quickly see that for these instances, all solvers that employed preferences as part of their algorithm performed much worse than those that did not. These would be $BB$,$IBB$,$KBB$ and $PB1x$.
 
 %You can also see a vague inverse correlation between the number of sat calls and the calculation time. wenige sat calls heissen nicht automatische wenig rechenzeit, womöglich aber auch nur weil hier eine schwierige datei ist.
 
@@ -40,9 +42,7 @@ Taking a look at this table, we can quickly see that for these instances, all so
 %zweite tabelle zeigen, wenn blocking clause nicht entfernt wurde
 
 \subsection{Importance of reusing learned clauses}
-Table \ref{tab:learnedIbb} shows a comparison of individual benchmarks to highlight the importance of reusing learned clauses. While working with the $Sat4J$ library I noticed that the $IBB$ backbone algorithm was accidentally configured in a way that learned clauses would always be discarded between SAT computations. However, these learned clauses are still valid in later iterations of the $IBB$ algorithm. The only difference that the formula goes through during this algorithm, is that the blocking clause that ensures a new model repeatedly looses some of it's literals. As long as the set of solutions for a formula is only reduced, the learned clauses of that formula stay valid.\footnote{Example: With a formula without any clauses but three variablesyy $a$,$b$ and $c$ you can create eight models. With only the clause $\{a\}$ in your formula you can have four models, with only the clause $\{a \lor b\}$ you can have 6 models, with only the clause $\{a\lor b \lor c\}$ you can have 7 models.}
-
-\begin{wraptable}{R}{8cm}
+\begin{wraptable}[30]{r}{8cm}
 \begin{tabular}{l| c c }
 File & $t_{keep}$ & $t_{discard}$ \\
 \hline
@@ -57,9 +57,9 @@ fla-barthel-220-1.cnf & 2.511 & 9.572 \\
 fla-barthel-220-2.cnf & 7.497 & 17.759 \\
 fla-barthel-220-4.cnf & 2.24 & 14.113 \\
 fla-barthel-240-2.cnf & 3.632 & 50.552 \\
+\iffalse
 fla-komb-200-3.cnf & 0.236 & 0.301 \\
 fla-komb-200-5.cnf & 0.114 & 0.276 \\
-\iffalse
 fla-komb-220-1.cnf & 0.293 & 0.475 \\
 fla-komb-220-3.cnf & 0.229 & 0.466 \\
 fla-komb-220-4.cnf & 0.129 & 0.217 \\
@@ -118,13 +118,14 @@ fla-qhid-340-4.cnf & 9.454 & 9.297 \\
 fla-qhid-360-1.cnf & 39.998 & 39.797 \\
 fla-qhid-360-5.cnf & 10.698 & 10.849 \\
 fla-qhid-380-1.cnf & 189.895 & 249.003 \\
-fla-qhid-400-3.cnf & 83.098 & 130.834 \\
+%fla-qhid-400-3.cnf & 83.098 & 130.834 \\
 fla-qhid-400-4.cnf & 55.213 & 52.811 \\
 smallSatBomb.cnf & 0.011 & 0.022 \\
 \end{tabular}
 \caption{Backbone computation time of the $IBB$ algorithm, once with keeping learned clauses ($t_{keep}$) and once discarding learned clauses between every sat call($t_{discard}$)}
 \label{tab:learnedIbb} %for referencing
-\end{wraptable}
+\end{wraptable} 
+Table \ref{tab:learnedIbb} shows a comparison of individual benchmarks to highlight the importance of reusing learned clauses. While working with the $Sat4J$ library I noticed that the $IBB$ backbone algorithm was accidentally configured in a way that learned clauses would always be discarded between SAT computations. However, these learned clauses are still valid in later iterations of the $IBB$ algorithm. The only difference that the formula goes through during this algorithm, is that the blocking clause that ensures a new model repeatedly looses some of it's literals. As long as the set of solutions for a formula is only reduced, the learned clauses of that formula stay valid.\footnote{Example: With a formula without any clauses but three variablesyy $a$,$b$ and $c$ you can create eight models. With only the clause $\{a\}$ in your formula you can have four models, with only the clause $\{a \lor b\}$ you can have 6 models, with only the clause $\{a\lor b \lor c\}$ you can have 7 models.}
 
 The information contained in learned clauses is very valuable, as it prevents the solver from repeating invalid combinations of assignments that might even be likely to occur again. But if already learned clauses can guide the SAT solver away from possible conflicts, it could ideally return a model without any backtracking.
 
@@ -185,7 +186,7 @@ Table \ref{tab:bbkbb}\footnote{
 	In this table the pure sat calculation time for the $BB$ column is missing. The $BB$ algorithm actually spends almost no time outside of the SAT solver in the case of the listed formulas.\\
 	Most of the performance differences in this table can be explained with other reasons than actual algorithmic differences. $fla-barthel-220-4.cnf$ for example should not be faster with $KBB$ since here no backbone literal was determined through unit propagation. However I was able to reproduce this performance difference just through the order of what was called first, i.e. if the two solvers are called the other way around the difference in timing between the first and second call are the same. A possible explanation could be a power saving feature in modern processors.
 	} 
-shows individual performance differences between the $BB$ solver supplied by Sat4J and my own $KBB$ solver for comparison, as well as the backbone's size and the number of backbone literals identified through unit implication. The time columns also contain the number of sat calls that were comitted. It's content matches the results of table \ref{tab:satCompAvg}. Occasional cases where $KBB$ trumps in performance over $BB$ get balanced out by cases where this is the other way round, but the number of sat calls is always better with the $KBB$ algorithm. And this is true in spite of the fact that almost all identifications happened through unit implication. 
+shows individual performance differences between the $BB$ solver supplied by $Sat4J$ and my own $KBB$ solver for comparison, as well as the backbone's size and the number of backbone literals identified through unit implication. The time columns also contain the number of sat calls that were comitted. It's content matches the results of table \ref{tab:satCompAvg}. Occasional cases where $KBB$ trumps in performance over $BB$ get balanced out by cases where this is the other way round, but the number of sat calls is always better with the $KBB$ algorithm. And this is true in spite of the fact that almost all identifications happened through unit implication. 
 
 This indicates that the effect from scanning for unit implied backbone literals also appears in the $BB$ solver, only not quite as obvious. When you look at line \ref{algo:bb:learn} of algorithm \ref{alg:bb}, you see that $BB$ actually takes identified backbone literals up into the formula to speed up the solving process. Now imagine what happens, if the unit implication case happens during the course of the $BB$ algorithm. You have a clause that is not satisfied, even though all but one of it's literals are already assigned through the learned backbone literals. When $BB$ tests the last of that clauses literals with an assumption against the last one, the clause becomes immediately unsatisfied\footnote{Remember that $BB$ tests by trying to disprove a potential backbone literal.}, proving the last remaining literal in the clause is part of the backbone. 
 

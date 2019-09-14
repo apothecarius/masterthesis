@@ -34,7 +34,7 @@ The two calls to the $SAT$ function return a pair which consists first of whethe
 \subsection{Combining with Enumeration}
 First observe that any model of $F$ would already reduce the set of literals to test by half, because for every assignment missing in the model, we know that it cannot be part of the backbone, so there is no need to test it. 
 
-This can be repeated with every further model that we find. The following algorithm \ref{alg:bb} is another one that is listed in both \cite{mjl10} and \cite{mjl15} and is implemented in the Sat4J library as $BB$\footnote{With the exception of using prime implicants instead of models, similar to the $IBB$ algorithm.}.
+This can be repeated with every further model that we find. The following algorithm \ref{alg:bb} is another one that is listed in both \cite{mjl10} and \cite{mjl15} and is implemented in the $Sat4J$ library as $BB$\footnote{With the exception of using prime implicants instead of models, similar to the $IBB$ algorithm.}.
 
 \begin{algorithm}
 \caption{{\sc Iterative algorithm (one test per variable)}}
@@ -63,11 +63,11 @@ $\nu_r \gets \emptyset$\;
 $\Return \; \nu_r$\;
 \end{algorithm}
 
-Note that both possible results of the call to the sat solver are converted to useful information. In the else branch, the formula together with the blocked literal $l$ was still solvable. In this case $\nu$ is still a valid model for $F$, so we can search through it to look for more assignments that don't need to be checked. Note that here $\nu$ must contain $\neg l$, as it was enforced. Therefore $l$ will be removed from $\Lambda$ in this case as well.
+Note that both possible results of the call to the SAT solver are converted to useful information. In the else branch, the formula together with the blocked literal $l$ was still solvable. In this case $\nu$ is still a valid model for $F$, so we can search through it to look for more assignments that don't need to be checked. Note that here $\nu$ must contain $\neg l$, as it was enforced. Therefore $l$ will be removed from $\Lambda$ in this case as well.
 
 In the other case, we identified $l$ as a backbone literal. In that case it will be added to the returned set, removed from the set of literals to test and, lastly, added to the problem $F$, which increases performance in subsequent solving steps. However it would be even better, not only to reuse the learned backbone literals, but all learned clauses.
 
-It is possible to apply the concept of preferences described in section \ref{ss:prefs} to the iterative algorithms listed here. However, this is less beneficial than adding it to the enumeration approach of $IBB$, because in the $BB$ algorithm many sat calls are supposed to return $UNSAT$ to positively identify an assignment as backbone. However, this case does not give us a model, so the extra effort of trying to find a more valuable model is often wasted here.
+It is possible to apply the concept of preferences described in section \ref{ss:prefs} to the iterative algorithms listed here. However, this is less beneficial than adding it to the enumeration approach of $IBB$, because in the $BB$ algorithm many SAT calls are supposed to return $UNSAT$ to positively identify an assignment as backbone. However, this case does not give us a model, so the extra effort of trying to find a more valuable model is often wasted here.
 
 Another difficulty with the $BB$ algorithm in comparison to $IBB$ is that here it is more difficult to reuse learned clauses. These are based on a subset of the clauses in $F$. Their existence is virtual so to speak, implied through these base clauses but difficult to find. Adding more clauses to the formula does not remove a learned clause, as the set of base clauses is untouched. At most it might be possible to subsume it with another learned clause. However if a clause is removed from $F$, it might be that the learned clause is no longer implied through the formula, therefore making it invalid. 
 

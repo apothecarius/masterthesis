@@ -1,8 +1,9 @@
 \section{SAT Competition Benchmark}
-\begin{wraptable}{r}{7cm} %[tbp]
-\begin{tabular}{l| c c c }
- & $t_{full}$ & $t_{sat}$ & $n_{sat}$ \\
+\begin{wraptable}{r}{8.5cm} %[tbp]
+\begin{tabular}{l| c c c c}
+ & $t_{full}$ & $t_{sat}$ & $t_{last}$& $n_{sat}$ \\
  \hline
+\iffalse % in case I dont wont last sat time after all
 BB & 8.63 & 8.628 & 254 \\
 IBB & 4.946 & 4.944 & 9 \\
 KBB & 8.713 & 8.687 & 36 \\
@@ -22,8 +23,28 @@ PB2(50\%) & 10.135 & 10.133 & 10 \\
 PB2(5\%) & 5.232 & 5.229 & 9 \\
 PB2(0.5\%) & 5.251 & 5.249 & 9 \\
 PB3 & 20.927 & 20.922 & 4 \\
+\fi
+BB & 8.63 & 8.628 & - & 254\\
+IBB & 4.946 & 4.944 & - & 9\\
+KBB & 8.713 & 8.687 & - & 36\\
+PB0 & 31.78 & 31.779 & 1.17 & 4\\
+PB1 & 17.49 & 17.488 & 6.998 & 5\\
+PB1(amnes) & 10.867 & 10.865 & 4.781 & 6\\
+PB1(model) & 25.794 & 25.793 & 8.677 & 5\\
+PB1x & 5.064 & 5.062 & 1.562 & 9\\
+PB1a & 11.241 & 11.239 & 5.351 & 8\\
+PB1b & 9.785 & 9.783 & 1.921 & 6\\
+PB1c(50\%) & 25.312 & 25.311 & 12.909 & 5\\
+PB1c(5\%) & 1064.097 & 1064.095 & 797.244 & 6\\
+PB1d(50\%) & 26.746 & 26.745 & 11.284 & 5\\
+PB1e & 17.187 & 16.591 & 6.796 & 6\\
+PB1f & 15.971 & 15.97 & 4.333 & 6\\
+PB2(50\%) & 10.135 & 10.133 & 6.428 & 10\\
+PB2(5\%) & 5.232 & 5.229 & 1.737 & 9\\
+PB2(0.5\%) & 5.251 & 5.249 & 1.816 & 9\\
+PB3 & 20.927 & 20.922 & 8.912 & 4\\
 \end{tabular}
-\caption{Averages of 65 testfiles taken from sat competitions. The columns indicate: The full time that the calculation took in seconds; The time that was spent in the sat solver; The number of sat calls (all three values are averages). }
+\caption{Averages of 65 testfiles taken from sat competitions. The columns indicate: The full time that the calculation took in seconds; The time that was spent in the sat solver; The time that the last sat computation took; The number of sat calls (all values are averages). }
 \label{tab:satCompAvg} %for referencing
 \end{wraptable}
 
@@ -192,10 +213,15 @@ This indicates that the effect from scanning for unit implied backbone literals 
 
 The results shown in the following chapter (\ref{sec:sectionVonThore}) paint a slightly different picture. Here the pure SAT time of $KBB$ is actually smaller than that of $BB$, however even $BB$ looses around a third of it's calculation time outside of pure SAT calls. This could be explained by the much higher number of SAT calls for this benchmark and the overhead that comes with preparations and cleanups for a SAT call, which appearantly became relevant at that point. Given good conditions (like in that benchmark) $KBB$ can identify many backbone literals in a single search, which also requires less data structures around it compared to a complete SAT computation.
 
-\subsection{Effect of subsets}
-The results of those algorithms where the set of preferences was restricted in size ($PB1c$ and $PB1d$) compare relatively bad to the base algorithm and this is most pronounced in the case of $PB1c(5\%)$ where the restriction is the strongest. This means that, at least for this benchmark, reducing the number of preferences completely backfired.
+\subsection{Effect of subset preferences}
+The results of those algorithms where the set of preferences was restricted in size ($PB1c$ and $PB1d$) compare relatively bad to the base algorithm and this is most pronounced in the case of $PB1c(5\%)$ where the restriction is the strongest. This means that, at least for this benchmark, restricting the number of preferences completely backfired.
 
-A potential explanation for this could be that... ??? TODO überlegen wieso oder rausnehmen
+This behaviour matches an observation that you can make with the duration of the last SAT call. 
+
+This result is difficult to explain.
+A potential explanation for this could be that a small set of pref
+
+ ??? TODO überlegen wieso oder rausnehmen
 
 Kleine mengen an präferenzen machen lösen tatsächlich schwieriger, kleiner pool an auswahlmöglichkeiten (sonst gehen in präferenzmenge noch auswahlheuristiken)
 

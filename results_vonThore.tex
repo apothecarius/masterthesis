@@ -39,10 +39,8 @@ and check for satisfiability of $F_{conf}$ under the condition that $a$ is $\top
 
 A more efficient approach is to only go over the 407 options once and for each variable $a$ of them calculate the backbone of $F_{conf} \cup \{a\}$ or in other words $F_{conf}$ under the assumption $a$. If a feature $b$ occurs in all models when $a$ is assumed, then $a$ implies $b$ in some way.
 
-TODO prerun idee zeigen, ist aber doof, weil hat kein backbone ohne erzwungene + formel ist so simpel, dass sie ohne konflikt durchläuft und es nix im voraus zu lernen gibt, kapitel unten hier reinkopieren und dann weg damit
 
 \subsection{Performance measurement and Discussion}
-
 Table \ref{tab:vonThore1} lists experimental results with the same set of algorithms that were run on the files from the SAT competition. In the following, I will list some observations about these results.
 
 \begin{itemize}

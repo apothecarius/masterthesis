@@ -10,13 +10,13 @@ The most straightforward method to quickly identify backbone literals is to scan
 
 Additionally you should check the CDCL table that your solver creates. If you look at this table you might find variable assignments through unit implication which happened before any decision. This includes all assignments from the paragraph above, but also those that are implied through these\footnote{Example: Formula $\{\{a\},\{\neg a, b\}\}$ has the backbone $\{a,b\}$, but only $a$ is immediately obvious.}.
 
-It makes sense to do this check after every SAT computation, as every different way that leads to a different model brings different learned clauses, that may sometimes consist of a single literal.
+It makes sense to do this check after every SAT computation, as every different way that leads to a different model brings different learned clauses, that may sometimes consist of a single literal. The number of these clauses depends on the structure of your formula. If it is easy to solve, very few conflicts will occur and in turn, very few clauses will be learned.
 
 An expansion on this would be to look for pairs of clauses $(a,b)$, $(a,\neg b)$ for any two variables of the formula. The only way to fulfill this pair of clauses is to assign $a$ to $\top$\footnote{Which fits the resolution formula described in 
 section \ref{ss:cdcl}}. This scheme can theoretically be applied to any clause size, but then you would require a quadratically increasing number of clauses to determine a backbone which would first increase computation time and secondly decrease the chance that the necessary set of clauses was available.
 
-TODO was ist mit gelerntem auf basis von assumptions
-\\TODO experBB results dazunehmen
+%TODO was ist mit gelerntem auf basis von assumptions
+%\\TODO experBB results dazunehmen
 
 \iffalse
 

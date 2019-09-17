@@ -13,28 +13,27 @@ PB1(model) & 25.794 & 25.793 & 5 \\
 PB1x & 5.064 & 5.062 & 9 \\
 PB1a & 11.241 & 11.239 & 8 \\
 PB1b & 9.785 & 9.783 & 6 \\
-PB1c & 25.312 & 25.311 & 5 \\
+PB1c(50\%) & 25.312 & 25.311 & 5 \\
 PB1c(5\%) & 1064.097 & 1064.095 & 6 \\
-PB1d & 26.746 & 26.745 & 5 \\
+PB1d(50\%) & 26.746 & 26.745 & 5 \\
 PB1e & 17.187 & 16.591 & 6 \\
 PB1f & 15.971 & 15.97 & 6 \\
-PB2 & 10.135 & 10.133 & 10 \\
+PB2(50\%) & 10.135 & 10.133 & 10 \\
 PB2(5\%) & 5.232 & 5.229 & 9 \\
 PB2(0.5\%) & 5.251 & 5.249 & 9 \\
 PB3 & 20.927 & 20.922 & 4 \\
 \end{tabular}
-\caption{Averages of 64 testfiles taken from sat competitions. The columns indicate: The full time that the calculation took in seconds; The time that was spent in the sat solver; The number of sat calls (all three values are averages). }
+\caption{Averages of 65 testfiles taken from sat competitions. The columns indicate: The full time that the calculation took in seconds; The time that was spent in the sat solver; The number of sat calls (all three values are averages). }
 \label{tab:satCompAvg} %for referencing
 \end{wraptable}
 
-For the first benchmark, I collected a set of 64 files from the 2017 SAT competition\footnote{
+For the first benchmark, I collected a set of 65 files from the 2017 SAT competition\footnote{
 To be more precise the $essential$ folder from the $incremental$ package, available at \url{https://baldur.iti.kit.edu/sat-competition-2017/benchmarks/incremental.zip}
-}. The SAT competitions generally use problems that are difficult to solve compared to other problems of the same file size. This is in order to encourage development of solving strategies that reliably have good performance and not only for most of them. To save time during benchmarking, those files that took longer than around one minute for a single model computation were excluded, resulting in files that are generally around 30 kilobytes large. Additionally, problems where the duration for backbone computation averaged below one second were excluded, because here the small differences in the measurements could just as well be explained with external factors like the CPU throttling for a short time. To get meaningful testresults for such files, multiple testpasses should be conducted.
+}. The SAT competitions generally use problems that are difficult to solve compared to other problems of the same file size. This is in order to encourage development of solving strategies that reliably have good performance and not only for most of them. To save time during benchmarking, files that took longer than around one minute for a single model computation were excluded, resulting in files that are generally around 30 kilobytes large. Additionally, problems where the duration for backbone computation averaged below one second were excluded, because here the small differences in the measurements could just as well be explained with external factors like the CPU throttling for a short time. To get meaningful testresults for such files, multiple testpasses should be conducted.
 
+The averaged time to compute the backbones of these 65 testfiles can be seen in \ref{tab:satCompAvg}. The second column shows the time that was only spent in the SAT solver. This gives a hint on whether a particular algorithm configures it's SAT solver well and whether it looses computation time in things besides the SAT calls, for example through model reduction.
 
-The averaged time to compute the backbones of these 64 testfiles can be seen in \ref{tab:satCompAvg}. To prove that various computation strategies are implemented as good as possible\footnote{e.g. no noteworthy timeloss during setup of preferences}, the second column shows the time that was only spent in the sat solver.
-
-Taking a look at this table, we can quickly see that for these instances, all solvers that employed preferences as part of their algorithm performed much worse than those that did not. These would be $BB$,$IBB$,$KBB$ and $PB1x$.
+Taking a look at this table, we can quickly see that for these instances, all solvers that employed preferences as part of their algorithm performed much worse than those that did not. These would be $BB$,$IBB$,$KBB$ and $PB1x$. This impression is further supported by the performance results of the three configurations of the $PB2$ algorithm. Here the effect of preferences was reduced incrementally, eventually reaching a computation time close to that of $PB1x$ where no preferences were set.
 
 %You can also see a vague inverse correlation between the number of sat calls and the calculation time. wenige sat calls heissen nicht automatische wenig rechenzeit, womöglich aber auch nur weil hier eine schwierige datei ist.
 
@@ -129,8 +128,9 @@ Table \ref{tab:learnedIbb} shows a comparison of individual benchmarks to highli
 
 The information contained in learned clauses is very valuable, as it prevents the solver from repeating invalid combinations of assignments that might even be likely to occur again. But if already learned clauses can guide the SAT solver away from possible conflicts, it could ideally return a model without any backtracking.
 
-\iffalse
+\iffalse 
 \subsection{Comparison of PB0 with PB1}
+topic dropped, weil vorhandene erklärung nicht eindeutig ist.
 
 \begin{wraptable}[7]{r}{7cm} %[tbp]
 \begin{tabular}{l| c c c c}
@@ -148,7 +148,7 @@ Table \ref{tab:satCompAvg} shows a strong performance difference between PB0 and
  grieu beispiel rauspicken (letzter sat call)
 
 
-stammt daher, dass zuletzt unsat errechnet wird. vonThore hat das problem nicht (selten überhaupt eine millisekunde gebraucht für letzten aufruf)
+stammt daher, dass zuletzt unsat errechnet wird. vonThore hat das problem nicht (selten überhaupt eine millisekunde gebraucht für letzten aufruf). Ne, lässt sich nicht so einfach sagen, in vonThore sind alle aufrufe ziemlich billig.
 \fi
 
 
@@ -188,9 +188,38 @@ Table \ref{tab:bbkbb}\footnote{
 	} 
 shows individual performance differences between the $BB$ solver supplied by $Sat4J$ and my own $KBB$ solver for comparison, as well as the backbone's size and the number of backbone literals identified through unit implication. The time columns also contain the number of sat calls that were comitted. It's content matches the results of table \ref{tab:satCompAvg}. Occasional cases where $KBB$ trumps in performance over $BB$ get balanced out by cases where this is the other way round, but the number of sat calls is always better with the $KBB$ algorithm. And this is true in spite of the fact that almost all identifications happened through unit implication. 
 
-This indicates that the effect from scanning for unit implied backbone literals also appears in the $BB$ solver, only not quite as obvious. When you look at line \ref{algo:bb:learn} of algorithm \ref{alg:bb}, you see that $BB$ actually takes identified backbone literals up into the formula to speed up the solving process. Now imagine what happens, if the unit implication case happens during the course of the $BB$ algorithm. You have a clause that is not satisfied, even though all but one of it's literals are already assigned through the learned backbone literals. When $BB$ tests the last of that clauses literals with an assumption against the last one, the clause becomes immediately unsatisfied\footnote{Remember that $BB$ tests by trying to disprove a potential backbone literal.}, proving the last remaining literal in the clause is part of the backbone. 
+This indicates that the effect from scanning for unit implied backbone literals also appears in the $BB$ solver, only not quite as obvious. When you look at line \ref{algo:bb:learn} of algorithm \ref{alg:bb}, you see that $BB$ actually takes identified backbone literals up into the formula to speed up the solving process. Now imagine what happens, if the unit implication case happens during the course of the $BB$ algorithm. You have a clause that is not satisfied, even though all but one of it's literals are already assigned through the learned backbone literals. When $BB$ tests the last of that clauses literals with an assumption against it, the clause becomes immediately unsatisfied\footnote{Remember that $BB$ tests by trying to disprove a potential backbone literal.}, proving that the last remaining literal in the clause is part of the backbone. 
 
-The results of the next chapter paint a slightly different picture. Here the pure SAT time of $KBB$ is actually smaller than that of $BB$, however even $BB$ looses around a third of it's calculation time outside of pure SAT calls. This could be explained by the much higher number of SAT calls for this benchmark and the overhead that comes with preparations and cleanups for a SAT call, which appearantly became relevant at that point. Given good conditions (like in that benchmark) $KBB$ can identify many backbone literals in a single search, which also requires less data structures around it compared to a complete SAT computation.
+The results shown in the following chapter (\ref{sec:sectionVonThore}) paint a slightly different picture. Here the pure SAT time of $KBB$ is actually smaller than that of $BB$, however even $BB$ looses around a third of it's calculation time outside of pure SAT calls. This could be explained by the much higher number of SAT calls for this benchmark and the overhead that comes with preparations and cleanups for a SAT call, which appearantly became relevant at that point. Given good conditions (like in that benchmark) $KBB$ can identify many backbone literals in a single search, which also requires less data structures around it compared to a complete SAT computation.
+
+\subsection{Effect of subsets}
+The results of those algorithms where the set of preferences was restricted in size ($PB1c$ and $PB1d$) compare relatively bad to the base algorithm and this is most pronounced in the case of $PB1c(5\%)$ where the restriction is the strongest. This means that, at least for this benchmark, reducing the number of preferences completely backfired.
+
+A potential explanation for this could be that... ??? TODO überlegen wieso oder rausnehmen
+
+Kleine mengen an präferenzen machen lösen tatsächlich schwieriger, kleiner pool an auswahlmöglichkeiten (sonst gehen in präferenzmenge noch auswahlheuristiken)
 
 \subsection{Benefits of forgetting preferences}
+Table \ref{tab:satCompAvg} shows an extreme performance drop for the $PB1c(5\%)$ case.
+
+\begin{wraptable}[12]{r}{7cm} %[tbp]
+\begin{tabular}{l| c c }
+ & Permanent & Forgetting  \\
+\hline
+PB1 &	20.251 & 12.426 \\
+PB1c(50\%) & 25.708 & 13.109 \\
+PB1c(5\%) & 1080.724 & 14.483 \\
+PB2(50\%) & 13.023 & 7.025 \\
+PB2(5\%) & 6.283 & 6.348 \\
+PB3 & 21.255 & 13.154 \\
+
+\end{tabular}
+\caption{Average of the complete backbone computation for variants of $PrefBones$ with and without forgetting preferences.}
+\label{tab:satCompForgettingBenefits}
+\end{wraptable}
+
+tab \ref{tab:satCompForgettingBenefits}\footnote{These performance ratings differ slightly from table \ref{tab:satCompAvg}. This is because that is a different execution.}
+
 schlechte ergebnisse von PB1c (0.05) vgl run2 mit run3 (run3 hat kein default vergessen)
+
+TODO solver mit vergessenden präferenzen ausführen, mindestens PB1c(5\%) sollte nicht ohne vergessende ausgeführt werden, weil das sonst 2 Tage dauert. Muss neu gemacht werden, weil fallback präferenz in ThirdRun anders ist als in SecondRun.

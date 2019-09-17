@@ -1,6 +1,7 @@
 \section{Industrial benchmark}
+\label{sec:sectionVonThore}
 
-\begin{wraptable}[25]{R}{8cm}
+\begin{wraptable}[28]{R}{8cm}
 %\begin{table}[tbp]
 \begin{tabular}{l| c c c }
 &	$t_{calc}$(sec) &	$t_{sat}$(sec)	& NSatCalls \\
@@ -26,8 +27,8 @@ PB2(5\%) & 8.313 & 3.484 & 15752 \\
 PB2(0.5\%) & 8.364 & 3.529 & 15752 \\
 PB3 & 3.872 & 1.204 & 4471 \\
 \end{tabular}
-\caption{First execution of industry application. Values are not averaged, but summed up over 407 different benchmarks.}
-\label{tab:vonThore1} %for referencing
+\caption{Performance results for computation of the backbone of a product formula. Values are not averaged, but summed up over 407 different executions, each with a different assumption.}
+\label{tab:vonThore1}
 \end{wraptable}
 
 Another benchmark I applied the various backbone algorithms to, was a formula for a real world application from the automobile industry. The purpose of this formula $F_{conf}$ was to describe a product in the context of options or features available to the customer. Some of these options can be combined, others exclude or require each other. Most of the variables in $F_{conf}$ correspond to a boolean parameter that is set to $\top$ if the associated feature is requested by the customer. If the formula would become unsatisfiable under such assumptions equal to the requested configuration, then the combination of these features would be impossible. $F_{conf}$ further contains a small set of additional variables to model more complex relationships between options.
@@ -38,93 +39,115 @@ and check for satisfiability of $F_{conf}$ under the condition that $a$ is $\top
 
 A more efficient approach is to only go over the 407 options once and for each variable $a$ of them calculate the backbone of $F_{conf} \cup \{a\}$ or in other words $F_{conf}$ under the assumption $a$. If a feature $b$ occurs in all models when $a$ is assumed, then $a$ implies $b$ in some way.
 
+TODO prerun idee zeigen, ist aber doof, weil hat kein backbone ohne erzwungene + formel ist so simpel, dass sie ohne konflikt durchläuft und es nix im voraus zu lernen gibt, kapitel unten hier reinkopieren und dann weg damit
+
 \subsection{Performance measurement and Discussion}
 
-Table \ref{tab:vonThore1} lists experimental results with the same set of algorithms that were run on the files from the SAT competition. After having analyzed these performance results, I will try to give a specialized algorithm that is optimized for this particular benchmark in the next section.
+Table \ref{tab:vonThore1} lists experimental results with the same set of algorithms that were run on the files from the SAT competition. In the following, I will list some observations about these results.
 
-We immediately see, that preferences give a much greater benefit than in the previous benchmark with the files from the SAT competition. However there are some more things that stand out:
 \begin{itemize}
-\item The fastest algorithm overall is the one that does not reduce the models at all. The number of SAT calls is even exactly the same as that of that variant with prime implicant reduction. However the time that was spent in the SAT solver is very similar to that execution with prime implicant reduction ($PB1$), so the difference must be the time that was spent to reduce the model and the benefit, namely the number of optional literals in the prime implicant, was very small.
-\item However, the fastest implementation when it comes to pure SAT solver time as well as number of SAT calls, was $PB3$, which differs from the others in that it uses literal rotation to reduce models instead of prime implicant computation. Apparantly the models that occur in this formula actually do contain many optional assignments. However these are spread over many different prime implicants with little distance to the model.\\
+\item We immediately see that preferences give a great benefit to performance other than in the previous benchmark with the files from the SAT competition. Here, all cases where I tried to soften the effects of preferences ($PB1(amnes)$,$PB1c$, $PB2$) had worse results than the base algorithm $PB1$.
+\item The fastest algorithm overall ($PB1(model)$) is the one that does not reduce the models at all. The number of SAT calls is even exactly the same as that of that variant with prime implicant reduction. However the time that was spent in the SAT solver is very similar to that execution with prime implicant reduction ($PB1$), so the difference must be the time that was spent to reduce the model and the benefit, namely the number of optional variables in the prime implicant, was very small.\\
+Still, this does not mean that model reduction wouldn't be useful at all in this benchmark, as the next point will show. It merely implies that the benefit of applying any special strategy may very well be outweighed by the extra performance cost that comes with it, since here all of this work would have to be done a very large number of times.
+\item The fastest implementation when it comes to pure SAT solver time as well as number of SAT calls was $PB3$, which differs from the others in that it uses literal rotation to reduce models instead of prime implicant computation. Apparantly the models that occur in this formula actually do contain many optional assignments. However these are spread over many different prime implicants with little distance to the model.\\
 A previous variant of this algorithm took around 250 seconds to compute overall. This version did not use the lookup from literal to containing clauses (as described in later paragraphs in section \ref{ss:rot}), but iterated over all clauses in the formula. Such a drastic effect of an efficient implementation did not occur for the SAT competition benchmark.\\
 This has primarily two reasons. First, the number of SAT calls per instance is twice as much in this benchmark compared to those from the SAT competitions\footnote{The 4471 calls span over 407 problem instances.}, therefore the model reduction happens twice as often. Secondly, the formula of this benchmark is much larger than those from the SAT competition, with the filesize being around twenty times as large. Therefore there are much more clauses to search through.
 \item The two algorithms in third place of overall computation time were $PB1e$ and $PB1f$. Both of these make use of learned literals so appearantly the backbone literals in this formula are easy to identify by checking the set of literals that the solver learns when it computes new models.\\
 In fact, on inspection, all literals that later turn out to be part of the backbone occur in this set after the very first SAT call(with an exception of the forced literal, which can be extracted by searching the formula for clauses with only one literal).
-\item Another noteworthy algorithm is the $KBB$ algorithm that uses unit implication to identify backbone literals. The implementation of this algorithm was based on that of the $BB$ algorithm and here the number of SAT calls with $KBB$ is a tenth of the number in the case of $BB$. However this advantage is not expressed equally strong when it comes to the time spent in the SAT solver(around a fourth), which means that the identification through calculating a new model can sometimes be more efficient than regularly checking unit implications.\\
-Finally, the overall computation time of $KBB$ is actually worse than that of $BB$, meaning that the benefit through cheap backbone literal identification is less than the time that it takes to check the clauses for the unit case. It may be possible that this method requires an improved implementation. The search for clauses where the unit implication for backbone literals applies could be implemented in a similar way as was used to calculate required and rotatable assignments, using the lookup from variables to clauses where they occur (see section \ref{ss:rot})
+\item Another noteworthy algorithm is the $KBB$ algorithm that uses unit implication to identify backbone literals. The implementation of this algorithm was based on that of the $BB$ algorithm and here the number of SAT calls with $KBB$ is a tenth of the number in the case of $BB$. However this advantage is not expressed equally strong when it comes to the time spent in the SAT solver(around a fourth), which means that the identification through calculating a new model can sometimes be more efficient than regularly checking unit implications, as was already explained in the previous section (\ref{ss:result_unit}).\\
+Finally, the overall computation time of $KBB$ is actually worse than that of $BB$, meaning that the benefit through cheap backbone literal identification is less than the time that it takes to check the clauses for the unit case. 
+%It may be possible that this method requires an improved implementation. The search for clauses where the unit implication for backbone literals applies could be implemented in a similar way as was used to calculate required and rotatable assignments, using the lookup from variables to clauses where they occur (see section \ref{ss:rot})
 \end{itemize}
 
 \subsection{Specialized algorithm}
-With the findings from the last section 
+\begin{wraptable}[7]{r}{8cm}
+%\begin{table}[tbp]
+\begin{tabular}{l| c c c }
+&	$t_{calc}$(sec) &	$t_{sat}$(sec)	& NSatCalls \\
+\hline
+PB4 & 1.482 & 0.863 & 4064 \\
+\end{tabular}
+\caption{Results of specialized backbone algorithm on product formula benchmark.}
+\label{tab:thoreSpecialResults}
+\end{wraptable}
 
-TODO schreiben
+With the findings from the last section and some experimentation, I devised a specialized algorithm $PB4$ for this use case which is listed in algorithm \ref{alg:thoreSpecial}. For comparison with the other implementations, the performance results can be seen in table \ref{tab:thoreSpecialResults}.
 
-verbesserungen:
-- nicht brute force klauseln prüfen, sondern anhand des index für watched literal propagation (notiz: monoclauses werden in sat4j nicht gelernt. Sollten stattdessen eh als assumptions übergeben werden)
+First of all, since it is very effective here to check the literals that the solver learns as backbones through conflict resolution, the scheme of approaching upper and lower bounds as described in section \ref{sec:upperLower} is applied here. The lower bound $bb_l$ of the backbone consists of all learned literals, whereas it's upper bound $bb_u$ consists of the intersection of found models or reductions of them. Having both upper and lower bound not only allows to potentially stop the loop before the last sat call. It also accelerates the reduction of the first model to it's required literals, because if I know that a literal is in the lower bound of the backbone, I don't need to explicitely test, whether it should be in it's upper bound. This behaviour is listed in algorithm \ref{alg:specReq}.
+
+Secondly, it turned out, that only the first model reduction in line \ref{line:specReq} was worth it's computational effort. The reduction of subsequent models did not give performance benefits that would have outweighed the time it took to do. That is why in line \ref{line:specNoReduc} the upper bound is intersected with the complete model instead of a reduction of it.
+
+For the preferences, the typical scheme was applied, where the solver was configured to disprove as many of the backbone candidates as possible, while the same set was added as a blocking clause to ensure that the loop would eventually terminate.
+
+
 %- außerdem: lits in bb_l muss man nicht prüfen ob notwendigerweise in bb_u
-- nur die literale rotieren die in der obermenge verbleiben
-- Außerdem: "bugfix" erzwungenes literal trat nicht in gelernten auf.
-- präferenzen nutzen
 
-besonderheiten: 
-- absolut alle backbone literale sind nach dem ersten sat aufruf gelernt. (*mit technischen besonderheiten, nur wenn man blocking clauses nimmt und dann ausgenommen die in der blocking clause)
-
-Line \ref{algo:kbbDoWhileStart} bis Line \ref{algo:kbbDoWhileEnd} do while breche ab sobald nix neues gefunden wird. unitImplied gibt nur neue zurück
+%Line \ref{algo:kbbDoWhileStart} bis Line \ref{algo:kbbDoWhileEnd} do while breche ab sobald nix neues gefunden wird. unitImplied gibt nur neue zurück
 \begin{algorithm}
 \caption{{\sc Specialized algorithm for industrial application}}
+\label{alg:thoreSpecial}
 \DontPrintSemicolon
 \KwIn{A satisfiable formula $F$ in CNF}
 \KwOut{All literals of the backbone of $F$}
-$(outc,mdl,learnt) \gets SAT(F)$\;
-$bb_u \gets required(mdl,F)$\;
+$(outc,model,learnt) \gets SAT(F)$\;
 $bb_l \gets learnt$\;
+$bb_u \gets required(model,F,bb_l)$\;
+\label{line:specReq}
 \While{$bb_l \neq bb_u$}{
+\iffalse
 	\Do{$unitBackbones \neq \emptyset$}{
 	\label{algo:kbbDoWhileStart}
 		$unitBackbones \gets unitImplied(F,bb_l)$\;
 		$bb_l \gets bb_l \cup unitBackbones$\;
 	}
 	\label{algo:kbbDoWhileEnd}
+	\fi
 	$blocker \gets \bigvee _{l\in bb_u}\neg l$\;
 	$prefs \gets \{\neg l : l \in bb_u \}$\;
-	$(outc,mdl,learnt) \gets prefSAT(F \cup blocker \cup bb_l, prefs)$\;
+	$(outc,model,learnt) \gets prefSAT(F \cup blocker \cup bb_l, prefs)$\;
 	\If{$\neg outc$}{
 		\Return{$bb_u$}\;
 	}
 	$bb_l = bb_l \cup learnt$\;
-	$bb_u = bb_u \cap required(mdl,F,bb_l)$\;
+	$bb_u = bb_u \cap model $\;%required(model,F,bb_l)$\;
+	\label{line:specNoReduc}
 }
 \Return{$bb_u$} %\tcp{Equivalent to $bb_l$}
-\label{alg:thoreSpecial}
 \end{algorithm}
+
+
+\begin{algorithm}
+\caption{{\sc Function $required(M,F,bb_l)$ }}
+\label{alg:specReq}
+\DontPrintSemicolon
+\KwIn{A model $M$ for formula $F$, a lower bound $bb_l$ of the backbone of $F$}
+\KwOut{All unrotatable literals in $M$ as an upper bound of the backbone of $F$}
+$R \gets bb_l$\;
+\For{$l \in M$}{
+	\If{$l \in bb_l \lor \exists c \in F : c\langle M \textbackslash l \rangle = \bot$}{
+		$R \gets R \cup \{l\}$\;
+	}
+}
+\Return{$R$}\;
+
+\end{algorithm}
+
 
 %über algo:thoreSpecial
 %- gelernte klauseln muss man nicht extra hinzufügen, weil gelernte literale gelernt bleiben
 %- für $bb_l \neq bb_u$ muss man nur größe vergleichen, weil upper/lower bound desselben ziels
 %- 
 
-besondere bedeutung für diesen benchmark: wiederverwendung von gelernten klauseln über unterschiedliche literale
 
-\subsection{Reuse of backbone information}
-\begin{wraptable}{r}{4.5cm}
-%\begin{table}[tbp]
-\begin{tabular}{l|  c c }
-Strategy & $t_{complete}$ & $n_{sat}$ \\
-\hline
-$BB$ & 123.321 & 1337 \\
-$BB_{pre}$ & 321.123 & 3117 \\
-$IBB$ & 123.321 & 1337 \\
-$IBB_{pre}$ & 321.123 & 3117 \\
-$PB0$ & 123.321 & 1337 \\
-$PB0_{pre}$ & 321.123 & 3117 \\
-$PB4$ & 123.321 & 1337 \\
-$PB4_{pre}$ & 321.123 & 3117 \\
-\end{tabular}
-\end{wraptable}
-The special structure of this use case should allow us to reuse information between the computations. If we can determine backbone literals of the base formula $F_{conf}$, then we can safely assume, that all of these are part of any restricted formula $F_{conf} \cup \{a\}$. This is because, when we add any clause to a CNF formula, it's set of models can only shrink, no new model can be induced through an additional clause. This implies that an assignment that didn't occur in the models before will also not appear in the new smaller set of models, in turn implying that if a a variable always occured with the same assignment in $F_{conf}$, it will also do so in $F_{conf} \cup \{a\}$.
+\subsection{Efficiency over all assumptions}
+Since for this benchmark, the almost same formula is worked on 407 times, it makes sense to think about ways how to make this outer loop efficient as well.
 
-This means, that a lot of work that otherwise would have to be repeated for all the tested literals can be computed once and just be reused.
+The first consideration was to first compute information of the base formula and reuse it in all subsequent computations, where the backbone under an assumption was calculated. However this was not possible.\\
+One interesting piece of information would have been the set of clauses that were learned during the computation of a model of the base formula $F_{conf}$. However this set was empty. Appearantly the formula is simple enough, that the model can be found without a single conflict. The solver returned without having learned any new clause for the formula.
 
-TODO tabelle mit und ohne pre run
-{BB, IBB, PB0, PB4}x {mit prerun / ohne}
+Another thing I thought about was the backbone of the base formula. If you can determine backbone literals of $F_{conf}$, then you can safely assume, that all of these are part of any restricted formula $F_{conf} \cup \{a\}$. This is because, when a clause gets added to a CNF formula, it's set of models can only shrink, no new model can be induced through an additional clause\footnote{Assuming that no new variable was induced.}. This implies that an assignment that didn't occur in the models before will also not appear in the new smaller set of models, in turn implying that if a a variable always occured with the same assignment in $F_{conf}$, it will also do so in $F_{conf} \cup \{a\}$. \\
+However this set was empty as well and for a good reason in this particular case. The backbone of a formula consists of all assignments that have to be done to end up in a model. In the context of a product formula, which we have here, this would mean, that a specific feature of the product would always have to be selected. In other words, the product has an option that is not optional. 
 
+What remained was to see, if the loop over the assumptions could be sped up. In fact whereas the backbone computations took a sum of 1.5 seconds, this loop overall took 3.9 seconds. The difference consisted of primarily the copying of the formula(2.2 seconds) and writing down benchmark information (around 150 milliseconds). 
+
+The formula had to be copied for each backbone computation because it was not reusable afterwards, most likely because of remaining blocking clauses. If this bug can be fixed, the 2.2 seconds of lost time should most likely disappear. Alternatively, if this is not possible, you could make use of the other CPU cores of your system, by concurrently making copies of $F_{conf}$, while simultaneously backbones are calculated. In fact, as long as no information shows up that would be reusable over the different backbone computations, all 407 backbone computations could just run in asynchronously in parallel.

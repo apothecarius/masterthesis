@@ -52,7 +52,7 @@ If the counter reaches the length of it's clause minus one, then you know that t
 \iffalse
 fuer den fall dass platz generiert werden muss: den obigen algorithmus nochmal formell aufschreiben.
 \begin{algorithm}
-\caption{{\sc Iterative algorithm (two tests per variable)}}
+\caption{{\sc Iteratsadfaive algorithm (two tests per variable)}}
 \label{alg:iterTwo}
 \DontPrintSemicolon
 \KwIn{A satisfiable formula $F$ in CNF}
@@ -69,7 +69,7 @@ I have tested this method in two solvers, $BB$ and a variant of $PB1$ that ident
 
 %TODO tabelle mit unit implikation von pb1e hervorzaubern
 
-For further investigation on this method see section \ref{ss:result_unit}.
+For further investigation on the effects of this method see section \ref{ss:result_unit}.
 
 %This clearly showed that this method requires a critical mass of already known backbone literals to have a benefit, because as already stated, if there even exists a clause in $F$ where this method can be applied, you need to know the $n_c - 1$ other backbone literals in $c$ beforehand.
 
@@ -89,7 +89,7 @@ Given a backbone literal $a$ and another literal $b$. If $b$ occurs in all claus
 
 Proof: Assuming $\neg b$ was not in the backbone, then there would have to exist a model that contained $b$. Given that all clauses that contain $b$ also contain $a$, $a$ cannot be part of the backbone.
 \end{lemma}
-\begin{wraptable}{l}{8cm}
+\begin{wraptable}[31]{l}{8cm}
 %\begin{wraptable}[31]{l}{8cm} % first optional parameter defines height of wraptable to avoid too much vertical space to be eaten away.
 \begin{tabular}{l| c c c }
 File& $n_{unit}$ & $n_{coocc}$ & $n_{var}$\\
@@ -170,7 +170,7 @@ fla-qhid-400-3.cnf & 366 & 0 & 400 \\
 fla-qhid-400-4.cnf & 359 & 0 & 400 \\
 smallSatBomb.cnf & 0 & 0 & 264 \\
 \end{tabular}
-\caption{Comparison of number of backbone literals identified through cooccurrence in comparison to the number identified through unit implication.}
+\caption{Comparison of number of backbone literals identified through cooccurrence in comparison to the number identified through unit implication and the overall number of variables.TODO num backbone lits wäre besser}
 \label{tab:coocBB}
 \end{wraptable}
 

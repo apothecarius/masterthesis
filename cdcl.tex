@@ -1,8 +1,8 @@
 \subsection{CDCL}
 \label{ss:cdcl}
-All the methods to generate a backbone of a formula $F$ that are described in this thesis essentially rely on calculating various models of $F$, so it makes sense to describe a method to do that as well. The current state-of-the-art algorithm to do this is the $Conflict\;Driven\;Clause\;Learning$ algorithm, or $CDCL$ for short. This algorithm was first published as $"GRASP"$ in \cite{GRASP}.
+All the methods to generate a backbone of a formula $F$ that are described in this thesis essentially rely on calculating various models of $F$, so it makes sense to describe a method to do that in depth. The current state-of-the-art algorithm to do this is the $Conflict\;Driven\;Clause\;Learning$ algorithm, or $CDCL$ for short. This algorithm was first published as $"GRASP"$ in \cite{GRASP}. An earlier algorithm for the SAT problem, which $CDCL$ is essentially based upon is the $DPLL$ algorithm \cite{dpll} published in 1962. However for this thesis I worked with the $CDCL$ implementation available in the $Sat4J$ library that is heavily based on $MiniSAT$ which you can read about in \cite{minisat}.
 
-Here a $CDCL\;table$ is used as a special dataset, to store the state of the SAT solver. This table stores the succession of assignments with four values for each assignment.
+In this algorithm, a so-called $CDCL\;table$ is used as a special dataset, to store the state of the SAT solver. This table stores the succession of assignments with four values for each assignment.
 \begin{itemize}
 \item The $level$ of the assignment. This level increases with each decision and starts at 0, where unit assignments before any decision are stored.
 \item The affected variable.

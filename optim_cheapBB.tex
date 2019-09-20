@@ -1,5 +1,5 @@
 \section{Cheap Identification of backbone literals}
-This section describes various ways that allow you to recognize backbone literals without an additional satisfiability check. Knowing these backbone literals early can speed up the individual calls to the SAT solver, because enforcing the backbone literals prevents the solver from trying to find solutions containing the negation of backbone literals, which by definition don't exist.
+This section describes various ways that allow you to recognize backbone literals without an additional satisfiability check. Knowing these backbone literals early can speed up the individual calls to the SAT solver, because enforcing the backbone literals prevents the solver from trying to find solutions containing the negation of backbone literals, which by definition don't exist. Specifically for algorithms that apply preferences, knowing backbone literals explicitely can be helpful, because then you can remove some of those preferences that go against the backbone and could never be satisfied anyway.
 
 %Furthermore the latter two subsections here work solely on the set of already identified backbone literals.
 

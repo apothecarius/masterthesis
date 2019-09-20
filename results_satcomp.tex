@@ -54,14 +54,6 @@ To be more precise the $essential$ folder from the $incremental$ package, availa
 
 The averaged time to compute the backbones of these 65 testfiles can be seen in \ref{tab:satCompAvg}. The second column shows the time that was only spent in the SAT solver. This gives a hint on whether a particular algorithm configures it's SAT solver well and whether it looses computation time in things besides the SAT calls, for example through model reduction.
 
-Taking a look at this table, we can quickly see that for these instances, all solvers that employed preferences as part of their algorithm performed much worse than those that did not. These would be $BB$,$IBB$,$KBB$ and $PB1x$. This impression is further supported by the performance results of the three configurations of the $PB2$ algorithm. Here the effect of preferences was reduced incrementally, eventually reaching a computation time close to that of $PB1x$ where no preferences were set.
-
-%You can also see a vague inverse correlation between the number of sat calls and the calculation time. wenige sat calls heissen nicht automatische wenig rechenzeit, womöglich aber auch nur weil hier eine schwierige datei ist.
-
-%TODO IBB hatte bug, darum bessere leistung von pb1x vgl IBB\\
-%zweite tabelle zeigen, wenn blocking clause nicht entfernt wurde
-
-\subsection{Importance of reusing learned clauses}
 \begin{wraptable}[30]{r}{8cm}
 \begin{tabular}{l| c c }
 File & $t_{keep}$ & $t_{discard}$ \\
@@ -145,7 +137,15 @@ smallSatBomb.cnf & 0.011 & 0.022 \\
 \caption{Backbone computation time of the $IBB$ algorithm, once with keeping learned clauses ($t_{keep}$) and once discarding learned clauses between every sat call($t_{discard}$)}
 \label{tab:learnedIbb} %for referencing
 \end{wraptable} 
-Table \ref{tab:learnedIbb} shows a comparison of individual benchmarks to highlight the importance of reusing learned clauses. While working with the $Sat4J$ library I noticed that the $IBB$ backbone algorithm was accidentally configured in a way that learned clauses would always be discarded between SAT computations. However, these learned clauses are still valid in later iterations of the $IBB$ algorithm. The only difference that the formula goes through during this algorithm, is that the blocking clause that ensures a new model repeatedly looses some of it's literals. As long as the set of solutions for a formula is only reduced, the learned clauses of that formula stay valid.\footnote{Example: With a formula without any clauses but three variablesyy $a$,$b$ and $c$ you can create eight models. With only the clause $\{a\}$ in your formula you can have four models, with only the clause $\{a \lor b\}$ you can have 6 models, with only the clause $\{a\lor b \lor c\}$ you can have 7 models.}
+Taking a look at this table, we can quickly see that for these instances, all solvers that employed preferences as part of their algorithm performed much worse than those that did not. These would be $BB$,$IBB$,$KBB$ and $PB1x$. This impression is further supported by the performance results of the three configurations of the $PB2$ algorithm. Here the effect of preferences was reduced incrementally, eventually reaching a computation time close to that of $IBB$ where no preferences were set.
+
+%You can also see a vague inverse correlation between the number of sat calls and the calculation time. wenige sat calls heissen nicht automatische wenig rechenzeit, womöglich aber auch nur weil hier eine schwierige datei ist.
+
+%TODO IBB hatte bug, darum bessere leistung von pb1x vgl IBB\\
+%zweite tabelle zeigen, wenn blocking clause nicht entfernt wurde
+
+\subsection{Importance of reusing learned clauses}
+Table \ref{tab:learnedIbb} shows a comparison of individual benchmarks to highlight the importance of reusing learned clauses. While working with the $Sat4J$ library I noticed that the $IBB$ backbone algorithm was accidentally configured in a way that learned clauses would always be discarded between SAT computations. However, these learned clauses are still valid in later iterations of the $IBB$ algorithm. The only difference that the formula goes through during this algorithm, is that the blocking clause that ensures a new model repeatedly looses some of it's literals. As long as the set of solutions for a formula is only reduced, the learned clauses of that formula stay valid.\footnote{Example: With a formula without any clauses but three variables $a$,$b$ and $c$ you can create eight models. With only the clause $\{a\}$ in your formula you can have four models, with only the clause $\{a \lor b\}$ you can have 6 models, with only the clause $\{a\lor b \lor c\}$ you can have 7 models.}
 
 The information contained in learned clauses is very valuable, as it prevents the solver from repeating invalid combinations of assignments that might even be likely to occur again. But if already learned clauses can guide the SAT solver away from possible conflicts, it could ideally return a model without any backtracking.
 
@@ -214,38 +214,27 @@ This indicates that the effect from scanning for unit implied backbone literals 
 The results shown in the following chapter (\ref{sec:sectionVonThore}) paint a slightly different picture. Here the pure SAT time of $KBB$ is actually smaller than that of $BB$, however even $BB$ looses around a third of it's calculation time outside of pure SAT calls. This could be explained by the much higher number of SAT calls for this benchmark and the overhead that comes with preparations and cleanups for a SAT call, which appearantly became relevant at that point. Given good conditions (like in that benchmark) $KBB$ can identify many backbone literals in a single search, which also requires less data structures around it compared to a complete SAT computation.
 
 
-
 \subsection{Effect of subset preferences}
-The results of those algorithms where the set of preferences was restricted in size ($PB1c$ and $PB1d$) compare relatively bad to the base algorithm and this is most pronounced in the case of $PB1c(5\%)$ where the restriction is the strongest. This means that, at least for this benchmark, restricting the number of preferences completely backfired.
+TODO: alles falsch: es ist speziell der letzte sat call von $pb1c(5\%)$ der schlecht läuft. Bitte ignorieren
+
+The algorithms where the set of preferences was restricted in size ($PB1c$ and $PB1d$) compared relatively bad to the base algorithm $PB1$ and this is most pronounced in the case of $PB1c(5\%)$ where the restriction is the strongest. This means that, at least for this benchmark, restricting the number of preferences completely backfired.
 
 %This behaviour matches an observation that you can make with the duration of the last SAT call. All of these take longer than the average. The commonality with the subset preferences is that the set of preferences is small here as well, since it 
 
-This result is difficult to explain. The smaller set of preferences could be less flexible than a larger one and thus more difficult to get to work. When a model is generated, not all of the preferences will be taken into account. Many of the variables that have a preferred assignment might be assigned something different through unit propagation and eventually you leave the set of preferred literals behind and use the remaining unassigned variables to reach a fully satisfied model.
+For a possible explanation I should begin with a reminder about the exact way in which preferences are implemented in $PB1$. Here two decision heuristics coexist, $h_{pref}$ and $h_{tail}$, whereas under normal circumstances a $CDCL$ SAT solver would only use one to pick a literal for a decision. In $PB1$, $h_{pref}$ is always consulted first, and only if all the variables that it offers for an assignment are already assigned to a value, $h_{tail}$ is queried. Both $h_{pref}$ and $h_{tail}$ contain a heuristic to choose the optimal variable for a decision, but in $h_{pref}$ the set to choose from is restricted and what that variable would then be assigned to, is fixed. In contrast, $h_{tail}$ is free to choose any remaining free variable and give it either boolean value, depending on what it deems better to satisfy the formula.
 
-je kleiner präferenzenmenge, desto wahrscheinlicher komplett im widerspruch mit backbone, alle kollidieren, alle präferenzen müssen durch gelernte literale ausgehebelt werden
-
-bei großem pool an präferenzen kann man nicht funktionierende hinten in eine queue stellen
-
-Also, since the preferred assignments have to be done earlier than others, they occur at the top of the CDCL table. This means that in case of a conflict with other assignments, the preferred decisions will not be reverted if there is any other decision available to be reverted, since the strategy of CDCL is most likely to revert only the youngest decision involved with the conflict. But if this preference actually goes against a backbone literal of the formula, it must eventually be reverted to reach a valid model. This can only happen by a unit propagation, since a decision would just take the preference into account again. <- pb1c hat das problem in jedem satcall
-
-You can actually see this effect with all the other computation schemes in table \ref{tab:satCompAvg} when you look at the $t_{last}$ column. All of these timings are larger than the average computation would take (if you divide $t_{sat}$ by $n_{sat}$) and the last SAT call is also the one where the set of preferences is the smallest. However, $PB1c$ with a sufficiently low number of preferences has this problem in all of it's SAT calls.
-%,especially since most of the preferences at that point stand against the formulas backbone.
-A potential explanation for this could be that a small set of pref
-
- ??? TODO überlegen wieso oder rausnehmen
-
-Kleine mengen an präferenzen machen lösen tatsächlich schwieriger, kleiner pool an auswahlmöglichkeiten (sonst gehen in präferenzmenge noch auswahlheuristiken)
+When a decided literal is involved with a conflict, it will be pushed back in it's decision heuristic. That way an opportunity is given to variables that might not be so difficult to be assigned a good value and the problematic variables might be assigned a necessary value through unit implication. 
+%This could even cancel out an unsatisfiable preference that would conflict with a necessary assignment (i.e. a backbone literal). 
+However this can only happen if enough other variables are available in the same heuristic and with it's strong size restriction, $PB1c(5\%)$ doesn't have them.
 
 
+%eigentlihc: dass anstatt schlecht funktionierenden präferenzen bessere benutzt werden
+A similar effect is hinted by the performance results listed in the third column $t_{last}$ of table \ref{tab:satCompAvg}. Many of these timings are larger than the average computation would take. The last SAT call is also the one, where the set of preferences would be the set of negations of all backbone literals. This means that actually none of these preferences can be implemented.\footnote{
+	Which is also the termination condition of $PB0$.}. <- könnte was zu tun haben damit, dass letzter sat call nicht schlecht ist.
 
+The common problem of these two things is that all available decisions in $h_{pref}$ cannot be implemented. All the decisions based on preferences at that point must eventually be reverted and clauses must be learned to prevent these decisions from happening again.
 
-\subsection{Benefits of forgetting preferences}
-%Table \ref{tab:satCompAvg} shows a relatively good result for $PB1(amnes)$. It is still worse than the solvers without any preferences, but in table \ref{tab:vonThore1} where pre
-Table \ref{tab:satCompForgettingBenefits}\footnote{
-	These performance ratings differ slightly from table \ref{tab:satCompAvg}. This is because that is a different execution.
-} lists a comparison of multiple backbone algorithms once with ordinary, permanent preferences and in a forgetting scheme as described in section \ref{sec:amnesPrefs}. Preferences in general resulted in worse performance for this benchmark. However, if configured to immediately drop those preferences involved in a conflict, the penalty was always reduced to an acceptable level.
-
-\begin{wraptable}[12]{r}{7cm} %[tbp]
+\begin{wraptable}[14]{r}{7cm} %[tbp]
 \begin{tabular}{l| c c }
  & Permanent & Forgetting  \\
 \hline
@@ -260,7 +249,23 @@ PB3 & 21.255 & 13.154 \\
 \label{tab:satCompForgettingBenefits}
 \end{wraptable}
 
-Table \ref{tab:vonThore1} in the upcoming section shows results for a formula that is more beneficient to preferences. Here we see, that in such a case, forgetting preferences still work as intended. If these results turn out to be reproducible for other formulas as well, forgetting preferences could be a viable strategy to compute the backbone of any formula without prior knowledge about it, since the penalty for difficult formulas would be relatively low but the speedup for easy formulas very high.
+Even worse, since the preferred assignments have to be done before all the others, they occur at the beginning of the CDCL table. This means that in case of a conflict with other assignments, the preferred decisions will not be reverted if there is any other decision available to be reverted, since the strategy of CDCL is usually to revert only the youngest decision involved with the conflict. But if this preference actually goes against a backbone literal of the formula, it must eventually be reverted to reach a valid model. This can only happen by a unit propagation, since otherwise a decision would just take the preference into account again. And since no decision can happen before the preferred decisions, to counter a preference a unit propagation requires the maximum amount of information so that it can happen without a prior decision. You would need to do an amount of learning that is actually equivalent to directly identifying a backbone literal. 
+
+
+The big difference between typical $PB1$ variants and $PB1c$ is that this problem of having no satisfiable preferences not only applies to the very last SAT call, but also to many other ones. This can easily happen if the chosen subset consists only of literals that go against the backbone, multiplying the number of problematic SAT calls. 
+
+
+
+
+
+\subsection{Benefits of forgetting preferences}
+%Table \ref{tab:satCompAvg} shows a relatively good result for $PB1(amnes)$. It is still worse than the solvers without any preferences, but in table \ref{tab:vonThore1} where pre
+Table \ref{tab:satCompForgettingBenefits}
+%\footnote{These performance ratings differ slightly from table \ref{tab:satCompAvg}. This is because it is a different execution.}
+lists a comparison of multiple backbone algorithms once with ordinary, permanent preferences and in a forgetting scheme as described in section \ref{sec:amnesPrefs}. Preferences in general resulted in worse performance for this benchmark. However, if configured to immediately drop those preferences that were involved in a conflict, the penalty was always reduced to an acceptable level.
+
+
+Table \ref{tab:vonThore1} in the upcoming section shows results for a formula that is more beneficient to preferences. Here we see, that in such a case, forgetting preferences still work as intended. If these results turn out to be reproducible for other formulas as well, forgetting preferences could be a viable strategy to compute the backbone of any formula without prior knowledge about it, since the penalty for difficult formulas would be relatively low but the speedup for easy ones very high.
 
 
 %in second benchmark sogar besser als PB1, hat möglicherweise schwierige und leichte komponenten und amnes kann mit beiden gut umgehen.

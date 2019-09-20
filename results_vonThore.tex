@@ -1,7 +1,7 @@
 \section{Industrial benchmark}
 \label{sec:sectionVonThore}
 
-\begin{wraptable}[28]{R}{8cm}
+\begin{wraptable}[27]{r}{8cm}
 %\begin{table}[tbp]
 \begin{tabular}{l| c c c }
 &	$t_{calc}$(sec) &	$t_{sat}$(sec)	& NSatCalls \\
@@ -31,7 +31,7 @@ PB3 & 3.872 & 1.204 & 4471 \\
 \label{tab:vonThore1}
 \end{wraptable}
 
-Another benchmark I applied the various backbone algorithms to, was a formula for a real world application from the automobile industry. The purpose of this formula $F_{conf}$ was to describe a product in the context of options or features available to the customer. Some of these options can be combined, others exclude or require each other. Most of the variables in $F_{conf}$ correspond to a boolean parameter that is set to $\top$ if the associated feature is requested by the customer. If the formula would become unsatisfiable under such assumptions equal to the requested configuration, then the combination of these features would be impossible. $F_{conf}$ further contains a small set of additional variables to model more complex relationships between options.
+Another benchmark I applied the various backbone algorithms to, was a formula for a real world application from the automobile industry. The purpose of this formula $F_{conf}$ was to describe a product in the context of options or features available to the customer. Some of these options can be combined, others exclude or require each other. Most of the variables in $F_{conf}$ correspond to a boolean parameter that is set to $\top$ if the associated feature is requested by the customer. If the formula would become unsatisfiable under such assumptions equal to the requested configuration, then the combination of these features would be impossible. Looking at it from the other side, the set of models of $F_{conf}$ matches exactly the set of possible product configurations that are available to the customer. $F_{conf}$ further contains a small set of additional variables to model more complex relationships between options.
 
 The particular use case that I examined was to find the implications in the formula, i.e. if a customer requests feature $a$, would he also have to pick feature $b$. A primitive way to calculate this would be to iterate over all possible pairs of features 
 %\footnote{Minus permutations and pairs with the same feature twice}
@@ -58,6 +58,9 @@ Finally, the overall computation time of $KBB$ is actually worse than that of $B
 \end{itemize}
 
 \subsection{Specialized algorithm}
+
+With the findings from the last section and some experimentation, I devised a specialized algorithm $PB4$ for this use case which is listed in algorithm \ref{alg:thoreSpecial}. For comparison with the other implementations, the performance results can be seen in table \ref{tab:thoreSpecialResults}.
+
 \begin{wraptable}[7]{r}{8cm}
 %\begin{table}[tbp]
 \begin{tabular}{l| c c c }
@@ -68,8 +71,6 @@ PB4 & 1.482 & 0.863 & 4064 \\
 \caption{Results of specialized backbone algorithm on product formula benchmark.}
 \label{tab:thoreSpecialResults}
 \end{wraptable}
-
-With the findings from the last section and some experimentation, I devised a specialized algorithm $PB4$ for this use case which is listed in algorithm \ref{alg:thoreSpecial}. For comparison with the other implementations, the performance results can be seen in table \ref{tab:thoreSpecialResults}.
 
 First of all, since it is very effective here to check the literals that the solver learns as backbones through conflict resolution, the scheme of approaching upper and lower bounds as described in section \ref{sec:upperLower} is applied here. The lower bound $bb_l$ of the backbone consists of all learned literals, whereas it's upper bound $bb_u$ consists of the intersection of found models or reductions of them. Having both upper and lower bound not only allows to potentially stop the loop before the last sat call. It also accelerates the reduction of the first model to it's required literals, because if I know that a literal is in the lower bound of the backbone, I don't need to explicitely test, whether it should be in it's upper bound. This behaviour is listed in algorithm \ref{alg:specReq}.
 
@@ -148,4 +149,11 @@ However this set was empty as well and for a good reason in this particular case
 
 What remained was to see, if the loop over the assumptions could be sped up. In fact whereas the backbone computations took a sum of 1.5 seconds, this loop overall took 3.9 seconds. The difference consisted of primarily the copying of the formula(2.2 seconds) and writing down benchmark information (around 150 milliseconds). 
 
-The formula had to be copied for each backbone computation because it was not reusable afterwards, most likely because of remaining blocking clauses. If this bug can be fixed, the 2.2 seconds of lost time should most likely disappear. Alternatively, if this is not possible, you could make use of the other CPU cores of your system, by concurrently making copies of $F_{conf}$, while simultaneously backbones are calculated. In fact, as long as no information shows up that would be reusable over the different backbone computations, all 407 backbone computations could just run in asynchronously in parallel.
+The formula had to be copied for each backbone computation because it was not reusable afterwards, most likely because of remaining blocking clauses. If this bug can be fixed, the 2.2 seconds of lost time should most likely disappear. Alternatively, if this is not possible, you could make use of the other CPU cores of your system, by concurrently making copies of $F_{conf}$, while simultaneously backbones are calculated. In fact, as long as no information shows up that would be reusable over the different backbone computations, all 407 backbone computations could just run asynchronously in parallel.
+
+
+TODO in results pof machen
+TODO da auch PB0 vs PB1 reinmachen
+vorteile von PB0:
+	- keine assumptions oder gelernte klauseln, alles gelernte ist immer gültig,
+	- wird nicht unsat und muss im letzten schritt auch nicht viel suchen, reicht wenn präferenzen alle durch unit ausgehebelt sind. dafür t-last vergleichen (tabelle 5.1 zeigt das zB), kann möglicherweise besser funktionieren als PB1

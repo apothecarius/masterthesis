@@ -3,7 +3,7 @@ The following chapter elaborates on methods to enhance the algorithms that were 
 
 \section{Model Reduction}
 
-The algorithms described in section 2 all boil down to testing for each variable whether there exist two models where one assigns the variable to $\top$ and the other to $\bot$. This section describes two strategies to reduce the model that is returned by the SAT solver to a subset that tells us more for the purpose of calculating a backbone. Both methods are essentially about using implicants instead of models.
+The algorithms described in section \ref{sec:algos} all boil down to testing for each variable whether there exist two models where one assigns the variable to $\top$ and the other to $\bot$. This section describes two strategies to reduce the model that is returned by the SAT solver to a subset that tells us more for the purpose of calculating a backbone. Both methods are essentially about using implicants instead of models.
 
 Having a single implicant $I$ that leaves some variables optional immediately tells us, that every possible combination of assignments of the optional literals can make a model, if we just add the assigned literals in $I$. You could say that an implicant implies a large set of models.
 

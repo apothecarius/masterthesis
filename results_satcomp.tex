@@ -195,14 +195,8 @@ The results shown in the following chapter (\ref{sec:sectionVonThore}) paint a s
 In summary, searching for backbone literals through unit implication can be a more efficient strategy than testing each individual literal through a SAT call, however only if the search for unit literals is implemented in a very efficient way. Also note that the problem of having too many SAT calls can just as well be resolved by using a enumeration algorithm like $IBB$ instead of an iterative approach.
 
 \subsection{Effect of subset preferences}
-TODO: alles falsch: es ist speziell der letzte sat call von $pb1c(5\%)$ der schlecht läuft. Bitte ignorieren
-- basis problem ist schlechter letzter sat call, zeigt sich auch überall sonst
-- effekt folgt aber einer kurve (PB1 < PB1c50\% < PB15\%)
-- obendrauf schlechte leistung von pb1c5\% -> last sat call in kombination mit beschränkten prefs ist ganz doll schlimm
-- pb1d macht es nicht besser
-- implikation: für vermutlich letzten sat call macht es sinn auf präferenzen komplett zu verzichten
 
-\begin{wraptable}{R}{5cm} %[tbp]
+\begin{wraptable}{r}{5cm} %[tbp]
 \begin{tabular}{l| c }
  & $t_{last}/t_{avg}$  \\
 \hline
@@ -224,11 +218,11 @@ PB2(5\%) & 2.989 \\
 PB2(0.5\%) & 3.113 \\
 PB3 & 1.703 \\
 \end{tabular}
-\caption{Fraction of the average duration of a SAT call and the duration of the last SAT call. Calculation is based on the values in table \ref{tab:satCompAvg}}
+\caption{Ratio between the average duration of a SAT call and the duration of the last SAT call. Calculation is based on the values in table \ref{tab:satCompAvg}}
 \label{tab:lastTimeToAvgTime}
 \end{wraptable}
 
-The algorithms where the set of preferences was restricted in size ($PB1c$ and $PB1d$) compared relatively bad to the base algorithm $PB1$ and this is most pronounced in the case of $PB1c(5\%)$ where the restriction is the strongest. This means that, at least for this benchmark, restricting the number of preferences completely backfired.
+The algorithms where the set of preferences was restricted in size ($PB1c$ and $PB1d$) compared relatively bad to the base algorithm $PB1$ and this is most pronounced in the case of $PB1c(5\%)$ where the restriction is the strongest. This means that, at least for this benchmark, restricting the number of preferences completely backfired. The decrease in performance can be traced beginning with $PB1$ which is equivalent to $PB1(100\%)$ towards the $50\%$ and $5\%$ configuration.
 
 %This behaviour matches an observation that you can make with the duration of the last SAT call. All of these take longer than the average. The commonality with the subset preferences is that the set of preferences is small here as well, since it 
 
@@ -236,14 +230,25 @@ For a possible explanation I should begin with a reminder about the exact way in
 
 When a decided literal is involved with a conflict, it will be pushed back in it's decision heuristic. That way an opportunity is given to variables that might not be so difficult to be assigned a good value and the problematic variables might be assigned a necessary value through unit implication. 
 %This could even cancel out an unsatisfiable preference that would conflict with a necessary assignment (i.e. a backbone literal). 
-However this can only happen if enough other variables are available in the same heuristic and with it's strong size restriction, $PB1c(5\%)$ doesn't have them.
+However this can only happen if enough other variables are available in the same heuristic to take it's place and with it's strong size restriction, $PB1c(5\%)$ doesn't have them.
 
+Additionally, the more that you restrict the size of the preferences, the more likely it becomes that all preferred literals are negated backbone literals. In this case, all decisions made based on $h_{pref}$ prevent you from finding a model and must eventually be reverted.
 
+Even worse, since the preferred assignments have to be done before all the others, they occur at the beginning of the CDCL table. This means that in case of a conflict with other assignments, the preferred decisions will not be reverted if there is any other decision available to be reverted, since the strategy of CDCL is usually to revert only the youngest decision involved with the conflict. But if this preference actually goes against a backbone literal of the formula, it must eventually be reverted to reach a valid model. This can only happen by a unit propagation, since otherwise a decision would just take the preference into account again. And since no decision can happen before the preferred decisions, to counter a preference a unit propagation requires the maximum amount of information so that it can happen without a prior decision. You would need to do an amount of learning that is actually equivalent to directly identifying a backbone literal. 
 %eigentlihc: dass anstatt schlecht funktionierenden präferenzen bessere benutzt werden
-A similar effect is hinted by the performance results listed in the third column $t_{last}$ of table \ref{tab:satCompAvg}. Many of these timings are larger than the average computation would take. The last SAT call is also the one, where the set of preferences would be the set of negations of all backbone literals. This means that actually none of these preferences can be implemented.\footnote{
-	Which is also the termination condition of $PB0$.}. <- könnte was zu tun haben damit, dass letzter sat call nicht schlecht ist.
 
-The common problem of these two things is that all available decisions in $h_{pref}$ cannot be implemented. All the decisions based on preferences at that point must eventually be reverted and clauses must be learned to prevent these decisions from happening again.
+%However, this extreme amount of work could potentially be made use of, by combining strategies from $PB0$ and $PB1c$. The strategy of $PB0$ incorporates to check every time, whether any of it's preferences could be implemented. If not it is interpreted as that each preference goes against a backbone literal. The same can be applied to $PB1c$ to iteratively identify multiple backbone literals in case they all could not be implemented wahrschienlich nicht, kp wie das mit den blocking clauses interagiert.
+
+
+%The big difference between typical $PB1$ variants and $PB1c$ is that this problem of having no satisfiable preferences not only applies to the very last SAT call, but also to many other ones. This can easily happen if the chosen subset consists only of literals that go against the backbone, multiplying the number of problematic SAT calls. 
+
+
+\subsection{Duration of last SAT call}
+A similar effect to the previous is hinted by the performance results listed in the third column $t_{last}$ of table \ref{tab:satCompAvg}. Many of these timings are larger than the average computation would take. The observation coincides exactly with whether the last SAT call would be unsatisfiable. The $PB0$ solver does not apply blocking clauses and still performs well in the last iteration, whereas the $IBB$ solver that does not employ preferences performs badly.\footnote{The $BB$ and $KBB$ solvers are excluded from this table, because as they are iterative algorithms. Algorithmically the first and last SAT calls do not differ that much.} This indicates that the problem lies in the fact, that in this last sat call, the formula is unsatisfiable.
+
+That $PB0$ performs so well in the last SAT call is actually quite interesting. This could be explained by the fact that since the formula is never really changed in the case of $PB0$, the clauses that it learns never become outdated. In contrast, in the typical model enumeration schemes, they may not become invalid but at least less useful over time, because they might only affect the generation of implicants that are later excluded from the formula through a stronger blocking clause.
+
+
 
 \begin{wraptable}[14]{r}{7cm} %[tbp]
 \begin{tabular}{l| c c }
@@ -260,20 +265,13 @@ PB3 & 21.255 & 13.154 \\
 \label{tab:satCompForgettingBenefits}
 \end{wraptable}
 
-Even worse, since the preferred assignments have to be done before all the others, they occur at the beginning of the CDCL table. This means that in case of a conflict with other assignments, the preferred decisions will not be reverted if there is any other decision available to be reverted, since the strategy of CDCL is usually to revert only the youngest decision involved with the conflict. But if this preference actually goes against a backbone literal of the formula, it must eventually be reverted to reach a valid model. This can only happen by a unit propagation, since otherwise a decision would just take the preference into account again. And since no decision can happen before the preferred decisions, to counter a preference a unit propagation requires the maximum amount of information so that it can happen without a prior decision. You would need to do an amount of learning that is actually equivalent to directly identifying a backbone literal. 
-
-
-The big difference between typical $PB1$ variants and $PB1c$ is that this problem of having no satisfiable preferences not only applies to the very last SAT call, but also to many other ones. This can easily happen if the chosen subset consists only of literals that go against the backbone, multiplying the number of problematic SAT calls. 
-
-
-
-
 
 \subsection{Benefits of forgetting preferences}
 %Table \ref{tab:satCompAvg} shows a relatively good result for $PB1(amnes)$. It is still worse than the solvers without any preferences, but in table \ref{tab:vonThore1} where pre
 Table \ref{tab:satCompForgettingBenefits}
 %\footnote{These performance ratings differ slightly from table \ref{tab:satCompAvg}. This is because it is a different execution.}
-lists a comparison of multiple backbone algorithms once with ordinary, permanent preferences and in a forgetting scheme as described in section \ref{sec:amnesPrefs}. Preferences in general resulted in worse performance for this benchmark. However, $PB1(amnes)$, where the preferences are configured to immediately drop those that were involved in a conflict, reduced the penalty to an acceptable level in all examples. 
+lists a comparison of multiple backbone algorithms once with ordinary, permanent preferences and in a forgetting scheme as described in section \ref{sec:amnesPrefs}. Preferences in general resulted in worse performance for this benchmark. However, $PB1(amnes)$, where the preferences are configured to immediately drop those that were involved in a conflict, reduced the penalty to an acceptable level in all examples. \footnote{
+In earlier executions of my benchmark setup, I also tested $PB1c$ with $0.5\%$ as preference size restriction, however only in combination with forgetting preferences. Without forgetting them, this configuration turned out to be completely unreasonable to test within an acceptable time frame and was dropped.}
 
 
 Table \ref{tab:vonThore1} in the upcoming section shows results for a formula that is more beneficient to preferences. Here we see, that in such a case, forgetting preferences still work as intended. If these results turn out to be reproducible for other formulas as well, forgetting preferences could be a viable strategy to compute the backbone of any formula without prior knowledge about it, since the penalty for difficult formulas would be relatively low but the speedup for easy ones very high.

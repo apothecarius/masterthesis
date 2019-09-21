@@ -1,9 +1,10 @@
+\section{Tested modifications}
 As is mentioned in \cite{PJ18}, the concept of preferences has not experienced much research as of yet. That is why I experimented a lot with various modifications on the concept for the purpose of this thesis.
 
 All of the following modifications were implemented ontop of algorithm \ref{alg:blockPref} ($PB1$). Algorithm \ref{alg:pb0} (PB0) depends on that all available preferences are taken into account strictly, so there is not much space to experiment there without making the algorithm unreliable. 
 
 
-\section{Forgetting preferences}
+\subsection{Forgetting preferences}
 \label{sec:amnesPrefs}
 During the course of solving a CNF formula with the CDCL algorithm, many assignment conflicts occur which must be resolved through backtracking. This means that some assignments need to be taken back. Looking at this from the other direction, it can very well happen, that the same variable can occur in decisions multiple times over such a calculation. If a variable assignment is even slightly involved in a conflict, then, lacking any further knowledge, it is a good strategy to simply try it's negation in the future. It is not guaranteed, but simply more likely that the other assignment resolves the conflict that occurred with the previous assignment. 
 
@@ -17,7 +18,7 @@ The most important effect of this strategy is, that the solver quickly falls bac
 
 It is quite likely that a formula contains models that are relevant for the backbone, because they contain the only occurence of some literal. However, if they contradict the current set of preferred literals in many other places, giving these preferences to the SAT solver can actually make it difficult to find said model.
 
-\section{Subsets}
+\subsection{Subsets}
 \label{sec:subsets}
 During benchmarking it showed itself, that all solvers that did not employ any preferences at all were the fastest ones when it came to difficult formulas. So it might be interesting to test some algorithm that can be configured with a floating point number, where a ground value of $0.0$ would be equivalent to having no preferences at all and then allowing to enable preferences in very small increments.
 
@@ -29,10 +30,10 @@ Aside from the straightforward implementation, I also created a variant, where e
 %Some preferences are difficult to take into account, but it is still possible that they will eventually disappear through model reduction, without spending too much time on finding a model with them. TODO irgendwo unterbringen
 
 
-%\section{Inverted Preferences}
+%\subsection{Inverted Preferences}
 %dropped the topic of inverted preferences
 
-\section{Nudging}
+\subsection{Nudging}
 \label{sec:nudging}
 The previous approach to scalable preferences still works against the decision heuristic because before the SAT solver even starts, the preferred variables are chosen. What subset of the preferred variables would be easiest for the solver to take into account cannot be said upfront. Therefore it should be much more efficient to "nudge" the existing decision heuristic in the direction of the preferences while it's running.
 
@@ -46,7 +47,7 @@ However, this factor $f$ can only influence the order of variables for decisions
 
 The purpose of this scheme was to see, whether benefits of preferences would rise up faster than the drawbacks with very low values of $f$.
 
-\section{Approaching lower and upper bounds}
+\subsection{Approaching lower and upper bounds}
 \label{sec:upperLower}
 I also tried an idea that was shortly mentioned in \cite[Chapter 3.4]{mjl10}: \blockquote{Another approach consists of executing enumeration and iteration based algorithms in parallel, since enumeration refines upper bounds on the size of the backbone, and iteration refines lower bounds. Such algorithm could terminate as soon as both bounds become equal.}
 

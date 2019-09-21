@@ -92,91 +92,42 @@ Proof: Assuming $\neg b$ was not in the backbone, then there would have to exist
 \begin{wraptable}[31]{l}{8cm}
 %\begin{wraptable}[31]{l}{8cm} % first optional parameter defines height of wraptable to avoid too much vertical space to be eaten away.
 \begin{tabular}{l| c c c }
-File& $n_{unit}$ & $n_{coocc}$ & $n_{var}$\\
+File& $n_{unit}$ & $n_{coocc}$ & $n_{BB}$\\
 \hline
-brock400-2.cnf & 0 & 0 & 400 \\
 dimacs-hanoi5.cnf & 1465 & 47 & 1931 \\
 grieu-vmpc-s05-25.cnf & 565 & 0 & 625 \\
-grieu-vmpc-s05-27.cnf & 142 & 0 & 729 \\
-johnson8-2-4.cnf & 0 & 0 & 28 \\
-fla-barthel-200-2.cnf & 33 & 0 & 200 \\
-fla-barthel-200-3.cnf & 43 & 0 & 200 \\
-fla-barthel-220-1.cnf & 149 & 0 & 220 \\
-fla-barthel-220-2.cnf & 0 & 0 & 220 \\
-fla-barthel-220-4.cnf & 0 & 0 & 220 \\
-fla-barthel-240-2.cnf & 61 & 0 & 240 \\
-\iffalse
-fla-komb-200-3.cnf & 166 & 0 & 200 \\
-fla-komb-200-5.cnf & 166 & 0 & 200 \\
-fla-komb-220-1.cnf & 190 & 0 & 220 \\
-fla-komb-220-3.cnf & 187 & 0 & 220 \\
-fla-komb-220-4.cnf & 188 & 0 & 220 \\
-fla-komb-220-5.cnf & 179 & 3 & 220 \\
-fla-komb-240-2.cnf & 211 & 0 & 240 \\
-fla-komb-240-3.cnf & 202 & 0 & 240 \\
-fla-komb-240-5.cnf & 215 & 0 & 240 \\
-fla-komb-260-1.cnf & 212 & 2 & 260 \\
-fla-komb-260-3.cnf & 224 & 2 & 260 \\
-fla-komb-260-4.cnf & 213 & 0 & 260 \\
-fla-komb-280-1.cnf & 244 & 0 & 280 \\
-fla-komb-280-3.cnf & 240 & 0 & 280 \\
-fla-komb-280-4.cnf & 245 & 0 & 280 \\
-fla-komb-280-5.cnf & 224 & 0 & 280 \\
-fla-komb-300-3.cnf & 238 & 1 & 300 \\
-fla-komb-300-4.cnf & 256 & 2 & 300 \\
-fla-komb-300-5.cnf & 272 & 0 & 300 \\
-fla-komb-320-2.cnf & 280 & 0 & 320 \\
-fla-komb-320-3.cnf & 257 & 0 & 320 \\
-fla-komb-320-5.cnf & 251 & 0 & 320 \\
-fla-komb-340-1.cnf & 299 & 0 & 340 \\
-fla-komb-340-2.cnf & 279 & 0 & 340 \\
-fla-komb-340-3.cnf & 300 & 1 & 340 \\
-fla-komb-340-4.cnf & 277 & 0 & 340 \\
-fla-komb-340-5.cnf & 290 & 0 & 340 \\
-fla-komb-360-1.cnf & 305 & 2 & 360 \\
-fla-komb-360-4.cnf & 291 & 0 & 360 \\
-fla-komb-360-5.cnf & 319 & 0 & 360 \\
-fla-komb-380-2.cnf & 330 & 1 & 380 \\
-fla-komb-380-3.cnf & 320 & 2 & 380 \\
-fla-komb-380-4.cnf & 322 & 1 & 380 \\
-fla-komb-380-5.cnf & 314 & 0 & 380 \\
-fla-qhid-200-1.cnf & 185 & 0 & 200 \\
-fla-qhid-200-2.cnf & 182 & 0 & 200 \\
-fla-qhid-200-4.cnf & 181 & 0 & 200 \\
-fla-qhid-200-5.cnf & 183 & 0 & 200 \\
-fla-qhid-220-2.cnf & 190 & 0 & 220 \\
-fla-qhid-220-3.cnf & 197 & 0 & 220 \\
-fla-qhid-220-4.cnf & 197 & 0 & 220 \\
-fla-qhid-220-5.cnf & 190 & 0 & 220 \\
-fla-qhid-240-3.cnf & 10 & 0 & 240 \\
-fla-qhid-240-5.cnf & 0 & 0 & 240 \\
-fla-qhid-260-1.cnf & 6 & 0 & 260 \\
-fla-qhid-260-2.cnf & 232 & 0 & 260 \\
-fla-qhid-280-1.cnf & 1 & 0 & 280 \\
-fla-qhid-280-3.cnf & 251 & 2 & 280 \\
-\fi
-fla-qhid-300-1.cnf & 260 & 0 & 300 \\
-fla-qhid-300-4.cnf & 270 & 0 & 300 \\
-fla-qhid-320-1.cnf & 296 & 0 & 320 \\
-fla-qhid-320-2.cnf & 0 & 0 & 320 \\
-fla-qhid-320-5.cnf & 283 & 2 & 320 \\
-fla-qhid-340-2.cnf & 310 & 0 & 340 \\
-fla-qhid-340-3.cnf & 309 & 3 & 340 \\
-fla-qhid-340-4.cnf & 301 & 4 & 340 \\
-fla-qhid-360-1.cnf & 326 & 0 & 360 \\
-fla-qhid-360-5.cnf & 321 & 0 & 360 \\
-fla-qhid-380-1.cnf & 344 & 2 & 380 \\
-fla-qhid-400-3.cnf & 366 & 0 & 400 \\
-fla-qhid-400-4.cnf & 359 & 0 & 400 \\
-smallSatBomb.cnf & 0 & 0 & 264 \\
+grieu-vmpc-s05-27.cnf & 142 & 0 & 677 \\
+fla-barthel-200-2.cnf & 33 & 0 & 78 \\
+fla-barthel-200-3.cnf & 43 & 0 & 97 \\
+fla-barthel-220-1.cnf & 149 & 0 & 184 \\
+fla-barthel-220-2.cnf & 0 & 0 & 4 \\
+fla-barthel-220-4.cnf & 0 & 0 & 6 \\
+fla-barthel-240-2.cnf & 61 & 0 & 128 \\
+%%%%%%%%%%%
+fla-qhid-280-1.cnf & 1 & 0 & 15 \\
+fla-qhid-280-3.cnf & 251 & 2 & 274 \\
+fla-qhid-300-1.cnf & 260 & 0 & 291 \\
+fla-qhid-300-4.cnf & 270 & 0 & 293 \\
+fla-qhid-320-1.cnf & 296 & 0 & 318 \\
+fla-qhid-320-2.cnf & 0 & 0 & 2 \\
+fla-qhid-320-5.cnf & 283 & 2 & 312 \\
+fla-qhid-340-2.cnf & 310 & 0 & 332 \\
+fla-qhid-340-3.cnf & 309 & 3 & 333 \\
+fla-qhid-340-4.cnf & 301 & 4 & 335 \\
+fla-qhid-360-1.cnf & 326 & 0 & 335 \\
+fla-qhid-360-5.cnf & 321 & 0 & 349 \\
+fla-qhid-380-1.cnf & 344 & 2 & 372 \\
+fla-qhid-400-3.cnf & 366 & 0 & 393 \\
+fla-qhid-400-4.cnf & 359 & 0 & 392 \\
+smallSatBomb.cnf & 0 & 0 & 9 \\
 \end{tabular}
-\caption{Comparison of number of backbone literals identified through cooccurrence in comparison to the number identified through unit implication and the overall number of variables.TODO num backbone lits wäre besser}
+\caption{Comparison of number of backbone literals identified through cooccurrence in comparison to the number identified through unit implication and the overall number of backbone literals in the formula.}
 \label{tab:coocBB}
 \end{wraptable}
 
 In other words, if we determine a new backbone literal, and all clauses that contain it also contain another literal, then we can add the negation of the latter to our backbone set. 
 
-However this strategy does not seem to be very effective, at least for the benchmark that I tested it on. Table \ref{tab:coocBB} shows the number of literals that were identified through this method in comparison to those that were identifed through unit implication and the number of variables in the formula. It is probably very rare that a variables always occurs together with another
+However this strategy does not seem to be very effective, at least for the benchmark that I tested it on. Table \ref{tab:coocBB} shows the number of literals that were identified through this method in comparison to those that were identifed through unit implication and the number of variables in the formula. It is probably very rare that a variable should always occur together with another one.
 
 %TODO Thore fragen, ob kapitel so wertvoll und ob die nicht theoretisch subsumiert werden müssten
 

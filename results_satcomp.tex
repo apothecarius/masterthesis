@@ -3,29 +3,8 @@
 \begin{tabular}{l| c c c c}
  & $t_{full}$ & $t_{sat}$ & $t_{last}$& $n_{sat}$ \\
  \hline
-\iffalse % in case I dont wont last sat time after all
-BB & 8.63 & 8.628 & 254 \\
-IBB & 4.946 & 4.944 & 9 \\
-KBB & 8.713 & 8.687 & 36 \\
-PB0 & 31.78 & 31.779 & 4 \\
-PB1 & 17.49 & 17.488 & 5 \\
-PB1(amnes) & 10.867 & 10.865 & 6 \\
-PB1(model) & 25.794 & 25.793 & 5 \\
-PB1x & 5.064 & 5.062 & 9 \\
-PB1a & 11.241 & 11.239 & 8 \\
-PB1b & 9.785 & 9.783 & 6 \\
-PB1c(50\%) & 25.312 & 25.311 & 5 \\
-PB1c(5\%) & 1064.097 & 1064.095 & 6 \\
-PB1d(50\%) & 26.746 & 26.745 & 5 \\
-PB1e & 17.187 & 16.591 & 6 \\
-PB1f & 15.971 & 15.97 & 6 \\
-PB2(50\%) & 10.135 & 10.133 & 10 \\
-PB2(5\%) & 5.232 & 5.229 & 9 \\
-PB2(0.5\%) & 5.251 & 5.249 & 9 \\
-PB3 & 20.927 & 20.922 & 4 \\
-\fi
 BB & 8.63 & 8.628 & - & 254\\
-IBB & 4.946 & 4.944 & - & 9\\
+IBB & 4.946 & 4.944 & 1.911 & 9\\
 KBB & 8.713 & 8.687 & - & 36\\
 PB0 & 31.78 & 31.779 & 1.17 & 4\\
 PB1 & 17.49 & 17.488 & 6.998 & 5\\
@@ -44,15 +23,15 @@ PB2(5\%) & 5.232 & 5.229 & 1.737 & 9\\
 PB2(0.5\%) & 5.251 & 5.249 & 1.816 & 9\\
 PB3 & 20.927 & 20.922 & 8.912 & 4\\
 \end{tabular}
-\caption{Averages of 65 testfiles taken from sat competitions. The columns indicate: The full time that the calculation took in seconds; The time that was spent in the sat solver; The time that the last sat computation took; The number of sat calls (all values are averages). }
+\caption{Averages of 64 testfiles taken from sat competitions. The columns indicate: The full time that the calculation took in seconds; The time that was spent in the sat solver; The time that the last sat computation took; The number of sat calls (all values are averages). TODO IBB auf letzten SAT call testen und falls vglbar mit pb1x, dessen durchschnitt rüberkopieren}
 \label{tab:satCompAvg} %for referencing
 \end{wraptable}
 
-For the first benchmark, I collected a set of 65 files from the 2017 SAT competition\footnote{
+For the first benchmark, I collected a set of 64 files from the 2017 SAT competition\footnote{
 To be more precise the $essential$ folder from the $incremental$ package, available at \url{https://baldur.iti.kit.edu/sat-competition-2017/benchmarks/incremental.zip}
 }. The SAT competitions generally use problems that are difficult to solve compared to other problems of the same file size. This is in order to encourage development of solving strategies that reliably have good performance and not only for most of them. To save time during benchmarking, files that took longer than around one minute for a single model computation were excluded, resulting in files that are generally around 30 kilobytes large. Additionally, problems where the duration for backbone computation averaged below one second were excluded, because here the small differences in the measurements could just as well be explained with external factors like the CPU throttling for a short time. To get meaningful testresults for such files, multiple testpasses should be conducted.
 
-The averaged time to compute the backbones of these 65 testfiles can be seen in \ref{tab:satCompAvg}. The second column shows the time that was only spent in the SAT solver. This gives a hint on whether a particular algorithm configures it's SAT solver well and whether it looses computation time in things besides the SAT calls, for example through model reduction.
+The averaged time to compute the backbones of these 64 testfiles can be seen in \ref{tab:satCompAvg}. The second column shows the time that was only spent in the SAT solver. This gives a hint on whether a particular algorithm configures it's SAT solver well and whether it looses computation time in things besides the SAT calls, for example through model reduction.
 
 \begin{wraptable}[30]{r}{8cm}
 \begin{tabular}{l| c c }
@@ -213,9 +192,41 @@ This indicates that the effect from scanning for unit implied backbone literals 
 
 The results shown in the following chapter (\ref{sec:sectionVonThore}) paint a slightly different picture. Here the pure SAT time of $KBB$ is actually smaller than that of $BB$, however even $BB$ looses around a third of it's calculation time outside of pure SAT calls. This could be explained by the much higher number of SAT calls for this benchmark and the overhead that comes with preparations and cleanups for a SAT call, which appearantly became relevant at that point. Given good conditions (like in that benchmark) $KBB$ can identify many backbone literals in a single search, which also requires less data structures around it compared to a complete SAT computation.
 
+In summary, searching for backbone literals through unit implication can be a more efficient strategy than testing each individual literal through a SAT call, however only if the search for unit literals is implemented in a very efficient way. Also note that the problem of having too many SAT calls can just as well be resolved by using a enumeration algorithm like $IBB$ instead of an iterative approach.
 
 \subsection{Effect of subset preferences}
 TODO: alles falsch: es ist speziell der letzte sat call von $pb1c(5\%)$ der schlecht läuft. Bitte ignorieren
+- basis problem ist schlechter letzter sat call, zeigt sich auch überall sonst
+- effekt folgt aber einer kurve (PB1 < PB1c50\% < PB15\%)
+- obendrauf schlechte leistung von pb1c5\% -> last sat call in kombination mit beschränkten prefs ist ganz doll schlimm
+- pb1d macht es nicht besser
+- implikation: für vermutlich letzten sat call macht es sinn auf präferenzen komplett zu verzichten
+
+\begin{wraptable}{R}{5cm} %[tbp]
+\begin{tabular}{l| c }
+ & $t_{last}/t_{avg}$  \\
+\hline
+IBB & 3.479 \\
+PB0 & 0.147 \\
+PB1 & 2.000 \\
+PB1(amnes) & 2.640 \\
+PB1(model) & 1.682 \\
+PB1x & 2.777 \\
+PB1a & 3.808 \\
+PB1b & 1.178 \\
+PB1c(50\%) & 2.550 \\
+PB1c(5\%) & 4.495 \\
+PB1d(50\%) & 2.109 \\
+PB1e & 2.457 \\
+PB1f & 1.627 \\
+PB2(50\%) & 6.343 \\
+PB2(5\%) & 2.989 \\
+PB2(0.5\%) & 3.113 \\
+PB3 & 1.703 \\
+\end{tabular}
+\caption{Fraction of the average duration of a SAT call and the duration of the last SAT call. Calculation is based on the values in table \ref{tab:satCompAvg}}
+\label{tab:lastTimeToAvgTime}
+\end{wraptable}
 
 The algorithms where the set of preferences was restricted in size ($PB1c$ and $PB1d$) compared relatively bad to the base algorithm $PB1$ and this is most pronounced in the case of $PB1c(5\%)$ where the restriction is the strongest. This means that, at least for this benchmark, restricting the number of preferences completely backfired.
 
@@ -262,7 +273,7 @@ The big difference between typical $PB1$ variants and $PB1c$ is that this proble
 %Table \ref{tab:satCompAvg} shows a relatively good result for $PB1(amnes)$. It is still worse than the solvers without any preferences, but in table \ref{tab:vonThore1} where pre
 Table \ref{tab:satCompForgettingBenefits}
 %\footnote{These performance ratings differ slightly from table \ref{tab:satCompAvg}. This is because it is a different execution.}
-lists a comparison of multiple backbone algorithms once with ordinary, permanent preferences and in a forgetting scheme as described in section \ref{sec:amnesPrefs}. Preferences in general resulted in worse performance for this benchmark. However, if configured to immediately drop those preferences that were involved in a conflict, the penalty was always reduced to an acceptable level.
+lists a comparison of multiple backbone algorithms once with ordinary, permanent preferences and in a forgetting scheme as described in section \ref{sec:amnesPrefs}. Preferences in general resulted in worse performance for this benchmark. However, $PB1(amnes)$, where the preferences are configured to immediately drop those that were involved in a conflict, reduced the penalty to an acceptable level in all examples. 
 
 
 Table \ref{tab:vonThore1} in the upcoming section shows results for a formula that is more beneficient to preferences. Here we see, that in such a case, forgetting preferences still work as intended. If these results turn out to be reproducible for other formulas as well, forgetting preferences could be a viable strategy to compute the backbone of any formula without prior knowledge about it, since the penalty for difficult formulas would be relatively low but the speedup for easy ones very high.

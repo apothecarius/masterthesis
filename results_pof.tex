@@ -33,3 +33,45 @@ PB4 & 2478.283 & 2361.488 & 297,192 \\
 \label{tab:vonThore2pof} %for referencing
 \end{wraptable}
 
+möglicherweise sinnvoll: für POF sinnvoll: PB0, ohne reduktion, 
+
+gelernte literale scheinen nicht relevant zu sein, insbesondere wenn man PB4 ansieht. sowohl rotation, als auch prim implikanten reduktion scheinen nutzlos zu sein.
+
+\begin{wraptable}{R}{4cm}
+\begin{tabular}{l| c }
+& $t_{calc}$\\
+\hline
+BB & 1.122 \\
+PB0 & 0.703 \\
+PB0(model) & 0.494 \\
+PB1(model) & 0.626 \\
+PB1 & 0.835 \\
+PB4 & 3.235 \\
+\end{tabular}
+\caption{Preptime}
+\end{wraptable}
+Preptime[msec]
+
+
+\begin{table}
+\begin{tabular}{l | c c c c}
+ & $t_{full}$ & $t_{sat}$ & $t_{last}$& $n_{sat}$\\
+\hline
+With prep\\
+BB & 894.491 & 615.687 & - & 2064493\\
+PB0 & 393.149 & 243.261 & 2.004 & 129908\\
+PB0(model) & 275.352 & 241.019 & 2 & 129854\\
+PB1(model) & 341.306 & 290.019 & 0.244 & 148868\\
+PB1 & 459.353 & 279.284 & 0.217 & 144057\\
+PB4 & 2093.709 & 1941.915 & 3.343 & 284062\\
+\hline
+Without prep\\
+BB & 905.379 & 626.052 & - & 2063982\\
+PB0 & 413.299 & 261.777 & 1.985 & 129943\\
+PB0(model) & 293.795 & 259.836 & 1.957 & 130099\\
+PB1(model) & 366.219 & 314.409 & 0.2 & 151119\\
+PB1 & 489.417 & 305.337 & 0.191 & 146349\\
+PB4 & 2274.757 & 2158.624 & 9.609 & 297192\\
+\end{tabular}
+\end{table}
+

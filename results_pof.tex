@@ -1,6 +1,19 @@
 \section{Second Industrial benchmark}
 
-TODO text dazu, beschreibung, vergleich mit erstem industrie benchmark
+\begin{wraptable}{r}{7cm}
+\begin{tabular}{l| c c c c}
+& $n_{Literals}$ & $n_{Clauses}$ & $n_{test}$ & Filesize \\
+\hline
+$F_{conf_1}$ & 469 & 66957 & 407 & 817 KiB \\
+$F_{conf_2}$ & 5055 & 81267 & 948 & 1401 KiB \\
+\end{tabular}
+\caption{Size comparison of the two industrial benchmarks. Contains the number of literals, clauses, tested literals and the filesize. }
+\label{tab:indusComp}
+\end{wraptable}
+
+In the following I will analyze another product formula $F_{conf2}$, similar the one in the previous chapter. However this one is much larger than the previous, see table \ref{tab:indusComp}. I tested this formula against the same set of algorithms as the previous formula $F_{conf1}$ including $PB4$, to identify the specific characteristics of it and identify the optimal backbone solver for it, just as in the previous section. Table \ref{tab:vonThore2pof} shows the performance result.
+
+
 
 \begin{wraptable}{R}{8cm}
 \begin{tabular}{l| c c c c}
@@ -31,6 +44,11 @@ PB4 & 2478.283 & 2361.488 & 0.2 &297,192 \\
 \label{tab:vonThore2pof} %for referencing
 \end{wraptable}
 
+The first thing that shows is that $PB4$, the algorithm proposed in the previous section performs quite bad. It is obviously optimized for that particular file and POFs do not make a class of formulas where you find all of the characteristics that were identified in $F_{conf1}$. We will have to find something new if the plan is to solve this particular formula as efficiently as possible. \footnote{Otherwise, $PB1(model)$ seems to be a good candidate, maybe}
+
+However, if we would actually want 
+If not, $PB1(model)$ would be a good choice
+
 analyse
 \begin{itemize}
 \item PB4 bringt nix
@@ -59,10 +77,9 @@ PB1(model) & 0.626 & 2965 \\
 \caption{Preptime and number of learned clauses}
 \end{wraptable}
 
-num backbones of base formula is 1449
 
 
-\begin{table}
+\begin{wraptable}{R}{8cm}
 \begin{tabular}{l | c c c c}
  & $t_{full}$ & $t_{sat}$ & $t_{last}$& $n_{sat}$\\
 \hline
@@ -83,6 +100,6 @@ PB1(model) & 366.219 & 314.409 & 0.2 & 151119\\
 %PB4 & 2274.757 & 2158.624 & 9.609 & 297192\\
 \hline
 \end{tabular}
-\end{table}
+\end{wraptable}
 
 durch die bank $10\%$ bessere performance mit prerun

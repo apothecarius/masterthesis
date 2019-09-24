@@ -41,7 +41,7 @@ A more efficient approach is to only go over the 407 options once and for each v
 
 
 \subsection{Performance measurement and Discussion}
-Table \ref{tab:vonThore1} lists experimental results with the same set of algorithms that were run on the files from the SAT competition. In the following, I will list some observations about these results.
+Table \ref{tab:vonThore1}\footnote{The duration of the last SAT call is missing in this table, because it was too small to be meaningfully interpretable.} lists experimental results with the same set of algorithms that were run on the files from the SAT competition. In the following, I will list some observations about these results.
 
 \begin{itemize}
 \item We immediately see that preferences give a great benefit to performance other than in the previous benchmark with the files from the SAT competition. Here, all cases where I tried to soften the effects of preferences ($PB1(amnes)$,$PB1c$, $PB2$) had worse results than the base algorithm $PB1$.
@@ -72,7 +72,7 @@ PB4 & 1.482 & 0.863 & 4064 \\
 \label{tab:thoreSpecialResults}
 \end{wraptable}
 
-First of all, since it is very effective here to check the literals that the solver learns as backbones through conflict resolution, the scheme of approaching upper and lower bounds as described in section \ref{sec:upperLower} is applied here. The lower bound $bb_l$ of the backbone consists of all learned literals, whereas it's upper bound $bb_u$ consists of the intersection of found models or reductions of them. Having both upper and lower bound not only allows to potentially stop the loop before the last sat call. It also accelerates the reduction of the first model to it's required literals, because if I know that a literal is in the lower bound of the backbone, I don't need to explicitely test, whether it should be in it's upper bound. This behaviour is listed in algorithm \ref{alg:specReq}.
+First of all, since it is very effective here to check the literals that the solver learns as backbones through conflict resolution, the scheme of approaching upper and lower bounds as described in section \ref{sec:upperLower} is applied here. The lower bound $bb_l$ of the backbone consists of all learned literals, whereas it's upper bound $bb_u$ consists of the intersection of found models or reductions of them. Having both upper and lower bound not only allows to potentially stop the loop before the last sat call. It also accelerates the reduction of the first model to it's required literals, because if I know that a literal is in the lower bound of the backbone, I don't need to explicitely test, whether it would also be in it's upper bound. This behaviour is listed in algorithm \ref{alg:specReq}.
 
 Secondly, it turned out, that only the first model reduction in line \ref{line:specReq} was worth it's computational effort. The reduction of subsequent models did not give performance benefits that would have outweighed the time it took to do. That is why in line \ref{line:specNoReduc} the upper bound is intersected with the complete model instead of a reduction of it.
 

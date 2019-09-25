@@ -1,17 +1,24 @@
 \section{Assumptions}
 
+derzeit deaktiviert, ging in axiomatic literals auf.
+TODO kürzen, sat solver assumptions sind schon erklärt
+
+
 A sub problem of calculating backbones is to calculate a backbone under an assumption. This means, that we actually want to know the Backbone of $F \cup\{l\}$ where $F$ is our base formula and $l$ is some variable of $F$.
 
-The most straightforward way to implement this is to simply call the SAT solver that we use with the same assumptions every time. However depending on the way that assumptions are implemented in your solver, the set of learned clauses may have to be discarded or at least filtered. Reusing learned clauses is very useful when you calculate a backbone through repeating calls to the SAT solver, as table \ref{tab:learnedIbb} shows.
+The most straightforward way to implement this is to simply call the SAT solver that we use with the same assumptions every time. However depending on the way that assumptions are implemented in your solver, this has an effect on the set of learned clauses, which may have to be discarded or at least filtered. Reusing learned clauses is very useful when you calculate a backbone through repeating calls to the SAT solver, as table \ref{tab:learnedIbb} shows.
 
-In a CDCL SAT solver, assumptions can be implemented in two ways. \\
-You could simply add a clause for each literal that you want to assume, with the clause containing only that literal. \\
-Alternatively, you can do a trick with in your CDCL table by starting the SAT computation with decisions that correspond to your assumptions. Then once you have to backtrack these decisions, you know that your formula is unsatisfiable with your assumptions.
+In a CDCL SAT solver, assumptions can be implemented in two ways. 
+\begin{itemize}
+	\setlength\itemsep{0pt}
+	\item You could simply add a clause for each literal that you want to assume, with the clause containing only that literal.
+	\item Alternatively, you can do a trick in your CDCL table by  This method is supported by the API of the $Sat4J$ library.
+\end{itemize}
 
-The latter technique has a very special benefit over the first. If the solver runs into a conflict, it will create a learned clause to prevent the same conflict to occur again. But the content of this learned clause differs depending on the implementation of assumptions.\\
+The latter technique has a very special benefit over the first. When the solver runs into a conflict, it will create a learned clause to prevent the same conflict to occur again. But the content of this learned clause differs depending on the implementation of assumptions.\\
 With the first method your assumption is taken as ground truth, as part of your formula. The resolution step for the variable associated with the assumption will remove it from the learned clause. Without the clause that implemented the assumption, that learned clause would be too strong.\\
 However with the latter method, where this assumption is involved with a conflict a corresponding literal will simply be added to the learned clause. That way the learned clause will later only come into effect under the circumstance that the variable that has now an assumption is then assigned the same value.
 
-If you later want to solve the same formula with different assumptions (or with none at all), then the first strategy might result in invalid learned clauses, which would restrict the set of models of the formula. This is something a learned clause should never do.
+If you later want to solve the same formula with different assumptions (or with none at all), then the first strategy might result in invalid learned clauses, which would restrict the set of models of the formula. This is something a learned clause should never do. However, note that, due to their design, some backbone algorithms have to clear their learned literals anyway, like all enumeration algorithms such as $IBB$ and $PB1$, since they modify the formula that they work with. 
 
-Having a sound implementation of assumptions is especially relevant for the $BB$ algorithm, because this algorithm uses a different assumption in nearly every one of it's SAT calls.
+%Having a sound implementation of assumptions is especially relevant for the $BB$ algorithm, because this algorithm uses a different assumption in nearly every one of it's SAT calls. If this was implemented with a clause, then the learned clauses would have to be flushed in each iteration.

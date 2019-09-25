@@ -1,7 +1,7 @@
 
 The following chapter elaborates on methods to enhance the algorithms that were described in the previous chapter. Depending on the particular combination of algorithm and enhancement, applying the optimization can be be considered a no brainer. However, experimental results show that this is not true without exception and in individual cases we will give thoughts why that is. Other improvements can only be applied to some algorithms due to the data that is available.
 
-\section{Model Reduction}
+\section{Model reduction}
 
 The algorithms described in section \ref{sec:algos} all boil down to testing for each variable whether there exist two models where one assigns the variable to $\top$ and the other to $\bot$. This section describes two strategies to reduce the model that is returned by the SAT solver to a subset that tells us more for the purpose of calculating a backbone. Both methods are essentially about using implicants instead of models.
 
@@ -11,7 +11,7 @@ Without any further information, a single implicant $I$ tells us, that every one
 
 Starting with complete models, implicants can be subsets of other implicants, by removing more and more assignments that are not essential. This way you will eventually reach an implicant where all of it's assignments are required and removing any further literal from it, would leave some clause unsatisfied. This would be called a prime implicant $I_\pi$.
 
-\subsection{Prime Implicant}
+\subsection{Prime implicant}
 \label{ss:primeImplicant}
 \cite{dflbm13} describes an algorithm that allows to calculate the prime implicant from a model in linear time over the number of literal occurrences in the formula. This algorithm works best if you generate the model of a variable with the CDCL algorithm for multiple reasons.
 

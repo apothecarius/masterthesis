@@ -1,5 +1,5 @@
 \section{Enumeration algorithms}
-\subsection{Model Enumeration}
+\subsection{Model enumeration}
 A simple definition of the backbone is that it is the intersection of all models of it's formula. If a literal is not part of the backbone, there must exist a model that contains the negation of that literal. Therefore if we had a way to iterate over every single model of the formula and, starting with the set of both literals for every variable and removing every literal from that set that was missing in one of these models, that set would end up being the backbone of the formula. \cite{mjl10} as well as \cite{mjl15} list an algorithm that does exactly this. 
 
 \begin{algorithm} %ueber alle models iterieren
@@ -23,7 +23,7 @@ $\Return\; \nu_r$\;
 
 Here, found models are prevented from being found again by adding a blocking clause of said model and the algorithm terminates once all models are prohibited and the formula became unsatisfiable through this.
 
-\subsection{Upper Bound Reduction}
+\subsection{Upper bound reduction}
 
 Clearly, calculating every single model of a formula leaves room for optimization. Most models of a common boolean formula differ by small, independent differences that can just as well occur in other models. Therefore the intersection of only a handful of models can suffice to result in the backbone, as long as these models are chosen to be as different as possible. This was achieved in \cite{mjl15} as is described in algorithm \ref{alg:ibb}.
 

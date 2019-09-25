@@ -40,7 +40,7 @@ and check for satisfiability of $F_{conf1}$ under the condition that $a$ is $\to
 A more efficient approach is to only go over the 407 options once and for each variable $a$ of them calculate the backbone of $F_{conf} \cup \{a\}$ or in other words $F_{conf1}$ under the assumption $a$. If a feature $b$ occurs in all models when $a$ is assumed, then $a$ implies $b$ in some way.
 
 
-\subsection{Performance measurement and Discussion}
+\subsection{Performance measurement and discussion}
 Table \ref{tab:vonThore1}\footnote{The duration of the last SAT call is missing in this table, because it was too small to be meaningfully interpretable.} lists experimental results with the same set of algorithms that were run on the files from the SAT competition. In the following, I will list some observations about these results.
 
 \begin{itemize}

@@ -47,7 +47,6 @@ The resolvent $r$ consists of all literals of the two clauses that are resolved,
 Figure \ref{fig:resolution} shows this with an example, where a conflict in variable $d$ happened. First the clauses $\{b,\neg d\}$ and $\{c,b,d\}$ are resolved over the variable $d$. Then $b$ is extracted for the learned clause, as its reason was a decision and not a unit clause. Finally $\{c\}$ and $\{\neg c\}$ are resolved over $c$, resulting in the empty set. The learned clause is $\{b\}$.\\
 An alternative resolution scheme would leave literals that stem from decisions in the working set until the end, but here they are extracted on first extraction. Otherwise, these literals would be inspected multiple times.
 
-
 Once collected, this set of decisions must be taken back, by reversing the assignments up until the first of these decisions, as this path through the search tree results in a conflict and will not end in models. 
 
 We also add the clause to our formula as a $learned\; clause$. This clause serves to prevent the particular combination of assignments that led to our conflict. The resulting formula will still be completely equivalent to before. It merely stores the information that we gained through analysis of our conflict to prevent it from happening again.

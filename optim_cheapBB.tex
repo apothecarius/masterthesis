@@ -1,10 +1,10 @@
-\section{Cheap Identification of backbone literals}
+\section{Cheap identification of backbone literals}
 This section describes various ways that allow you to recognize backbone literals without an additional satisfiability check. Knowing these backbone literals early can speed up the individual calls to the SAT solver, because enforcing the backbone literals prevents the solver from trying to find solutions containing the negation of backbone literals, which by definition don't exist. Specifically for algorithms that apply preferences, knowing backbone literals explicitely can be helpful, because then you can remove some of those preferences that go against the backbone and could never be satisfied anyway.
 
 %Furthermore the latter two subsections here work solely on the set of already identified backbone literals.
 
 
-\subsection{Axiomatic literals}
+\subsection{Learned literals}
 \label{subsec:axiomatic}
 The most straightforward method to quickly identify backbone literals is to scan the formula for clauses with only a single literal. Since these clauses have only one possible way to become satisfied, that assignment must be used in every model of the formula and is therefore backbone.
 
@@ -15,6 +15,16 @@ It makes sense to do this check after every SAT computation, as every different 
 An expansion on this would be to look for pairs of clauses $(a,b)$, $(a,\neg b)$ for any two variables of the formula. The only way to fulfill this pair of clauses is to assign $a$ to $\top$\footnote{Which fits the resolution formula described in 
 section \ref{ss:cdcl}}. This scheme can theoretically be applied to any clause size, but then you would require a quadratically increasing number of clauses to determine a backbone which would first increase computation time and secondly decrease the chance that the necessary set of clauses was available.
 
+However, if you employ a backbone algorithm that adds clauses during its course, then learned literals may not be guaranteed to be valid backbone literals, just as learned clauses may not be valid beyond the running backbone computation\footnote{
+	A simple example: You find an implicant $\{a\}$ with only a single literal. Then you add the blocking clause $\{\neg a\}$. But in $F \cup \{\neg a\}$ $\neg a$ is suddenly a backbone literal.}.
+In theory, you could track for each learned clause which original clauses were used to create it. This way, you could tell for each individual learned clause (and literal), whether it would also be valid for the original formula. However, as far I investigated it, $Sat4J$ does not support this feature. This means that the $PB1$ and $IBB$ algorithms should not be combined with this optimization, except for their very first SAT call since it is done before a blocking clause is added. It also means that the same algorithms have to discard all their learned literals and clauses together with the inserted blocking clauses before they return.
+
+The other algorithms, $BB$ and $PB0$ on the other hand do not have this issue. $PB0$ does not modify the formula at all and the $BB$ algorithm can use a different mechanism for its temporary modifications which is to solve it under $assumptions$. This means that you start the SAT computation by putting decisions that correspond to the assignments that you want to enforce at the very beginning of the CDCL table. Then once you have to backtrack these decisions, you know that your formula is unsatisfiable with your assumptions. The difference that this makes regarding learned clauses is that the content of them will differ. When implemented as temporary clauses, your assumption is taken as ground truth, as part of your formula. The resolution step for the variable associated with the assumption will remove it from the learned clause. Without the clause that implemented the assumption, that learned clause would be too strong.\\
+However as decisions, where this assumption is involved with a conflict a corresponding literal will simply be added to the learned clause. That way the learned clause will later only come into effect under the circumstance that the variable that has now an assumption is then assigned the same value.
+
+For this reason, both $BB$ and $PB0$ are also able to keep their learned clauses after a backbone computation, even under assumptions. This will become relevant later in the $Results$ section.
+
+
 %TODO was ist mit gelerntem auf basis von assumptions
 %\\TODO experBB results dazunehmen
 
@@ -22,9 +32,9 @@ section \ref{ss:cdcl}}. This scheme can theoretically be applied to any clause s
 
 However, if you want to use this feature in each iteration, make sure that your learned clauses do not stem from the means in which you enforce different models.
 
- for example the blocking clauses in $IBB$ or the checked literal in $BB$. Otherwise, you might confuse the backbone literals of your original problem $F$ with literals that only became axiomatic in your modified formula. \footnote{A simple example: You find an implicant $\{a\}$ with only a single literal. Then you add the blocking clause $\{\neg a\}$. But in $F \cup \{\neg a\}$ $\neg a$ is suddenly a backbone literal.}
+ for example the blocking clauses in $IBB$ or the checked literal in $BB$. Otherwise, you might confuse the backbone literals of your original problem $F$ with literals that only became axiomatic in your modified formula. 
 
-The $BB$ solver manages this by having the feature of $assumptions$, which were first proposed in \cite{ENSO03}. These assumptions are assignments that are tested for whether the formula has a model that contains these assignments. For this, the CDCL table is first filled with decisions, that match the assumptions and subsequently the CDCL algorithm runs it's course ordinarily, except that the root decision level is after the entries that assign the assumptions. This has the effect that the assignments from the assumptions can not be taken back through backtracking, instead returning that $F$ is unsatisfiable under the given assumptions.
+The $BB$ solver manages this by having the feature of $assumptions$, which were first proposed in \cite{ENSO03}. These assumptions are assignments that are tested for whether the formula has a model that contains these assignments. For this, the CDCL table is first filled with decisions, that match the assumptions and subsequently the CDCL algorithm runs its course ordinarily, except that the root decision level is after the entries that assign the assumptions. This has the effect that the assignments from the assumptions can not be taken back through backtracking, instead returning that $F$ is unsatisfiable under the given assumptions.
 
 Once a model was found, all the learned clauses are checked whether they are related to the assumptions, and if so, they must be discarded, as is mentioned in \cite{WKS01}. This way, the assumptions will not have any long term effect
 \footnote{\cite{ENSO03} actually states that ``all learned clauses are safe to keep''. \cite{WKS01} differs from \cite{ENSO03} in that here clauses are removed explicitely whereas assumptions are removed automatically.}.
@@ -38,34 +48,23 @@ Additionally, you can identify axiomatic literals if you check the table that is
 TODO tabelle mit wieviele literale dabei rausgefunden werden
 
 \fi
-\subsection{Unit Implication}
+\subsection{Unit implication}
 \label{subsec:unitImpl}
 
 When you have some backbone literals identified, there are some methods that you can apply on this set, which can potentially expand it without a complete model calculation. 
 
-One method becomes obvious, if you recall the CDCL algorithm, specifically unit propagation. Suppose you have a clause where all but one of it's variables turned out to be part of the backbone, however all of them with the exact opposite sign from that in the clause, so that the clause is still not satisfied by them. In this case you are forced to assign the remaining literal in a way that it does satisfy the clause and you have to do this in every possible model, since what forces you to do that are backbone literals. Therefore, this unit implied assignment is in the backbone.
+One method becomes obvious, if you recall the CDCL algorithm, specifically unit propagation. Suppose you have a clause where all but one of its variables turned out to be part of the backbone, however all of them with the exact opposite sign from that in the clause, so that the clause is still not satisfied by them. In this case you are forced to assign the remaining literal in a way that it does satisfy the clause and you have to do this in every possible model, since what forces you to do that are backbone literals. Therefore, this unit implied assignment is in the backbone.
 
 An efficient algorithm for this would be as follows: Keep a counter for each of the clauses in your formula that indicates the number of not satisfying backbone literals in said clause. When you identify a new backbone literal, increment all the counters where that literal occurs in negation. You can drop the counter completely for clauses where the newly identified backbone literal occurs with the same sign so that it satisfies the clause\footnote{
 	In fact, you could remove the whole clause from your formula, since it will always be satisfied through the backbone literal. You could say, it get's subsumed by a clause with only the backbone literal.}.
-If the counter reaches the length of it's clause minus one, then you know that to satisfy this particular clause, the remaining literal in it has to be in the backbone. In this case you can compare it's literals with your current inventory of backbone literals to identify the remaining one. This algorithm should be done inbetween every SAT computation with only those backbone literals that were identified in the last iteration.
+If the counter reaches the length of its clause minus one, then you know that to satisfy this particular clause, the remaining literal in it has to be in the backbone. In this case you can compare its literals with your current inventory of backbone literals to identify the remaining one. This algorithm should be done inbetween every SAT computation with only those backbone literals that were identified in the last iteration.
 
-\iffalse
-fuer den fall dass platz generiert werden muss: den obigen algorithmus nochmal formell aufschreiben.
-\begin{algorithm}
-\caption{{\sc Iteratsadfaive algorithm (two tests per variable)}}
-\label{alg:iterTwo}
-\DontPrintSemicolon
-\KwIn{A satisfiable formula $F$ in CNF}
-\KwOut{All literals of the backbone of $F$ $\nu_r$}
-
-
-\Return{$\nu_r$}\;
-\end{algorithm}
-\fi
 
 Without an efficient implementation, this search for unit implied backbone literals might consume a lot of time. If you try to find the backbone of a formula where the computation takes many SAT calls which each return relatively quickly, the time spent to search for unit implied backbone literals can actually exceed the time spent in the SAT solver if it's implemented inefficiently.
 
-I have tested this method in two solvers, $BB$ and a variant of $PB1$ that identifies backbone literals only through the learned literals. The tested files were from a SAT competition. Here it showed, that for the method described in this section it is important to supply a sufficient number of already known backbone literals for it to have a positive impact on runtime. The learned backbone literals alone could rarely supply this, before the $PrefBones$ algorithm terminated from other conditions. However the iterative approach of the $BB$ solver, testing every yet unidentified literal individually, was much faster at providing positively identified backbone literals that you would need to imply other backbone literals through unit implication.
+I have tested this method in two solvers, $BB$ and a variant of $PB1$ that identifies backbone literals only through the learned literals\footnote{
+	In the previous section I stated, that the $PB1$ solver should not be combined with learning backbone literals, but I only realized this constraint much later. During testing, the computed backbones were always verified and an incorrectly identified backbone literal never occurred. The subsequent observations are still valid, independently of this.}.
+The tested files were from a SAT competition. Here it showed, that for the method described in this section it is important to supply a sufficient number of already known backbone literals for it to have a positive impact on runtime. The learned backbone literals alone could rarely supply this, before the $PrefBones$ algorithm terminated from other conditions. However the iterative approach of the $BB$ solver, testing every yet unidentified literal individually, was much faster at providing positively identified backbone literals that you would need to imply other backbone literals through unit implication.
 
 %TODO tabelle mit unit implikation von pb1e hervorzaubern
 
@@ -77,7 +76,7 @@ For further investigation on the effects of this method see section \ref{ss:resu
 
 
 
-\subsection{Implication through Cooccurrence}
+\subsection{Implication through cooccurrence}
 \label{subsec:coocc}
 
 %\begin{wraptable}{r}{7cm}
@@ -89,6 +88,7 @@ Given a backbone literal $a$ and another literal $b$. If $b$ occurs in all claus
 
 Proof: Assuming $\neg b$ was not in the backbone, then there would have to exist a model that contained $b$. Given that all clauses that contain $b$ also contain $a$, $a$ cannot be part of the backbone.
 \end{lemma}
+
 \begin{wraptable}[31]{l}{8cm}
 %\begin{wraptable}[31]{l}{8cm} % first optional parameter defines height of wraptable to avoid too much vertical space to be eaten away.
 \begin{tabular}{l| c c c }
@@ -127,7 +127,7 @@ smallSatBomb.cnf & 0 & 0 & 9 \\
 
 In other words, if we determine a new backbone literal, and all clauses that contain it also contain another literal, then we can add the negation of the latter to our backbone set. 
 
-However this strategy does not seem to be very effective, at least for the benchmark that I tested it on. Table \ref{tab:coocBB} shows the number of literals that were identified through this method in comparison to those that were identifed through unit implication and the number of variables in the formula. It is probably very rare that a variable should always occur together with another one.
+However this strategy does not seem to be very effective, at least for the benchmarks that I tested it on. Table \ref{tab:coocBB} shows the number of literals that were identified through this method in comparison to those that were identifed through unit implication and the number of variables in the formula. It is probably very rare that a variable should always occur together with another one.
 
 %TODO Thore fragen, ob kapitel so wertvoll und ob die nicht theoretisch subsumiert werden müssten
 

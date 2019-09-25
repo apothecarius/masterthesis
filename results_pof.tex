@@ -1,4 +1,4 @@
-\section{Second Industrial benchmark}
+\section{Second industrial benchmark}
 \begin{wraptable}{r}{7cm}
 \begin{tabular}{l| c c c c}
 & $n_{Literals}$ & $n_{Clauses}$ & $n_{test}$ & Filesize \\
@@ -10,7 +10,7 @@ $F_{conf_2}$ & 5055 & 81267 & 948 & 1401 KiB \\
 \label{tab:indusComp}
 \end{wraptable}
 
-In the following I will analyze another product formula $F_{conf2}$, similar the one in the previous chapter. However this one is much larger than the previous, see table \ref{tab:indusComp}. I tested this formula against the same set of algorithms as the previous formula $F_{conf1}$ including $PB4$, to identify the specific characteristics of it and identify the optimal backbone solver for it, just as in the previous section. Table \ref{tab:vonThore2pof} shows the performance result.
+In the following I will analyze another product formula $F_{conf2}$, similar the one in the previous chapter. However this one is much larger than the previous, see table \ref{tab:indusComp}. I tested this formula against the same set of algorithms as the previous formula $F_{conf1}$ including $PB4$, to identify the specific characteristics of it and identify the optimal backbone solver for it, just as in the previous section. Table \ref{tab:vonThore2pof} shows the performance result. viel wichtiger: gelernte klauseln
 
 \begin{wraptable}{R}{8cm}
 \begin{tabular}{l| c c c c}
@@ -73,7 +73,7 @@ PB1(model) & 0.626 & 2965 \\
 
 
 
-\begin{wraptable}{R}{8cm}
+\begin{wraptable}{r}{8cm}
 \begin{tabular}{l | c c c c}
  & $t_{full}$ & $t_{sat}$ & $t_{last}$& $n_{sat}$\\
 \hline
@@ -97,3 +97,47 @@ PB1(model) & 366.219 & 314.409 & 0.2 & 151119\\
 \end{wraptable}
 
 durch die bank $10\%$ bessere performance mit prerun
+
+ad
+
+ad
+
+ad
+
+ad
+
+ad
+
+ad
+
+ad
+
+ad
+
+ad
+
+ad
+
+ad
+
+ad
+
+ad
+
+ad
+
+ad
+
+wichtig: die literale nicht per klausel erzwingen sondern per assumption, dann werden gelernte klauseln nicht weggeworfen. geht nur mit BB und PB0, und bringt nix in vonThore, weil da nix gelernt wird.
+
+\begin{wraptable}{l}{8cm}
+\begin{tabular}{l| c c c c}
+& $t_{calc}$ & $t_{sat}$ & $t_{last}$ & $n_{sat}$ \\
+\hline
+BB & 1199.796 & 695.674 & -0.944 & 2116264\\
+PB0 & 407.427 & 197.473 & 1.54 & 129721\\
+PB0(model) & 229.986 & 197.334 & 1.48 & 129742\\
+\end{tabular}
+\caption{Results with assumptions instead of formula modification}
+\label{tab:pofAssump}
+\end{wraptable}

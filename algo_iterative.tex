@@ -31,7 +31,7 @@ $\nu_r \gets \emptyset$\;
 %As is commonly written in literature about boolean satisfiability, the
 The two calls to the $SAT$ function return a pair which consists first of whether the given function was satisfiable at all and, secondly, the found model, which in this case is discarded. There is no good algorithm that can tell whether a boolean formula is satisfiable or not without trying to find a model for said formula, but we can use it to greatly improve the algorithm above by combining this approach with that of the enumeration algorithms.
 
-\subsection{Combining with Enumeration}
+\subsection{Combining with enumeration}
 First observe that any model of $F$ would already reduce the set of literals to test by half, because for every assignment missing in the model, we know that it cannot be part of the backbone, so there is no need to test it. 
 
 This can be repeated with every further model that we find. The following algorithm \ref{alg:bb} is another one that is listed in both \cite{mjl10} and \cite{mjl15} and is implemented in the $Sat4J$ library as $BB$\footnote{With the exception of using prime implicants instead of models, similar to the $IBB$ algorithm.}.

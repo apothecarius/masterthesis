@@ -15,8 +15,8 @@ PB1(amnes) & 4.067 & 1.682 & 6531 \\
 PB1(model) & 2.148 & 1.59 & 6531 \\
 %PB1(invert) & 8.154 & 3.26 & 15248 \\
 PB1x & 7.596 & 2.94 & 15748 \\
-PB1a & 5.096 & 2.112 & 9335 \\
-PB1b & 7.754 & 3.199 & 15248 \\
+%PB1a & 5.096 & 2.112 & 9335 \\
+PB1b & 7.754 & 3.199 & 15248 \\ %leave this in place, required for comparison with PB2
 PB1c(50\%) & 5.376 & 2.248 & 9680 \\
 PB1c(5\%) & 7.026 & 2.693 & 13955 \\
 PB1d & 4.464 & 1.804 & 7386 \\
@@ -31,29 +31,31 @@ PB3 & 3.872 & 1.204 & 4471 \\
 \label{tab:vonThore1}
 \end{wraptable}
 
-Another benchmark I applied the various backbone algorithms to, was a formula for a real world application from the automobile industry. The purpose of this formula $F_{conf1}$ was to describe a product in the context of options or features available to the customer. Some of these options can be combined, others exclude or require each other. Most of the variables in $F_{conf1}$ correspond to a boolean parameter that is set to $\top$ if the associated feature is requested by the customer. If the formula would become unsatisfiable under such assumptions equal to the requested configuration, then the combination of these features would be impossible. Looking at it from the other side, the set of models of $F_{conf1}$ matches exactly the set of possible product configurations that are available to the customer. $F_{conf1}$ further contains a small set of additional variables to model more complex relationships between options.
+Another benchmark I applied the various backbone algorithms to, was a formula for a real world application from the automobile industry. The purpose of this formula $POF_1$ was to describe a product in the context of options or features available to the customer. Some of these options can be combined, others exclude or require each other. Most of the variables in $POF_1$ correspond to a boolean parameter that is set to $\top$ if the associated feature is requested by the customer. If the formula would become unsatisfiable under such assumptions equal to the requested configuration, then the combination of these features would be impossible. Looking at it from the other side, the set of models of $POF_1$ matches exactly the set of possible product configurations that are available to the customer. $POF_1$ further contains a small set of additional variables to model more complex relationships between options.
 
 The particular use case that I examined was to find the implications in the formula, i.e. if a customer requests feature $a$, would he also have to pick feature $b$. A primitive way to calculate this would be to iterate over all possible pairs of features 
 %\footnote{Minus permutations and pairs with the same feature twice}
-and check for satisfiability of $F_{conf1}$ under the condition that $a$ is $\top$ and $b$ is $\bot$. If this was unsatisfiable, then $a$ would imply $b$. However, with 407 literals to choose from, you would have to do 165,242\footnote{407 times 406} sat calls. 
+and check for satisfiability of $POF_1$ under the condition that $a$ is $\top$ and $b$ is $\bot$. If this was unsatisfiable, then $a$ would imply $b$. However, with 407 literals to choose from, you would have to do 165,242\footnote{407 times 406} sat calls. 
 
-A more efficient approach is to only go over the 407 options once and for each variable $a$ of them calculate the backbone of $F_{conf} \cup \{a\}$ or in other words $F_{conf1}$ under the assumption $a$. If a feature $b$ occurs in all models when $a$ is assumed, then $a$ implies $b$ in some way.
+A more efficient approach is to only go over the 407 options once and for each variable $a$ of them calculate the backbone of $POF_1 \cup \{a\}$ or in other words $POF_1$ under the assumption $a$. If a feature $b$ occurs in all models when $a$ is assumed, then $a$ implies $b$ in some way.
 
 
 \subsection{Performance measurement and discussion}
 Table \ref{tab:vonThore1}\footnote{The duration of the last SAT call is missing in this table, because it was too small to be meaningfully interpretable.} lists experimental results with the same set of algorithms that were run on the files from the SAT competition. In the following, I will list some observations about these results.
 
 \begin{itemize}
-\item We immediately see that preferences give a great benefit to performance other than in the previous benchmark with the files from the SAT competition. Here, all cases where I tried to soften the effects of preferences ($PB1(amnes)$,$PB1c$, $PB2$) had worse results than the base algorithm $PB1$.
+\item We immediately see that preferences give a great benefit to performance, other than in the previous benchmark with the files from the SAT competition. Here, all cases where I tried to soften the effects of preferences ($PB1(amnes)$,$PB1c$, $PB2$) had worse results than the base algorithm $PB1$\footnote{
+	Especially $PB2$, but note that this algorithm only affects the assignment order. A fair comparison would be between $PB2$ and $PB1b$, but here $PB2$ is the slower one as well.
+}. 
 \item The fastest algorithm overall ($PB1(model)$) is the one that does not reduce the models at all. The number of SAT calls is even exactly the same as that of that variant with prime implicant reduction. However the time that was spent in the SAT solver is very similar to that execution with prime implicant reduction ($PB1$), so the difference must be the time that was spent to reduce the model and the benefit, namely the number of optional variables in the prime implicant, was very small.\\
 Still, this does not mean that model reduction wouldn't be useful at all in this benchmark, as the next point will show. It merely implies that the benefit of applying any special strategy may very well be outweighed by the extra performance cost that comes with it, since here all of this work would have to be done a very large number of times.
 \item The fastest implementation when it comes to pure SAT solver time as well as number of SAT calls was $PB3$, which differs from the others in that it uses literal rotation to reduce models instead of prime implicant computation. Apparantly the models that occur in this formula actually do contain many optional assignments. However these are spread over many different prime implicants with little distance to the model.\\
-A previous variant of this algorithm took around 250 seconds to compute overall. This version did not use the lookup from literal to containing clauses (as described in later paragraphs in section \ref{ss:rot}), but iterated over all clauses in the formula. Such a drastic effect of an efficient implementation did not occur for the SAT competition benchmark.\\
+A previous variant of this algorithm took around 250 seconds to compute overall. This version did not use the lookup from literal to containing clauses (as described in later paragraphs of section \ref{ss:rot}), but iterated over all clauses in the formula. Such a drastic effect of an efficient implementation did not occur for the SAT competition benchmark.\\
 This has primarily two reasons. First, the number of SAT calls per instance is twice as much in this benchmark compared to those from the SAT competitions\footnote{The 4471 calls span over 407 problem instances.}, therefore the model reduction happens twice as often. Secondly, the formula of this benchmark is much larger than those from the SAT competition, with the filesize being around twenty times as large. Therefore there are much more clauses to search through.
 \item The two algorithms in third place of overall computation time were $PB1e$ and $PB1f$. Both of these make use of learned literals so appearantly the backbone literals in this formula are easy to identify by checking the set of literals that the solver learns when it computes new models.\\
 In fact, on inspection, all literals that later turn out to be part of the backbone occur in this set after the very first SAT call(with an exception of the forced literal, which can be extracted by searching the formula for clauses with only one literal).
 \item Another noteworthy algorithm is the $KBB$ algorithm that uses unit implication to identify backbone literals. The implementation of this algorithm was based on that of the $BB$ algorithm and here the number of SAT calls with $KBB$ is a tenth of the number in the case of $BB$. However this advantage is not expressed equally strong when it comes to the time spent in the SAT solver(around a fourth), which means that the identification through calculating a new model can sometimes be more efficient than regularly checking unit implications, as was already explained in the previous section (\ref{ss:result_unit}).\\
-Finally, the overall computation time of $KBB$ is actually worse than that of $BB$, meaning that the benefit through cheap backbone literal identification is less than the time that it takes to check the clauses for the unit case. 
+Finally, the overall computation time of $KBB$ is actually worse than that of $BB$, meaning that the benefit through cheap backbone literal identification is outweighed by the time that it takes to check the clauses for the unit case. 
 %It may be possible that this method requires an improved implementation. The search for clauses where the unit implication for backbone literals applies could be implemented in a similar way as was used to calculate required and rotatable assignments, using the lookup from variables to clauses where they occur (see section \ref{ss:rot})
 \end{itemize}
 
@@ -72,11 +74,11 @@ PB4 & 1.482 & 0.863 & 4064 \\
 \label{tab:thoreSpecialResults}
 \end{wraptable}
 
-First of all, since it is very effective here to check the literals that the solver learns as backbones through conflict resolution, the scheme of approaching upper and lower bounds as described in section \ref{sec:upperLower} is applied here. The lower bound $bb_l$ of the backbone consists of all learned literals, whereas it's upper bound $bb_u$ consists of the intersection of found models or reductions of them. Having both upper and lower bound not only allows to potentially stop the loop before the last sat call. It also accelerates the reduction of the first model to it's required literals, because if I know that a literal is in the lower bound of the backbone, I don't need to explicitely test, whether it would also be in it's upper bound. This behaviour is listed in algorithm \ref{alg:specReq}.
+First of all, we should make use of the fact, that all backbone literals are learned after the first SAT call. This can be done with the scheme of approaching upper and lower bounds as described in section \ref{sec:upperLower}. The lower bound $bb_l$ of the backbone consists of all learned literals, whereas it's upper bound $bb_u$ consists of the intersection of found models or reductions of them. Having both upper and lower bound not only allows to potentially stop the loop before the last sat call. It also accelerates the reduction of the first model to it's required literals, because if I know that a literal is in the lower bound of the backbone, I don't need to explicitely test, whether it would also be in it's upper bound. This behaviour is listed in algorithm \ref{alg:specReq}. It might sound sensible at first to regularly check for new learned literals in case some might only show up later. However for the reasons described in section \ref{subsec:axiomatic}, this is not guaranteed to result in valid backbone literals.
 
 Secondly, it turned out, that only the first model reduction in line \ref{line:specReq} was worth it's computational effort. The reduction of subsequent models did not give performance benefits that would have outweighed the time it took to do. That is why in line \ref{line:specNoReduc} the upper bound is intersected with the complete model instead of a reduction of it.
 
-For the preferences, the typical scheme was applied, where the solver was configured to disprove as many of the backbone candidates as possible, while the same set was added as a blocking clause to ensure that the loop would eventually terminate.
+For the preferences, the typical scheme was applied, where the solver was configured to disprove as many of the backbone candidates as possible. The same set was added as a blocking clause to ensure that the loop would eventually terminate if $bb_l$ happenend to miss some backbone literal. In line \ref{line:specSatcall} the identified backbone literals are enforced as well, to prevent impossible assignments against them. However if implemented correctly in $Sat4J$, they should still be in place from the previous model computation.
 
 
 %- außerdem: lits in bb_l muss man nicht prüfen ob notwendigerweise in bb_u
@@ -93,21 +95,14 @@ $bb_l \gets learnt$\;
 $bb_u \gets required(model,F,bb_l)$\;
 \label{line:specReq}
 \While{$bb_l \neq bb_u$}{
-\iffalse
-	\Do{$unitBackbones \neq \emptyset$}{
-	\label{algo:kbbDoWhileStart}
-		$unitBackbones \gets unitImplied(F,bb_l)$\;
-		$bb_l \gets bb_l \cup unitBackbones$\;
-	}
-	\label{algo:kbbDoWhileEnd}
-	\fi
 	$blocker \gets \bigvee _{l\in bb_u}\neg l$\;
 	$prefs \gets \{\neg l : l \in bb_u \}$\;
-	$(outc,model,learnt) \gets prefSAT(F \cup blocker \cup bb_l, prefs)$\;
+	$(outc,model) \gets prefSAT(F \cup blocker \cup bb_l, prefs)$\;
+	\label{line:specSatcall}
 	\If{$\neg outc$}{
 		\Return{$bb_u$}\;
 	}
-	$bb_l = bb_l \cup learnt$\;
+	%$bb_l = bb_l \cup learnt$\;
 	$bb_u = bb_u \cap model $\;%required(model,F,bb_l)$\;
 	\label{line:specNoReduc}
 }
@@ -142,17 +137,17 @@ $R \gets bb_l$\;
 Since for this benchmark, the almost same formula is worked on 407 times, it makes sense to think about ways how to make this outer loop efficient as well.
 
 The first consideration was to first compute information of the base formula and reuse it in all subsequent computations, where the backbone under an assumption was calculated. However this was not possible.\\
-One interesting piece of information would have been the set of clauses that were learned during the computation of a model of the base formula $F_{conf1}$. However this set was empty. Appearantly the formula is simple enough, that the model can be found without a single conflict. The solver returned without having learned any new clause for the formula.
+One interesting piece of information would have been the set of clauses that were learned during the computation of a model of the base formula $POF_1$. However this set was empty. Appearantly the formula is simple enough, that the model can be found without a single conflict. The solver returned without having learned any new clause for the formula.
 
-Another thing I thought about was the backbone of the base formula. If you can determine backbone literals of $F_{conf1}$, then you can safely assume, that all of these are part of any restricted formula $F_{conf} \cup \{a\}$. This is because, when a clause gets added to a CNF formula, it's set of models can only shrink, no new model can be induced through an additional clause\footnote{Assuming that no new variable was introduced.}. This implies that an assignment that didn't occur in the models before will also not appear in the new smaller set of models, in turn implying that if a variable always occured with the same assignment in $F_{conf1}$, it will also do so in $F_{conf} \cup \{a\}$. \\
+Another thing I thought about was the backbone of the base formula. If you can determine backbone literals of $POF_1$, then you can safely assume, that all of these are part of any restricted formula $POF_1 \cup \{a\}$. This is because, when a clause gets added to a CNF formula, it's set of models can only shrink, no new model can be induced through an additional clause\footnote{Assuming that no new variable was introduced.}. This implies that an assignment that didn't occur in the models before will also not appear in the new smaller set of models, in turn implying that if a variable always occured with the same assignment in $POF_1$, it will also do so in $POF_1 \cup \{a\}$. \\
 However this set was empty as well and for a good reason in this particular case. The backbone of a formula consists of all assignments that have to be done to end up in a model. In the context of a product formula, which we have here, this would mean, that a specific feature of the product would always have to be selected. In other words, the product has an option that is not optional. 
 
 What remained was to see, if the loop over the assumptions could be sped up. In fact whereas the backbone computations\footnote{Of only the new $PB4$ solver} took a sum of 1.5 seconds, this loop overall took 3.9 seconds. The difference consisted of primarily the copying of the formula(2.2 seconds) and writing down benchmark information(around 150 milliseconds). 
 
-To do this in $Sat4J$ you must first of all reset the formula object\footnote{The class name in $Sat4J$ is $Solver$ or $ISolver$.}. In the case of model enumeration algorithms like $IBB$ or $PB1$, this incorporates removing all the blocking clauses because they modify the formula. If you don't do this, all backbone computations after the first one will immediately fail, because the final blocking clause makes the formula unsatisfiable. Additionally, you must flush the set of learned clauses and literals because some of these may be based on the blocking clauses. Therefore, if you would leave them in place, they could reproduce most of the effects that the blocking clause had. Take care that all of this happens in a way that during the individual backbone computation, the learned clauses stay in place. $Sat4J$ supplies a special function to remove a clause under the expectation that it will immediately become subsumed or already is, which you can use to remove old blocking clauses during the loop without flushing the learned clauses. Alternatively you could remove all of them at the end. The ordinary function to remove a clause in $Sat4J$ triggers the cleanup automatically. 
+To do this in $Sat4J$ you must first of all reset the formula object\footnote{The class name in $Sat4J$ is $Solver$ or $ISolver$.}. In the case of model enumeration algorithms like $IBB$ or $PB1$, this incorporates removing all the blocking clauses because they modify the formula. If you don't do this, all backbone computations after the first one will immediately fail, because the final blocking clause makes the formula unsatisfiable. Additionally, you must flush the set of learned clauses and literals because some of these may be based on the blocking clauses. Therefore, if you would leave them in place, they could reproduce some of the effects that the blocking clause had. Take care that all of this happens in a way that during the individual backbone computations, the learned clauses stay in place. $Sat4J$ supplies a special function to remove a clause under the expectation that it will immediately become subsumed or already is, which you can use to remove old blocking clauses during the loop without flushing the learned clauses. Alternatively you could remove all of them at the end. The ordinary function to remove a clause in $Sat4J$ triggers the cleanup automatically. 
 
 Additionally, it makes sense to revert the decision heuristic if you replaced it with something that allows to implement preferences and you want to reuse the formula object with a backbone solver without preferences. The typical behaviour throughout the $Sat4J$ library, including the $BB$ and $IBB$ backbone solvers, is to assume that such a data structure is already set up correctly.
 
-One last bit of state inside the formula object that I noticed were two floating point numbers called $claInc$ and $claDecay$. These influence the scale in which the activity values inside the decision heuristic grow and shrink. They merely influenced the exact behaviour of the solver, but not the calculation result.
+One last bit of state inside the formula object that I noticed were two floating point numbers called $claInc$ and $claDecay$. These influence the scale in which the activity values inside the decision heuristic grow and shrink. They do not influence the calculation result, but merely the exact behaviour of the solver.
 
 With all of this taken care of, the duration of the outermost loop over the assumptions took just as long as the sum of the durations of the backbone computations.

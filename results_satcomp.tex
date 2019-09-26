@@ -28,12 +28,14 @@ PB3 & 20.927 & 20.922 & 8.912 & 4\\
 \end{wraptable}
 
 For the first benchmark, I collected a set of 64 files from the 2017 SAT competition\footnote{
-To be more precise the $essential$ folder from the $incremental$ package, available at \url{https://baldur.iti.kit.edu/sat-competition-2017/benchmarks/incremental.zip}
+To be more precise the $essential$ folder from the $incremental$ package, currently available at \url{https://baldur.iti.kit.edu/sat-competition-2017/benchmarks/incremental.zip}
 }. The SAT competitions generally use problems that are difficult to solve compared to other problems of the same file size. This is in order to encourage development of solving strategies that reliably have good performance and not only for most of them. To save time during benchmarking, files that took longer than around one minute for a single model computation were excluded, resulting in files that are generally around 30 kilobytes large. Additionally, problems where the duration for backbone computation averaged below one second were excluded, because here the small differences in the measurements could just as well be explained with external factors like the CPU throttling for a short time. To get meaningful testresults for such files, multiple testpasses should be conducted.
 
-The averaged time to compute the backbones of these 64 testfiles can be seen in \ref{tab:satCompAvg}. The second column shows the time that was only spent in the SAT solver. This gives a hint on whether a particular algorithm configures it's SAT solver well and whether it looses computation time in things besides the SAT calls, for example through model reduction.
+The averaged time to compute the backbones of these 64 testfiles can be seen in \ref{tab:satCompAvg}\footnote{
+	The hardware used for all benchmarks listed in this thesis was an Intel Core i7-8809G with 16 gigabytes of DDR4-2667 memory in dual channel and an NVMe harddrive. XXX
+}. The second column shows the time that was only spent in the SAT solver. This gives a hint on whether a particular algorithm configures it's SAT solver well and whether it looses computation time in things besides the SAT calls, for example through model reduction.
 
-\begin{wraptable}[30]{r}{8cm}
+\begin{wraptable}[29]{r}{8cm}
 \begin{tabular}{l| c c }
 File & $t_{keep}$ & $t_{discard}$ \\
 \hline
@@ -182,9 +184,8 @@ Rows indicate: Calculation time and number of SAT calls for the $BB$ solver  ; C
 \label{tab:bbkbb}
 \end{table}
 
-Table \ref{tab:bbkbb}\footnote{
-	In this table the pure sat calculation time for the $BB$ column is missing. The $BB$ algorithm actually spends almost no time outside of the SAT solver in the case of the listed formulas.\\
-	Most of the performance differences in this table can be explained with other reasons than actual algorithmic differences. $fla-barthel-220-4.cnf$ for example should not be faster with $KBB$ since here no backbone literal was determined through unit propagation. However I was able to reproduce this performance difference just through the order of what was called first, i.e. if the two solvers are called the other way around the difference in timing between the first and second call are the same. A possible explanation could be a power saving feature in modern processors.
+Table \ref{tab:bbkbb}\footnote{In this table the pure sat calculation time for the $BB$ column is missing. The $BB$ algorithm actually spends almost no time outside of the SAT solver in the case of the listed formulas.
+	%\\Most of the performance differences in this table can be explained with other reasons than actual algorithmic differences. $fla-barthel-220-4.cnf$ for example should not be faster with $KBB$ since here no backbone literal was determined through unit propagation. However I was able to reproduce this performance difference just through the order of what was called first, i.e. if the two solvers are called the other way around the difference in timing between the first and second call are the same. A possible explanation could be a power saving feature in modern processors.
 	} 
 shows individual performance differences between the $BB$ solver supplied by $Sat4J$ and my own $KBB$ solver for comparison, as well as the backbone's size and the number of backbone literals identified through unit implication. The time columns also contain the number of sat calls that were comitted. It's content matches the results of table \ref{tab:satCompAvg}. Occasional cases where $KBB$ trumps in performance over $BB$ get balanced out by cases where this is the other way round, but the number of sat calls is always better with the $KBB$ algorithm. And this is true in spite of the fact that almost all identifications happened through unit implication. 
 

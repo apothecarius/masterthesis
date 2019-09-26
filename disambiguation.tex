@@ -4,7 +4,7 @@ This thesis is an investigation on the calculation of backbones for boolean form
 
 %An implicant is a set of assignments of the variables in the problem $F$ that still satisfies $F$. The difference to models is, that here it is allowed to leave variables undefined. Let's imagine a formula where every clause contains the literal $a$, amongst other literals. Then $(a)$ would be a simple implicant for this formula, because assigning $a$ to $\top$ is sufficient to satisfy each clause. However there may also be a different implicant that does not contain $a$ at all, satisfying the clauses in a different way. If a variable $v$ does not occur in an implicant $I$, we say that $v$ is optional in $I$.
 
-When we want to know whether a model $M$ satisfies a formula $F$, clause $c$ or literal $l$, we write $F\langle M\rangle \rightarrow \{\top,\bot\}$ or $c\langle M\rangle$ and $l\langle M\rangle$ respectively. The result is $\top$ if the assignment satisfies what it is applied to or $\bot$ if it doesn't.
+When we want to know whether a model $M$ satisfies a formula $F$, clause $c$ or literal $l$, we write $F\langle M\rangle \rightarrow \{\top,\bot\}$ or $c\langle M\rangle$ and $l\langle M\rangle$ respectively. The result is $\top$ if the assignment satisfies what it is applied to or $\bot$ if it doesn't. TODO mehr benutzen oder weg
 
 %Although it might be confusing, for many purposes in satisfiability computation, a boolean variable can not only be assigned to the two truth values $\bot$ and $\top$, but also be unassigned, don't care, free or optional. This feature is not only important for SAT solver implementations, but also to calculate //kann man auch einfach darstellen, indem die variable nicht in der menge auftaucht.
 

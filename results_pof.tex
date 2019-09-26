@@ -3,14 +3,14 @@
 \begin{tabular}{l| c c c c}
 & $n_{Literals}$ & $n_{Clauses}$ & $n_{test}$ & Filesize \\
 \hline
-$F_{conf_1}$ & 469 & 66957 & 407 & 817 KiB \\
-$F_{conf_2}$ & 5055 & 81267 & 948 & 1401 KiB \\
+$POF_1$ & 469 & 66957 & 407 & 817 KiB \\
+$POF_2$ & 5055 & 81267 & 948 & 1401 KiB \\
 \end{tabular}
 \caption{Size comparison of the two industrial benchmarks. Contains the number of literals, clauses, tested literals and the filesize. }
 \label{tab:indusComp}
 \end{wraptable}
 
-In the following I will analyze another product formula $F_{conf2}$, similar the one in the previous chapter. However this one is much larger than the previous, see table \ref{tab:indusComp}. I tested this formula against the same set of algorithms as the previous formula $F_{conf1}$ including $PB4$, to identify the specific characteristics of it and identify the optimal backbone solver for it, just as in the previous section. Table \ref{tab:vonThore2pof} shows the performance result. viel wichtiger: gelernte klauseln
+In the following I will analyze another product formula $POF_2$, similar the one in the previous chapter. However this one is much larger than the previous, see table \ref{tab:indusComp}. I tested this formula against the same set of algorithms as the previous formula $POF_1$ including $PB4$, to identify the specific characteristics of it and identify the optimal backbone solver for it, just as in the previous section. Table \ref{tab:vonThore2pof} shows the performance result. 
 
 \begin{wraptable}{R}{8cm}
 \begin{tabular}{l| c c c c}
@@ -23,14 +23,14 @@ PB0 & 442.172 & 285.674 & 2.139 & 129943 \\
 PB1 & 523.182 & 331.089 & 0.211 & 146349 \\
 PB1(amnes) & 504.572 & 315.742 & 0.229 & 143503 \\
 PB1(model) & 391.147 & 340.538 & 0.252 & 151119 \\
-PB1x & 1420.34 & 910.275 & 1.675 & 440355 \\
-PB1a & 948.42 & 646.993 & 2.576 & 239787 \\
+%PB1x & 1420.34 & 910.275 & 1.675 & 440355 \\
+%PB1a & 948.42 & 646.993 & 2.576 & 239787 \\
 PB1b & 1421.294 & 869.288 & 0.617 & 460292 \\
 PB1c(50\%) & 533.995 & 334.392 & 0.232 & 146799 \\
 PB1c(5\%) & 614.968 & 377.302 & 3.648 & 198227 \\
 PB1d & 542.427 & 332.594 & 0.217 & 146430 \\
 PB1e & 523.955 & 324.705 & 1.164 & 148096 \\
-PB1f & 522.015 & 327.188 & 1.244 & 147614 \\
+%PB1f & 522.015 & 327.188 & 1.244 & 147614 \\
 PB2(50\%) & 1660.442 & 1123.058 & 4.227 & 438298 \\
 PB2(5\%) & 1591.691 & 1052.998 & 2.039 & 439801 \\
 PB2(0.5\%) & 1586.361 & 1049.304 & 2 & 439140 \\
@@ -41,17 +41,27 @@ PB4 & 2478.283 & 2361.488 & 0.2 &297,192 \\
 \label{tab:vonThore2pof} %for referencing
 \end{wraptable}
 
-The first thing that shows is that $PB4$, the algorithm proposed in the previous section performs quite bad. It is obviously optimized for that particular file and POFs do not make a class of formulas where you find all of the characteristics that were identified in $F_{conf1}$. We will have to find something new if the plan is to solve this particular formula as efficiently as possible. \footnote{Otherwise, $PB1(model)$ seems to be a good candidate, maybe also $PB0$ without model reduction}
+The first thing that shows, again, is that algorithms with preferences have a much better performance overall. $PB0$ and $PB1$ finish between two and three times faster than $BB$ and $IBB$
+
+PB0+BB sind gut -> hinweis auf gelernte klauseln
+
+%The first thing that shows is that $PB4$, the algorithm proposed in the previous section performs quite bad. . We will have to find something new if the plan is to solve this particular formula as efficiently as possible. \footnote{Otherwise, $PB1(model)$ seems to be a good candidate, maybe also $PB0$ without model reduction}
 
 analyse
+
+PB4 bringt nix\\
+präferenzen immer besser\\
+gelernte literale bringen nichts.\\
+rotieren < primimplikante < model bzgl calcTime, in pureSat andersrum, aber logisch, weil stärkere reduktion. model reduktion hier anscheinend völlig nutzlos und verschwendet zeit\\
+PB0 besser als PB1. \\
+PB0 komischerweise schlechtere last sat time TODO entweder begründen oder einfach weglassen\\
+PB1(amnes) geht auch gut\\
+aber: basisformel hat backbones und lernbare klauseln\\
+
+Further minor observations findings:
 \begin{itemize}
-\item PB4 bringt nix
-\item präferenzen immer besser
-\item gelernte literale bringen nichts.
-\item rotieren < primimplikante < model bzgl calcTime, in pureSat andersrum, aber logisch, weil stärkere reduktion. model reduktion hier anscheinend völlig nutzlos und verschwendet zeit
-\item PB0 besser als PB1. 
-\item PB0 komischerweise schlechtere last sat time TODO entweder begründen oder einfach weglassen
-\item PB1(amnes) geht auch gut
+	\item The observation about unit implied backbone literals can be observed again in this benchmark. The number of SAT calls and the time spent in the SAT solver are much better in $KBB$ compared to $BB$. But this does not reflect in better overall performance.
+	\item The algorithm designed for the previous benchmark, $PB4$ performs quite bad. It is obviously optimized for that particular formula and POFs do not make a class of formulas where you find all of the characteristics that were identified in $POF_1$.
 \end{itemize}
 PB0 geht mit (model), leider nicht auch mit (amnes)
 Basis formel hat backbone literale, also de
@@ -68,7 +78,7 @@ PB1 & 0.835 & 2738 \\
 PB1(model) & 0.626 & 2965 \\
 %PB4 & 3.235 & - \\
 \end{tabular}
-\caption{Preptime and number of learned clauses}
+\caption{Preptime and number of learned clauses TODO an die tabelle unten dranschweisen}
 \end{wraptable}
 
 
@@ -94,6 +104,7 @@ PB1(model) & 366.219 & 314.409 & 0.2 & 151119\\
 %PB4 & 2274.757 & 2158.624 & 9.609 & 297192\\
 \hline
 \end{tabular}
+\caption{Comparison of benchmark results depending on reuse of learned clauses and backbones of the base formula $POF_2$ when being solved with $PB0$. TODO irgendwie erklären wieso konsistent besser als in basistabelle}
 \end{wraptable}
 
 durch die bank $10\%$ bessere performance mit prerun
@@ -134,7 +145,7 @@ wichtig: die literale nicht per klausel erzwingen sondern per assumption, dann w
 \begin{tabular}{l| c c c c}
 & $t_{calc}$ & $t_{sat}$ & $t_{last}$ & $n_{sat}$ \\
 \hline
-BB & 1199.796 & 695.674 & -0.944 & 2116264\\
+BB & 875.153 & 565.083 & - & 2,063,224\\
 PB0 & 407.427 & 197.473 & 1.54 & 129721\\
 PB0(model) & 229.986 & 197.334 & 1.48 & 129742\\
 \end{tabular}

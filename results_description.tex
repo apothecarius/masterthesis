@@ -12,13 +12,13 @@ For clarity, the used benchmarks are listed here. All algorithms unless otherwis
 \item \textbf{PB1}: $PrefBones$ with blocking clause. See algorithm \ref{alg:blockPref}.
 \item \textbf{PB1(amnes)}: $PB1$ with forgetting preferences as described in section \ref{sec:amnesPrefs}.
 \item \textbf{PB1(model)}: $PB1$ without any model reduction.
-\item \textbf{PB1x}: TODOweg $PB1$ without preferences. Structurally identical with $IBB$\footnote{There are slight differences in the performance measurements between these two implementations. These probably stem from differences in the implementation. The differences divided by the number of sat calls is relatively comparable, implying that the two implementations scale comparably.}
-\item \textbf{PB1a}: TODO nötig?
-\item \textbf{PB1b}: TODOweg $PB1$ where preferences can only affect the selection order. Given for the purpose of comparison with $PB2$.
+%\item \textbf{PB1x}: TODOweg $PB1$ without preferences. Structurally identical with $IBB$\footnote{There are slight differences in the performance measurements between these two implementations. These probably stem from differences in the implementation. The differences divided by the number of sat calls is relatively comparable, implying that the two implementations scale comparably.}
+%\item \textbf{PB1a}: TODO nötig?
+\item \textbf{PB1b}: $PB1$ where preferences can only affect the selection order. Given for the purpose of comparison with $PB2$.
 \item \textbf{PB1c}: $PB1$ with a limited number of preferences, as described in section \ref{sec:subsets}. Listed with three different size restrictions.
 \item \textbf{PB1d}: Like $PB1c$, but with more diverse preferences in each iteration.
-\item \textbf{PB1e}: $PB1$ in combination with approaching upper and lower bounds as described in section \ref{sec:upperLower}. The lower bound is made up of learned literals. TODO sollte man nicht machen, auf ergebniskorrektheit geprüft, ja sorry
-\item \textbf{PB1f}: Based on $PB1e$, but sollte eigenltich weg
+\item \textbf{PB1e}: $PB1$ in combination with approaching upper and lower bounds as described in section \ref{sec:upperLower}, where the lower bound is made up of learned literals. As previously mentioned, this method should not be applied once a formula is modified. Results of $PB1e$ serve the sole purpose of indicating that looking for learned literals is a useful strategy.
+%\item \textbf{PB1f}: Based on $PB1e$, but sollte eigenltich weg
 \item \textbf{PB2}: Uses scalable preferences as described in section \ref{sec:nudging}.
 \item \textbf{PB3}: $PB1$ with model reduction through rotation. TODO rename
 \end{itemize}

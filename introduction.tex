@@ -1,8 +1,29 @@
 \chapter{Introduction}
-%Backbones can also be very useful in formal logic. 
-Imagine a discussion about a certain issue where the case gets complicated by the fact that the two parties cannot even agree on factual real world data, but can at least both agree on logical relationships between certain hypothetical concepts that may or may not be true. In this case, you have the opportunity to set up a boolean formula that expresses the issue, with one all deciding boolean variable that determines which of the parties is right. If one of the parties should be lucky, it will turn out that it would actually be impossible that that formula would judge in favor of their opponent, no matter what the facts were, as long as the formula itself was correctly stated and applied. For this you would calculate the backbone of the formula and simply check whether it contained the all deciding variable with either positive or negative assignment. 
+Imagine a discussion about a certain issue where the case gets complicated by the fact that the two parties cannot even agree on factual real world data, but can at least both agree on logical relationships between certain hypothetical concepts that may or may not be true. In this case, you have the opportunity to set up a boolean formula that expresses the issue, with one all deciding boolean variable that determines which of the parties is right. If one of the parties should be lucky, it will turn out that it would actually be impossible that that formula would judge in favor of their opponent, no matter what the facts were, as long as the formula itself was correctly stated and applied. For this you would calculate the backbone of the formula, the set of conclusions that lie in the formula itself and will not change whatever the facts were. Then you would simply check whether it contained the all deciding variable with either positive or negative assignment. 
+
+Now how would you go about calculating such a backbone. Many great papers have been written on the topic, for example \cite{mjl15}, which discusses the common approaches exhaustively. Typically, you would collect various solutions of the formula and check for parts that always look the same and if you can't get them to work another way, then it must be part of the backbone. However an original thought not discussed there can be found much earlier in \cite{kk01}: 
+\begin{quotation}
+Obviously, the effect of filtering depends on the quality of the results returned by the SAT algorithm whenever the examined formula is satisfiable. [...]
+%Variables that have not been detected as $not$ inadmissible should not be set to $\bot$ in the satisfying assignment and those that have $not$ been classified as not necessary should not be set to $\top$. Otherwise, they definitely cannot be classified in advance. 
+In order to maximize the number of variables for which this condition holds, we use a corresponding variable selection strategy in the underlying SAT checker [...]
+%as illustrated in the algorithm $directed$ in Fig. 1. 
+Variables that have not been classified at all have the highest priority, followed by variables that are not known as not necessary, and finally by those not recognized as not inadmissible.
+\end{quotation}
+
+At that time, this approach faired very well in the performance tests listed in the same paper, but the idea seems to have been forgotten. Over 15 years later, in \cite{PJ18}, where a very similar method is described, it is stated that...
+\begin{quotation}
+[...]to the best of our understanding the use of SAT with preferences has not been previously proposed in the context of backbone computation.
+\end{quotation}
+
+For this reason, I decided to reexamine this peculiar concept in this master's thesis, along other promising methods. The remainder of this chapter contains a primer on elementary knowledge of SAT solving which necessary to understand backbone computation. This includes an algorithm to find solutions to boolean formulas, a functionality that almost always lies at the heart of backbone computation.\\
+Subsequently, in the second chapter multiple algorithms for backbone computation are introduced and grouped according to certain characteristics of them. The third chapter describes supplementary methods, that can be applied ontop of base algorithms to fine-tune their behaviour.\\
+The fourth chapter is dedicated to experimentation on the concept of preference guided backbone computation. It also contains information for the purpose of applying the knowledge found in this thesis in the $Sat4J$ library. \\
+Finally all of these methods are tested on multiple benchmarks in chapter 5. Building on the findings about individual strategies, the final goal is to find the optimal strategy for each of the benchmarks.
 
 
+\iffalse
+Auch noch andere methoden 
+normaler ansatz rechnet halt bisschen lösung aus, aber was wenn man die zu steuert ;
 TODO introduction
 wofür brauche ich backbones
 
@@ -13,11 +34,6 @@ welche paper waren relevant
 wie ist die thesis strukturiert, 
 
 was wurde in den sechs monaten gemacht
-
-
-use cases von backbones:
-- formel reduktion um fixe variablen
-- 
 
 %Backbones can also help to simplify a formula. If a variable is part of the backbone it is safe to remove it from the formula. This prevents you from trying to find a solution to the problem with a condition that the   . A question where one of the two answers does not make sense does not need to be asked.
 
@@ -36,3 +52,4 @@ introduction soll aus perspektive vor dem schreiben geschrieben werden (absichte
 
 extra chap mit related work
 nutzen für endnutzer und wirtschaft.
+\fi

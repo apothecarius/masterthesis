@@ -8,8 +8,8 @@ IBB & 4.946 & 4.944 & 1.911 & 9\\
 KBB & 8.713 & 8.687 & - & 36\\
 PB0 & 31.78 & 31.779 & 1.17 & 4\\
 PB1 & 17.49 & 17.488 & 6.998 & 5\\
-PB1(amnes) & 10.867 & 10.865 & 4.781 & 6\\
 PB1(model) & 25.794 & 25.793 & 8.677 & 5\\
+PB1(forget) & 10.867 & 10.865 & 4.781 & 6\\
 PB1x & 5.064 & 5.062 & 1.562 & 9\\
 PB1a & 11.241 & 11.239 & 5.351 & 8\\
 PB1b & 9.785 & 9.783 & 1.921 & 6\\
@@ -204,8 +204,8 @@ In summary, searching for backbone literals through unit implication can be a mo
 IBB & 3.479 \\
 PB0 & 0.147 \\
 PB1 & 2.000 \\
-PB1(amnes) & 2.640 \\
 PB1(model) & 1.682 \\
+PB1(forget) & 2.640 \\
 PB1x & 2.777 \\
 PB1a & 3.808 \\
 PB1b & 1.178 \\
@@ -275,7 +275,7 @@ PB3 & 21.255 & 13.154 \\
 %Table \ref{tab:satCompAvg} shows a relatively good result for $PB1(amnes)$. It is still worse than the solvers without any preferences, but in table \ref{tab:vonThore1} where pre
 Table \ref{tab:satCompForgettingBenefits}
 %\footnote{These performance ratings differ slightly from table \ref{tab:satCompAvg}. This is because it is a different execution.}
-lists a comparison of multiple backbone algorithms once with ordinary, permanent preferences and in a forgetting scheme as described in section \ref{sec:amnesPrefs}. Preferences in general resulted in worse performance for this benchmark. However, $PB1(amnes)$, where the preferences are configured to immediately drop those that were involved in a conflict, reduced the penalty to an acceptable level in all examples. \footnote{
+lists a comparison of multiple backbone algorithms once with ordinary, permanent preferences and in a forgetting scheme as described in section \ref{sec:amnesPrefs}. Preferences in general resulted in worse performance for this benchmark. However, $PB1(forget)$, where the preferences are configured to immediately drop those that were involved in a conflict, reduced the penalty to an acceptable level in all examples. \footnote{
 In earlier executions of my benchmark setup, I also tested $PB1c$ with $0.5\%$ as preference size restriction, however only in combination with forgetting preferences. Without forgetting them, this configuration turned out to be completely unreasonable to test within an acceptable time frame and was dropped.}
 
 

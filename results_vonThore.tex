@@ -11,8 +11,8 @@ IBB & 6.353 & 2.316 & 15748 \\
 KBB & 13.747 & 2.11 & 15266 \\
 PB0 & 3.659 & 1.469 & 6531 \\
 PB1 & 3.918 & 1.611 & 6531 \\
-PB1(amnes) & 4.067 & 1.682 & 6531 \\
 PB1(model) & 2.148 & 1.59 & 6531 \\
+PB1(forget) & 4.067 & 1.682 & 6531 \\
 %PB1(invert) & 8.154 & 3.26 & 15248 \\
 PB1x & 7.596 & 2.94 & 15748 \\
 %PB1a & 5.096 & 2.112 & 9335 \\
@@ -31,7 +31,7 @@ PB3 & 3.872 & 1.204 & 4471 \\
 \label{tab:vonThore1}
 \end{wraptable}
 
-Another benchmark I applied the various backbone algorithms to, was a formula for a real world application from the automobile industry. The purpose of this formula $POF_1$ was to describe a product in the context of options or features available to the customer. Some of these options can be combined, others exclude or require each other. Most of the variables in $POF_1$ correspond to a boolean parameter that is set to $\top$ if the associated feature is requested by the customer. If the formula would become unsatisfiable under such assumptions equal to the requested configuration, then the combination of these features would be impossible. Looking at it from the other side, the set of models of $POF_1$ matches exactly the set of possible product configurations that are available to the customer. $POF_1$ further contains a small set of additional variables to model more complex relationships between options.
+Another benchmark I applied the various backbone algorithms to, was a formula for a real world application from the automobile industry, a so-called "Product Overview Formula". The purpose of this formula $POF_1$ was to describe a product in the context of options or features available to the customer. Some of these options can be combined, others exclude or require each other. Most of the variables in $POF_1$ correspond to a boolean parameter that is set to $\top$ if the associated feature is requested by the customer. If the formula would become unsatisfiable under such assumptions equal to the requested configuration, then the combination of these features would be impossible. Looking at it from the other side, the set of models of $POF_1$ matches exactly the set of possible product configurations that are available to the customer. $POF_1$ further contains a small set of additional variables to model more complex relationships between options.
 
 The particular use case that I examined was to find the implications in the formula, i.e. if a customer requests feature $a$, would he also have to pick feature $b$. A primitive way to calculate this would be to iterate over all possible pairs of features 
 %\footnote{Minus permutations and pairs with the same feature twice}
@@ -44,7 +44,7 @@ A more efficient approach is to only go over the 407 options once and for each v
 Table \ref{tab:vonThore1}\footnote{The duration of the last SAT call is missing in this table, because it was too small to be meaningfully interpretable.} lists experimental results with the same set of algorithms that were run on the files from the SAT competition. In the following, I will list some observations about these results.
 
 \begin{itemize}
-\item We immediately see that preferences give a great benefit to performance, other than in the previous benchmark with the files from the SAT competition. Here, all cases where I tried to soften the effects of preferences ($PB1(amnes)$,$PB1c$, $PB2$) had worse results than the base algorithm $PB1$\footnote{
+\item We immediately see that preferences give a great benefit to performance, other than in the previous benchmark with the files from the SAT competition. Here, all cases where I tried to soften the effects of preferences ($PB1(forget)$,$PB1c$, $PB2$) had worse results than the base algorithm $PB1$\footnote{
 	Especially $PB2$, but note that this algorithm only affects the assignment order. A fair comparison would be between $PB2$ and $PB1b$, but here $PB2$ is the slower one as well.
 }. 
 \item The fastest algorithm overall ($PB1(model)$) is the one that does not reduce the models at all. The number of SAT calls is even exactly the same as that of that variant with prime implicant reduction. However the time that was spent in the SAT solver is very similar to that execution with prime implicant reduction ($PB1$), so the difference must be the time that was spent to reduce the model and the benefit, namely the number of optional variables in the prime implicant, was very small.\\
@@ -60,6 +60,7 @@ Finally, the overall computation time of $KBB$ is actually worse than that of $B
 \end{itemize}
 
 \subsection{Specialized algorithm}
+TODO PB0 war auch ziemlich gut
 
 With the findings from the last section and some experimentation, I devised a specialized algorithm $PB4$ for this use case which is listed in algorithm \ref{alg:thoreSpecial}. For comparison with the other implementations, the performance results can be seen in table \ref{tab:thoreSpecialResults}.
 
@@ -74,9 +75,9 @@ PB4 & 1.482 & 0.863 & 4064 \\
 \label{tab:thoreSpecialResults}
 \end{wraptable}
 
-First of all, we should make use of the fact, that all backbone literals are learned after the first SAT call. This can be done with the scheme of approaching upper and lower bounds as described in section \ref{sec:upperLower}. The lower bound $bb_l$ of the backbone consists of all learned literals, whereas it's upper bound $bb_u$ consists of the intersection of found models or reductions of them. Having both upper and lower bound not only allows to potentially stop the loop before the last sat call. It also accelerates the reduction of the first model to it's required literals, because if I know that a literal is in the lower bound of the backbone, I don't need to explicitely test, whether it would also be in it's upper bound. This behaviour is listed in algorithm \ref{alg:specReq}. It might sound sensible at first to regularly check for new learned literals in case some might only show up later. However for the reasons described in section \ref{subsec:axiomatic}, this is not guaranteed to result in valid backbone literals.
+First of all, we should make use of the fact, that all backbone literals are learned after the very first SAT call. This can be done with the scheme of approaching upper and lower bounds as described in section \ref{sec:upperLower}. The lower bound $bb_l$ of the backbone consists of all learned literals, whereas it's upper bound $bb_u$ consists of the intersection of found models or reductions of them. Having both upper and lower bound not only allows to potentially stop the loop before the last sat call. It also accelerates the reduction of the first model to it's required literals, because if you know that a literal is in the lower bound of the backbone, you don't need to explicitely test, whether it would also be in it's upper bound. This behaviour is listed in algorithm \ref{alg:specReq}. It might sound sensible at first to regularly check for new learned literals in case some might only show up later. However for the reasons described in section \ref{subsec:axiomatic}, this is not guaranteed to result in valid backbone literals.
 
-Secondly, it turned out, that only the first model reduction in line \ref{line:specReq} was worth it's computational effort. The reduction of subsequent models did not give performance benefits that would have outweighed the time it took to do. That is why in line \ref{line:specNoReduc} the upper bound is intersected with the complete model instead of a reduction of it.
+Secondly, it turned out, that only the first model reduction in line \ref{line:specReq} was worth it's computational effort. The reduction of subsequent models did not give performance benefits that would have outweighed the time it took to do. That is why in line \ref{line:specNoReduc} the upper bound is intersected with the complete model instead of a reduction of it. This property of the $POF_1$ would also explain why the overall computation time of $PB3$ is over three times larger than it's pure SAT time. If your instance requires a lot of SAT calls, then it might actually be a very sound strategy to apply optimizations such as model reductions only on the first iteration where it probably has the greatest effect. 
 
 For the preferences, the typical scheme was applied, where the solver was configured to disprove as many of the backbone candidates as possible. The same set was added as a blocking clause to ensure that the loop would eventually terminate if $bb_l$ happenend to miss some backbone literal. In line \ref{line:specSatcall} the identified backbone literals are enforced as well, to prevent impossible assignments against them. However if implemented correctly in $Sat4J$, they should still be in place from the previous model computation.
 

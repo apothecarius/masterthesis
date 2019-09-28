@@ -1,109 +1,67 @@
 \section{Second industrial benchmark}
-\begin{wraptable}{r}{7cm}
+
+\begin{wraptable}[9]{r}{7cm}
 \begin{tabular}{l| c c c c}
 & $n_{Literals}$ & $n_{Clauses}$ & $n_{test}$ & Filesize \\
 \hline
 $POF_1$ & 469 & 66957 & 407 & 817 KiB \\
 $POF_2$ & 5055 & 81267 & 948 & 1401 KiB \\
 \end{tabular}
-\caption{Size comparison of the two industrial benchmarks. Contains the number of literals, clauses, tested literals and the filesize. }
+\caption{Size comparison of the two $POF$s. 
+%$n_{test}$ denotes the number of tests executed on the formula.
+$n_{test}$ denotes the number of backbone sets to be computed for the formula.
+}
 \label{tab:indusComp}
 \end{wraptable}
 
-In the following I will analyze another product formula $POF_2$, similar to the one in the previous chapter. However this one is much larger than the previous, see table \ref{tab:indusComp}. I tested this formula against the same set of algorithms as the previous formula $POF_1$ including $PB4$, to identify the specific characteristics of it and identify the optimal backbone solver for it, just as in the previous section. Table \ref{tab:vonThore2pof} shows the performance result. 
+In the following I will analyze another product formula $POF_2$, similar to the one in the previous chapter. However this one is much larger than the previous, see table \ref{tab:indusComp}. I tested this formula against the same set of algorithms as the previous formula $POF_1$ including $PB4$, to identify the specific characteristics of it and identify the optimal backbone solver for it, just as in the previous section. Table \ref{tab:vonThore2pof} shows the performance results\footnote{Again, the duration of the last SAT call is missing, because it generally took less than a millisecond and could not be measured properly.}.
+
 
 \begin{wraptable}{R}{8cm}
-\begin{tabular}{l| c c c c}
-& $t_{calc}$ & $t_{sat}$ & $t_{last}$ & $n_{sat}$ \\
+\begin{tabular}{l| c c c}
+& $t_{calc}$ & $t_{sat}$ & $n_{sat}$ \\
  \hline
-BB & 964.05 & 680.113 & - & 2,063,982\\
-IBB & 1244.075 & 832.699 & 1.527 & 432,408\\
-KBB & 1229.866 & 429.248 & - & 417,846\\
-PB0 & 427.187 & 276.132 & 2.094 & 129,943\\
-PB0(model) & 304.072 & 273.185 & 2.084 & 130,099\\
-PB1 & 498.542 & 316.225 & 0.235 & 146,349\\
-PB1(model) & 375.146 & 325.547 & 0.221 & 151,119\\
-PB1(forget) & 471.434 & 292.868 & 0.243 & 143,406\\
-PB1b & 1333.112 & 818.313 & 0.614 & 460,292\\
-PB1c & 508.382 & 318.489 & 0.215 & 146,799\\
-PB1c(5\%) & 575.371 & 355.767 & 3.06 & 198,242\\
-PB1c(0.5\%) & 805.314 & 511.091 & 3.452 & 273,882\\
-PB1d & 517.259 & 317.346 & 0.208 & 146,430\\
-PB1e & 509.053 & 314.43 & 1.123 & 148,096\\
-PB2 & 1515.258 & 1025.452 & 3.576 & 437,898\\
-PB2(5\%) & 1459.938 & 969.117 & 1.921 & 439,641\\
-PB3 & 614.978 & 311.232 & 0.286 & 141,126\\
-PB4 & 363.885 & 318.21 & 0.243 & 146,498\\
+$BB$ 				& 964.05 & 680.113 & 2,063,982\\
+$BB_{unit}$ 		& 1229.866 & 429.248 & 417,846\\
+$IBB$ 				& 1244.075 & 832.699 & 432,408\\
+$PB0$ 				& 427.187 & 276.132 &  129,943\\
+$PB0_{model}$ 		& 304.072 & 273.185 &  130,099\\
+$PB1$ 				& 498.542 & 316.225 & 146,349\\
+$PB1_{model}$ 		& 375.146 & 325.547 &  151,119\\
+$PB1_{rotate}$ 		& 614.978 & 311.232 &  141,126\\
+$PB1_{forget}$ 		& 471.434 & 292.868 &  143,406\\
+$PB1b$ 				& 1333.112 & 818.313 &  460,292\\
+$PB1c$ 				& 508.382 & 318.489 &  146,799\\
+$PB1c_{5\%}$ 		& 575.371 & 355.767 &  198,242\\
+$PB1c_{0.5\%}$ 		& 805.314 & 511.091 &  273,882\\
+$PB1d_{50\%}$ 		& 517.259 & 317.346 & 146,430\\
+$PB1e$ 				& 509.053 & 314.43 &  148,096\\
+$PB2$ 				& 1515.258 & 1025.452 &  437,898\\
+$PB2_{5\%}$ 		& 1459.938 & 969.117 &  439,641\\
+$PB4$ 				& 363.885 & 318.21 &  146,498\\
 \end{tabular}
-\caption{Second Industrial benchmark. Values are not averaged, but summed up over 948 different benchmarks.}
+\caption{Second Industrial benchmark. Values are not averaged, but summed up over 948 different backbone computations.}
 \label{tab:vonThore2pof} %for referencing
 \end{wraptable}
 
-The first thing that shows, again, is that algorithms with preferences have a much better performance overall. $PB0$ and $PB1$ finish between two and three times faster than $BB$ and $IBB$. Something similar an be seen when you compare $PB1b$ with the $PB2$ variants, however it becomes more complicated to explain the result of $PB1(forget)$, which outperformed $PB1$ slightly. Perhaps $POF_2$ contains easy components as well as difficult ones. If so, forgetting preferences could adjust to both dynamically during the same model computation. This would be supported by the fact that $PB1(forget)$ turned out to be the fastest when it comes to pure SAT time.
+The first thing that shows, again, is that algorithms with preferences have a much better performance overall. $PB0$ and $PB1$ finish between two and three times faster than $BB$ and $IBB$. Something similar can be seen when you compare $PB1b$ with the $PB2$ variants, however it becomes more complicated to explain the result of $PB1(forget)$, which outperformed $PB1$ slightly. Perhaps $POF_2$ contains easy components as well as difficult ones. If so, forgetting preferences could adjust to both dynamically during the same model computation, by only dropping preferences about complicated variables. This would be supported by the fact that $PB1(forget)$ turned out to be the fastest when it comes to pure SAT time.
 
-Additionally, it seems that model reduction does not give any benefit in this instance. $PB1(model)$ outperforms the base configuration with prime implication reduction as well as $PB3$ and the same goes for the comparison between $PB0$ and $PB0(model)$. Looking for required literals in the model\footnote{Meaning $PB3$} does give a performance benefit visible in the number of SAT calls and the pure calculation time, as is to be expected from the strongest model reduction scheme. It is however negligible. A more interesting case is $PB4$. Here the overall computation time is comparatively close to the pure SAT time, which coincides with the fact that $PB4$ reduces it's model only once. However, $PB4$ is still outperformed by $PB0(model)$. I also tried out the combination of forgetting preferences and not employing model reduction, but their benefits did not add up to result in a better method than $PB0(model)$.
+Additionally, it seems that model reduction does not give any benefit in this instance. $PB1_{model}$ outperforms the base configuration with prime implicant reduction as well as $PB1_{rotate}$ and the same goes for the comparison between $PB0$ and $PB0_{model}$. Looking for required literals in the model\footnote{I.e. employing $PB1_{rotate}$} does give a performance benefit visible in the number of SAT calls and the pure calculation time, as is to be expected from the strongest model reduction scheme. It is however negligible. A more interesting case is $PB4$. Here the overall computation time is comparatively close to the pure SAT time, which coincides with the fact that $PB4$ reduces its model only once. However, $PB4$ is still outperformed by $PB0_{model}$. I also tried out the combination of forgetting preferences and not employing model reduction, but their benefits did not add up to result in a better method than $PB0_{model}$. This was done based on the $PB1$ algorithm, because the preferences scheme cannot be modified in $PB0$.
 
-Further we can see that the observation about unit implied backbone literals can be observed again in this benchmark. The number of SAT calls and the time spent in the SAT solver are much better in $KBB$ compared to $BB$. But this does not reflect in better overall performance. Also, learnable literals don't seem to be particular valuable in this formula as can be deducted from the results of $PB1e$.
+Further we can see that the observation about unit implied backbone literals can be observed again in this benchmark. The number of SAT calls and the time spent in the SAT solver are much better in $BB_{unit}$ compared to $BB$. But this does not reflect in better overall performance. Also, learnable literals don't seem to be particular valuable in this formula as can be deducted from the results of $PB1e$.
 
 Judging from this, the best backbone computation strategy for $POF_2$ would be the $PB0$ algorithm without any model reduction.
 
 
 
-PB4 bringt nix\\
-präferenzen immer besser\\
-gelernte literale bringen nichts.\\
-rotieren < primimplikante < model bzgl calcTime, in pureSat andersrum, aber logisch, weil stärkere reduktion. model reduktion hier anscheinend völlig nutzlos und verschwendet zeit\\
-PB0 besser als PB1. \\
-PB0 komischerweise schlechtere last sat time TODO entweder begründen oder einfach weglassen\\
-PB1(forget) geht auch gut\\
-aber: basisformel hat backbones und lernbare klauseln\\
-
-PB0 geht mit (model), leider nicht auch mit (forget)
-Basis formel hat backbone literale, also de
-
-
-
-
-ad
-
-ad
-
-ad
-
-ad
-
-ad
-
-ad
-
-ad
-
-ad
-
-ad
-
-ad
-
-ad
-
-ad
-
-ad
-
-ad
-
-ad
-
-wichtig: die literale nicht per klausel erzwingen sondern per assumption, dann werden gelernte klauseln nicht weggeworfen. geht nur mit BB und PB0, und bringt nix in vonThore, weil da nix gelernt wird.
-
-\begin{wraptable}{l}{8cm}
-\begin{tabular}{l| c c c c}
-& $t_{calc}$ & $t_{sat}$ & $t_{last}$ & $n_{sat}$ \\
+\begin{wraptable}{l}{7.5cm}
+\begin{tabular}{l| c c  c}
+& $t_{calc}$ & $t_{sat}$ &  $n_{sat}$ \\
 \hline
-BB & 1275.055 & 829.091 & - & 2,116,264 \\
-IBB & 1312.134 & 878.177 & 2.198 & 431,554 \\
-PB0 & 487.614 & 287.116 & 1.939 & 129,626 \\
-PB0(model) & 316.511 & 285.347 & 1.914 & 129,668 \\
+$BB$ & 1275.055 & 829.091 &  2,116,264 \\
+$IBB$ & 1312.134 & 878.177  & 431,554 \\
+$PB0$ & 487.614 & 287.116 &  129,626 \\
+$PB0_{model}$ & 316.511 & 285.347 & 129,668 \\
 \end{tabular}
 \caption{Results with assumptions instead of formula modification}
 \label{tab:pofAssump}
@@ -119,21 +77,21 @@ eigentlich erstes: kopieren rausoptimieren
 
 The first consideration was to first compute information of the base formula and reuse it in all subsequent computations, where the backbone under an assumption was calculated. Two interesting pieces of this would be the clauses that would be learned by doing this and secondly the backbone of the base formula.
 
-The gain of this depends on the formula. $POF_1$ by itself actually had neither backbone literals nor was it necessary for the SAT solver to learn any new clauses to find a model for it, and even when I tried to compute it's backbone with either $PB0$ or $BB$\footnote{Both algorithms, that can leave their learned clauses in place after backbone computation.} in an effort to learn as much about the formula as possible, not a single clause was learned.
+The gain of this depends on the formula. $POF_1$ by itself actually had neither backbone literals nor was it necessary for the SAT solver to learn any new clauses to find a model for it, and even when I tried to compute its backbone with either $PB0$ or $BB$\footnote{Both algorithms, that can leave their learned clauses in place after backbone computation.} in an effort to learn as much about the formula as possible, not a single clause was learned.
 
 $POF_2$ on the other hand actually had quite a large backbone and many clauses to learn. Table \ref{tab:pofPrepBenefit} shows performance results where the solver object was always copied from either the original formula or one where learned clauses and backbone literals were added explicitely. The third ssection shows how long the preparations took with different solvers and how many clauses were learned and additionally the size of $POF_2$'s backbone.
 
 
 \begin{wraptable}{r}{8cm}
-\begin{tabular}{l | c c c c}
-$Computation$ & $t_{full}$ & $t_{sat}$ & $t_{last}$& $n_{sat}$\\
+\begin{tabular}{l | c c c}
+$Computation$ & $t_{full}$ & $t_{sat}$ & $n_{sat}$\\
 \hline 
-BB & 980.539 & 672.579 & - & 2,080,370 \\
-IBB & 1227.487 & 776.105 & 0.855 & 461,746 \\
-PB0 & 374.425 & 219.909 & 1.93 & 129,912 \\
-PB0(model) & 250.473 & 219.202 & 1.951 & 129,912 \\
-PB1 & 412.914 & 238.005 & 0.244 & 137,985 \\
-PB1(model) & 290.615 & 244.659 & 0.248 & 140,790 \\
+BB 			& 980.539 & 672.579 & 2,080,370 \\
+IBB 		& 1227.487 & 776.105 &  461,746 \\
+PB0 		& 374.425 & 219.909 &  129,912 \\
+PB0(model) 	& 250.473 & 219.202 &  129,912 \\
+PB1 		& 412.914 & 238.005 &  137,985 \\
+PB1(model) 	& 290.615 & 244.659 & 140,790 \\
 
 %PB4 & 2093.709 & 1941.915 & 3.343 & 284062\\
 \hline \hline 
@@ -156,7 +114,7 @@ learned lits übernehmen in POF ist schlechter ansatz, weil wird relativ schnell
 The first consideration was to first compute information of the base formula and reuse it in all subsequent computations, where the backbone under an assumption was calculated. However this was not possible.\\
 One interesting piece of information would have been the set of clauses that were learned during the computation of a model of the base formula $POF_1$. However this set was empty. Appearantly the formula is simple enough, that the model can be found without a single conflict. The solver returned without having learned any new clause for the formula.
 
-Another thing I thought about was the backbone of the base formula. If you can determine backbone literals of $POF_1$, then you can safely assume, that all of these are part of any restricted formula $POF_1 \cup \{a\}$. This is because, when a clause gets added to a CNF formula, it's set of models can only shrink, no new model can be induced through an additional clause\footnote{Assuming that no new variable was introduced.}. This implies that an assignment that didn't occur in the models before will also not appear in the new smaller set of models, in turn implying that if a variable always occured with the same assignment in $POF_1$, it will also do so in $POF_1 \cup \{a\}$. \\
+Another thing I thought about was the backbone of the base formula. If you can determine backbone literals of $POF_1$, then you can safely assume, that all of these are part of any restricted formula $POF_1 \cup \{a\}$. This is because, when a clause gets added to a CNF formula, its set of models can only shrink, no new model can be induced through an additional clause\footnote{Assuming that no new variable was introduced.}. This implies that an assignment that didn't occur in the models before will also not appear in the new smaller set of models, in turn implying that if a variable always occured with the same assignment in $POF_1$, it will also do so in $POF_1 \cup \{a\}$. \\
 However this set was empty as well and for a good reason in this particular case. The backbone of a formula consists of all assignments that have to be done to end up in a model. In the context of a product formula, which we have here, this would mean, that a specific feature of the product would always have to be selected. In other words, the product has an option that is not optional. 
 
 What remained was to see, if the loop over the assumptions could be sped up. In fact whereas the backbone computations\footnote{Of only the new $PB4$ solver} took a sum of 1.5 seconds, this loop overall took 3.9 seconds. The difference consisted of primarily the copying of the formula(2.2 seconds) and writing down benchmark information(around 150 milliseconds). 

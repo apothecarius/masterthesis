@@ -2,68 +2,32 @@
 
 This chapter contains a couple of benchmarks that were all tested against a series of backbone algorithms. There is a slight focus on the preferences approach. Since this is not as thoroughly examined as other approaches in literature, most of these variants are slight modifications of algorithm \ref{alg:blockPref}, where preferences are combined with blocking clauses.
 
-For clarity, the used benchmarks are listed here. All algorithms unless otherwise stated reduce the models that they find to prime implicants with the method described in section \ref{ss:primeImplicant}.
+For clarity, the used algorithms are listed here. All algorithms unless otherwise stated reduce the models that they find to prime implicants with the method described in section \ref{ss:primeImplicant}.
 \begin{itemize}
-	%\setlength\itemsep{0.2em}
-\item \textbf{BB}: $Sat4J$ implementation of algorithm \ref{alg:bb}.
-\item \textbf{IBB}: $Sat4J$ implementation of algorithm \ref{alg:ibb}.
-\item \textbf{KBB}: Algorithm $BB$ in combination with unit implication as described in section \ref{subsec:unitImpl}. 
-\item \textbf{PB0}: $PrefBones$ after \cite{PJ18}. See algorithm \ref{alg:pb0}.
-\item \textbf{PB1}: $PrefBones$ with blocking clause. See algorithm \ref{alg:blockPref}.
-\item \textbf{PB1(model)}: $PB1$ without any model reduction.
-\item \textbf{PB1(forget)}: $PB1$ with forgetting preferences as described in section \ref{sec:amnesPrefs}.
-%\item \textbf{PB1x}: TODOweg $PB1$ without preferences. Structurally identical with $IBB$\footnote{There are slight differences in the performance measurements between these two implementations. These probably stem from differences in the implementation. The differences divided by the number of sat calls is relatively comparable, implying that the two implementations scale comparably.}
-%\item \textbf{PB1a}: TODO nötig?
-\item \textbf{PB1b}: $PB1$ where preferences can only affect the selection order. Given for the purpose of comparison with $PB2$.
-\item \textbf{PB1c}: $PB1$ with a limited number of preferences, as described in section \ref{sec:subsets}. Listed with three different size restrictions.
-\item \textbf{PB1d}: Like $PB1c$, but with more diverse preferences in each iteration.
-\item \textbf{PB1e}: $PB1$ in combination with approaching upper and lower bounds as described in section \ref{sec:upperLower}, where the lower bound is made up of learned literals. As previously mentioned, this method should not be applied once a formula is modified. Results of $PB1e$ serve the sole purpose of indicating that looking for learned literals is a useful strategy.
-%\item \textbf{PB1f}: Based on $PB1e$, but sollte eigenltich weg
-\item \textbf{PB2}: Uses scalable preferences as described in section \ref{sec:nudging}.
-\item \textbf{PB3}: $PB1$ with model reduction through rotation. TODO rename
+\setlength\itemsep{0.2em}
+\item $\boldsymbol{BB}$: $Sat4J$ implementation of algorithm \ref{alg:bb}.
+\item $\boldsymbol{BB_{unit}}$: Algorithm $BB$ in combination with unit implication, see section \ref{subsec:unitImpl}.
+\item $\boldsymbol{IBB}$: $Sat4J$ implementation of algorithm \ref{alg:ibb}.
+\item $\boldsymbol{PB0}$: $PrefBones$ after \cite{PJ18}. See algorithm \ref{alg:pb0}.
+\item $\boldsymbol{PB0_{model}}$: $PB0$ without any model reduction.
+\item $\boldsymbol{PB1}$: $PrefBones$ with blocking clause. See algorithm \ref{alg:blockPref}.
+\item $\boldsymbol{PB1_{model}}$: $PB1$ without any model reduction.
+\item $\boldsymbol{PB1_{rotate}}$: $PB1$ with model reduction through rotation. 
+\item $\boldsymbol{PB1_{forget}}$: $PB1$ with forgetting preferences as described in section \ref{sec:amnesPrefs}.
+%\item $\boldsymbol{PB1x}$: TODOweg $PB1$ without preferences. Structurally identical with $IBB$\footnote{There are slight differences in the performance measurements between these two implementations. These probably stem from differences in the implementation. The differences divided by the number of sat calls is relatively comparable, implying that the two implementations scale comparably.}
+%\item $\boldsymbol{PB1a}$: TODO nötig?
+\item $\boldsymbol{PB1b}$: $PB1$ where preferences can only affect the selection order. Given for the purpose of comparison with $PB2$.
+\item $\boldsymbol{PB1c}$: $PB1$ with a limited number of preferences, as described in section \ref{sec:subsets}. Listed with three different size restrictions.
+\item $\boldsymbol{PB1d}$: Like $PB1c$, but with more diverse preferences in each iteration.
+\item $\boldsymbol{PB1e}$: $PB1$ in combination with approaching upper and lower bounds as described in section \ref{sec:upperLower}, where the lower bound is made up of learned literals\footnote{As previously mentioned, this method should not be applied once a formula is modified. Results of $PB1e$ serve the sole purpose of indicating that looking for learned literals is a useful strategy.}.
+%\item $\boldsymbol{PB1f}$: Based on $PB1e$, but sollte eigenltich weg
+\item $\boldsymbol{PB2}$: Uses scalable preferences as described in section \ref{sec:nudging}.
 \end{itemize}
 
 
-\iffalse
 
 
-
-
-The first two algorithms are $BB$ (as listed in algorithm \ref{alg:bb}) and $IBB$ (algorithm \ref{alg:ibb}). The next algorithm (designated as $KBB$) is a variant of $BB$ that whenever a backbone literal was identified through iterative testing, unit implication as described in subsection \ref{subsec:unitImpl} is used on the set of known backbone literals, trying to identify more backbone literals in a cheap way\footnote{
-	Note that optimisations such as this one were sometimes implemented in a simple, brute-force manner for the sake of time. Here the number of easily identified literals in combination with the pure calculation time is more interesting than the overall time that includes the unit search time.
-}. 
-The following variant $KBB(Pref)$ additionally adds preferences to $KBB$. Both differ further from $BB$, in that they reduce their model not to a prime implicant, but to the required assignments in said model.
-TODO KBB benutzt Rotationen (keine primimplikanten). reiner effekt der unit implikation verfälscht. Problem?
-
-Next is the original $bb-pref$ (see algorithm \ref{alg:pb0}) as described in \cite{PJ18}, designated as $PB0$, followed by my own variant of $Prefbones$ that uses blocking clauses (see algorithm \ref{alg:blockPref}). However by default it contains two optimizations.
-\begin{itemize}
-\item Instead of intersecting models, the result of the sat call is refined to a prime implicant. The results for the case where this optimization was omitted can be seen in $PB1(model)$.
-\item Preferences are $forgetting$. There is a test with this omitted as well, namely $PB1(noAmnes)$.
-\end{itemize}
-
-The algorithms after that can also be described as slight modifications of $PB1$.
-\begin{itemize}
-	\item $PB1(invert)$ is a variant where the preferences are inverted, resulting in the sat solver trying to reproduce already found solutions. 
-	\item $PB1x$ simply deactivates the preferences. Algorithmically this makes $PB1x$ the same is $IBB$.
-	\item $PB1a$ removes the effect of selection order from the preferences. However, when one of the preferred literals is assigned, the assigned phase is chosen from the preferences.
-	\item $PB1b$ is the opposite of $PB1a$. The assigned value to a preferred literal is left to underlying heuristics, but preferred literals are picked for decisions.
-	\item $PB1c$ is configured in a way that only a handful of preferences are set in any point in time. It can be configured with a parameter $f \in ]0..1]$. The maximum number of preferred assignments in $PB1c$ is the number of variables in the formula multiplied with $f$. However, the particular order in which the subset is chosen is linear beginning at the first literal, so the set of preferences is often very similar over different sat calls.
-	\item To alleviate this, $PB1d$ contains an additional mechanism to ensure that the chosen subset of preferences is as different as possible in every sat computation.
-	\item $PB1e$ takes learned literals into account. These are put into set called $bb_{sub}$, which always contains a lower bound of the backbone. This allows two things. First you can omit preferences that would go against required backbone assignments, which would unnecessarily waste time. Secondly, you can add another abort condition. Instead of only stopping once the blocking clause makes the formula unsatisfiable, here you can also compare the backbones lower bound ($bb_{sub}$) with it's upper bound, which would be the intersection of previously found implicants. You can stop, once both upper and lower bound are the same and it is sufficient to compare their size to do this. This approach can potentially save the last sat computation.
-	TODO: unter umständen behält der sat solver sowieso gelernte literale, dann hätten andere präferenzen eh keinen effekt.
-	\item $PB1f$ expands upton $PB1e$ by initially running two satcalls, where one always assigns decided literals to $\top$ and the other to $\bot$. 
-\end{itemize}
-
-$PB2$ employs a different way to implement preferences. Instead of having a preferred and a remainder set of literals and first exhausting the preferred set, here only one order is set up. However the activity values that determine the order are manipulated by applying a constant factor $f$ to those literals that are preferred. The underlying idea is, that two variables are an equally good choice for a decision if their activity values are close, but if we have to pick one of the two, the one that is preferred is definitely to better. 
-TODO problem mit ansatz ist, dass durch bevorzugte phase, präferenz trotzdem hart ist.
-
-$PB3$ reduces the models not to a prime implicant but to the set of required literals as described in section \ref{ss:rot}.
-
-
-
-\fi
-
-
+%$\mathrm{}$
 
 
 

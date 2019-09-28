@@ -1,6 +1,6 @@
 \section{Enumeration algorithms}
 \subsection{Model enumeration}
-A simple definition of the backbone is that it is the intersection of all models of it's formula. If a literal is not part of the backbone, there must exist a model that contains the negation of that literal. Therefore if we had a way to iterate over every single model of the formula and, starting with the set of both literals for every variable and removing every literal from that set that was missing in one of these models, that set would end up being the backbone of the formula. \cite{mjl10} as well as \cite{mjl15} list an algorithm that does exactly this. 
+A simple definition of the backbone is that it is the intersection of all models of its formula. If a literal is not part of the backbone, there must exist a model that contains the negation of that literal. Therefore if we had a way to iterate over every single model of the formula and, starting with the set of both literals for every variable and removing every literal from that set that was missing in one of these models, that set would end up being the backbone of the formula. \cite{mjl10} as well as \cite{mjl15} list an algorithm that does exactly this. 
 
 \begin{algorithm} %ueber alle models iterieren
 \caption{{\sc Enumeration-based backbone computation}}
@@ -49,7 +49,7 @@ It generates an upper bound $\nu_r$ of the backbone by intersecting found models
 
 This is because what remains after the intersection of a handful of models, are the assignments that were the same in all these models and from that we make a blocking clause that prohibits the next model to contain that particular combination of assignments. The next model will then have to be different from all previous models for at least one of the variables in the blocking clause to satisfy it.
 
-Eventually $\nu_r$ will be reduced to the backbone. This can be easily recognized, because the blocking clause of the backbone or any of it's subsets makes the formula unsatisfiable, except in the case that the formulas backbone would be empty. 
+Eventually $\nu_r$ will be reduced to the backbone. This can be easily recognized, because the blocking clause of the backbone or any of its subsets makes the formula unsatisfiable, except in the case that the formulas backbone would be empty. 
 
 Note that it is not particularly important for the algorithm whether the blocking clauses remain in $F$ or get replaced by the next blocking clause, because the new blocking clause $bc_{i+1}$ always subsumes the previous one $bc_i$, meaning that every solution that is prohibited by $bc_{i+1}$ is also prohibited by $bc_i$ and $F \cup \{bc_i , bc_{i+1}\}$ is equivalent to $F \cup \{bc_{i+1}\}$ concerning the set of models.
 

@@ -9,7 +9,7 @@ Having a single implicant $I$ that leaves some variables optional immediately te
 
 Without any further information, a single implicant $I$ tells us, that every one of the optional variables in it cannot be part of the backbone.
 
-Starting with complete models, implicants can be subsets of other implicants, by removing more and more assignments that are not essential. This way you will eventually reach an implicant where all of it's assignments are required and removing any further literal from it, would leave some clause unsatisfied. This would be called a prime implicant $I_\pi$.
+Starting with complete models, implicants can be subsets of other implicants, by removing more and more assignments that are not essential. This way you will eventually reach an implicant where all of its assignments are required and removing any further literal from it, would leave some clause unsatisfied. This would be called a prime implicant $I_\pi$.
 
 \subsection{Prime implicant}
 \label{ss:primeImplicant}
@@ -53,7 +53,7 @@ There is a model reduction method that is even more powerful than calculating th
 
 Any model of a CNF formula can contain multiple implicants and even prime implicants\footnote
 	{As an example imagine any formula with only clauses of size two, where the first literals are disjunct from the second literals. This formula has at least two prime implicants $I_1$ and $I_2$ that you can generate by collecting either the first literal of every clause for $I_1$ or the second literal for $I_2$. Since the literals in $I_1$ are disjunct from those in $I_2$, you can build a model of the combination of $I_1$ and $I_2$.}
-, so if we could find out from only a single model $M_0$ of $F$, which of these literals occured in all implicants that that model covered, with each model we could reduce the set of backbone candidates even more than with just one of it's prime implicants.
+, so if we could find out from only a single model $M_0$ of $F$, which of these literals occured in all implicants that that model covered, with each model we could reduce the set of backbone candidates even more than with just one of its prime implicants.
 
 Doing this is actually pretty simple. Instead of generating a small set of various prime implicants, you check for each assignment $a$ in $M_0$, whether it is required in $M_0$, by checking whether $(M_0 \textbackslash a)$ is still an implicant that satisfies $F$. If so, we know that $a$ is not part of the backbone, because we found an implicant without it. This approach was described in \cite{mjl15}.
 
@@ -64,7 +64,7 @@ Additionally, if you happen to use a computation strategy, where you have a set 
 %Whether this gives a performance benefit greatly depends on the structure of the formulas. I essentially used two benchmarks, one academic made of examples from the sat competitions and the other being a real-life example from the automobile industry. The academic one contained much fewer clauses (1.000-2.000) compared to the industrial (around 60.000), however the clauses of the academic benchmark contained three literals each, compared to two in the industrial one.  \\
 %TODO individuelle vonThore benchmarks mit individuellen satcomp benchmarks vergleichen
 
-%The difference in performance was extreme. Whereas the academic benchmark spent almost all of it's time in the sat solver, for the industrial benchmark my experimental solver with brute-force model rotation spent around 190 times as much time to rotate literals as it did to calculate the model.
+%The difference in performance was extreme. Whereas the academic benchmark spent almost all of its time in the sat solver, for the industrial benchmark my experimental solver with brute-force model rotation spent around 190 times as much time to rotate literals as it did to calculate the model.
 
 %Clauses with many clauses that contain few literals 
 %vonThore: 60k zweier klauseln -> brute force scheiße

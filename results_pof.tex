@@ -122,9 +122,11 @@ In comparison with unprepared computations (see table \ref{tab:vonThore2pof}), t
 
 
 \subsubsection{Reusing formula instance}
-But why should you discard any information about the formula at all? Both $BB$ and $PB0$ never change their formula during the whole benchmark, so you would think that all of these learned clauses would be just as valuable in subsequent iterations of this benchmark. When you have an object representing a formula in $Sat4J$, calculate it's backbone with either $PB0$ or $BB$ and put that into an infinite loop, the duration of each repetition will quickly decrease to only a handful of milliseconds, because all possible conflicts will eventually be evaded with help of knowledge from previous repetitions.
+But why should you discard any information about the formula at all? Both $BB$ and $PB0$ never change their formula during the whole benchmark, so you would think that all of these learned clauses would be just as valuable in subsequent iterations of this benchmark. When you have an object representing a formula in $Sat4J$, calculate its backbone with either $PB0$ or $BB$ and put that into an infinite loop, the duration of each repetition will quickly decrease to only a handful of milliseconds, because all possible conflicts will eventually be evaded with help of knowledge from previous repetitions.
 
-\begin{wraptable}{l}{7.5cm}
+\begin{table}[h]
+%\begin{wraptable}{l}{7.5cm}
+\centering
 \begin{tabular}{l| c c  c}
 & $t_{calc}$ & $t_{sat}$ &  $n_{sat}$ \\
 \hline
@@ -133,21 +135,30 @@ $BB$ & 1275.055 & 829.091 &  2,116,264 \\
 $PB0$ & 487.614 & 287.116 &  129,626 \\
 $PB0_{model}$ & 316.511 & 285.347 & 129,668 \\
 \end{tabular}
-\caption{Results with assumptions instead of formula modification}
+\caption{Results with a reused formula object and assumptions instead of formula modifications.}
 \label{tab:pofAssump}
-\end{wraptable}
+%\end{wraptable}
+\end{table}
 
 However, taking a look at table \ref{tab:pofAssump}, this is clearly not happening. $BB$, $PB0$ and $PB0_{model}$ are 32\% , 14\% and 4\% slower respectively than when using a fresh or resetted formula object without any learned clauses\footnote{For which results are listed in table \ref{tab:vonThore2pof}}. Results for the previous benchmark $POF_1$ were inconclusive with negligible performance differences.
 
-Appearantly, the $POF$ formulae don't benefit much from this technique. It could be that they contain clause clusters that only become problematic with the right variable being fixed to a certain value. In this case the clauses learned during the computation of a backbone under one assumption would be much less useful for the backbone under another assumption. Note also that in the domain of SAT solving it is generally considered a bad thing to have many clauses in your formula that aren't useful to the current computation. Even if they are effectively meaningless in the context of their own formula, they have to be checked whether they indicate a unit assignment every time that a relevant variable is assigned a value. Typically a SAT solver removes unused learned clauses regularly, however in this benchmark, this never happened, even over 948 backbone computations, finally having learned 35,983 clauses but not having become noticeably faster.
+Appearantly, the $POF$ formulae don't benefit much from this technique. It could be that they contain clause clusters that only become problematic with the right variable being fixed to a certain value. In this case the clauses learned during the computation of a backbone under one assumption would be much less useful for the backbone under another assumption. 
+
+Note also that in the domain of SAT solving it is generally considered a bad thing to have many clauses in your formula that aren't useful to the current computation. Even if they are effectively meaningless in the context of their own formula, they have to be checked whether they indicate a unit assignment every time that a relevant variable is assigned a value. Typically a SAT solver removes unused learned clauses regularly, however in this benchmark, this never happened, even over 948 backbone computations, finally having learned 35,983 clauses but not having become noticeably faster.
+
+In fact, as figure \ref{fig:reusePrep} shows, it became slower. Here, the grey continuous line shows the overall computation duration of the $PB0_{model}$ algorithm with reusing the same formula object, while the dashed black line denotes the computation time of the same algorithm solving a prepared formula object and discarding all newer learned clauses. The latter is is faster in every single case, while the grey line even increases its performance loss through its build-up of learned clauses. 
 
 
+\begin{figure}[h]
+\centering
+\includegraphics[angle=90,origin=c,width=\textwidth,height=\textheight,keepaspectratio=true]{reuseprep}
+\caption[Performance comparison of using a prepared formula object and reusing the same one.]{Performance comparison of using a prepared formula object (dashed black) and reusing the same one (grey ) with algorithm $PB0_{model}$. Values are smoothed over a five element window with weights $[\frac{1}{10},\frac{1}{5},\frac{2}{5},\frac{1}{5},\frac{1}{10}]$.}
+\label{fig:reusePrep}
+%\end{wrapfigure}
+\end{figure}
 
-
-
-
-\newpage
-TODO vergleichs bild zwischen $PB0_model(prepped)$ und $PB0_model(chained)$, am besten geglättet
+%\newpage
+%TODO vergleichs bild zwischen $PB0_model(prepped)$ und $PB0_model(chained)$, am besten geglättet
 
 
 \iffalse

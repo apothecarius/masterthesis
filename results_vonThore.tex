@@ -1,8 +1,9 @@
 \section{First industrial benchmark}
 \label{sec:sectionVonThore}
 
-\begin{wraptable}[29]{r}{7cm}
-%\begin{table}[tbp]
+%\begin{wraptable}[29]{r}{7cm}
+\begin{table}[tbp]
+\centering
 \begin{tabular}{l| c c c }
 &$t_{calc}$ & $t_{sat}$& $n_{sat}$ \\
 \hline
@@ -26,13 +27,14 @@ $PB2_{0.5\%}$ & 8.364 & 3.529 & 15,752 \\
 \end{tabular}
 \caption[Performance results of first industrial benchmark]{Performance results for computation of the backbone of a product formula. Values are not averaged, but summed up over 407 backbone computations, each with a different assumption.}
 \label{tab:vonThore1}
-\end{wraptable}
+%\end{wraptable}
+\end{table}
 
 Another benchmark I applied the various backbone algorithms to, was a formula for a real world application from the automobile industry, a so-called "Product Overview Formula". The purpose of this formula $POF_1$ was to describe a product in the context of options or features available to the customer. Some of these options can be combined, others exclude or require each other. Most of the variables in $POF_1$ correspond to a boolean parameter that is set to $\top$ if the associated feature is requested by the customer. If the formula would become unsatisfiable under such assumptions equal to the requested configuration, then the combination of these features would be impossible. Looking at it from the other side, the set of models of $POF_1$ matches exactly the set of possible product configurations that are available to the customer. $POF_1$ further contains a small set of additional variables to model more complex relationships between options.
 
 The particular use case that I examined was to find the implications in the formula, i.e. if a customer requests feature $a$, would he also have to pick feature $b$. A primitive way to calculate this would be to iterate over all possible pairs of features 
 %\footnote{Minus permutations and pairs with the same feature twice}
-and check for satisfiability of $POF_1$ under the condition that $a$ is $\top$ and $b$ is $\bot$. If this was unsatisfiable, then $a$ would imply $b$. However, with 407 literals to choose from, you would have to do 165,242\footnote{407 times 406. This is actually very close to the number of sat calls of the $BB$ algorithm.} sat calls. 
+and check for satisfiability of $POF_1$ under the condition that $a$ is $\top$ and $b$ is $\bot$. If this was unsatisfiable, then $a$ would imply $b$. However, with 407 literals to choose from, you would have to do 165,242\footnote{407 times 406. This is actually very close to the number of SAT calls of the $BB$ algorithm.} SAT calls. 
 
 A more efficient approach is to only go over the 407 options once and for each variable $a$ of them calculate the backbone of $POF_1 \cup \{a\}$ or in other words $POF_1$ under the assumption $a$. If a feature $b$ occurs in all models when $a$ is assumed, then $a$ implies $b$ in some way.
 
@@ -67,7 +69,7 @@ With the findings from the last section and some experimentation, I devised a sp
 \begin{table}[h]
 \centering
 \begin{tabular}{l| c c c }
-&	$t_{calc}$(sec) &	$t_{sat}$(sec)	& NSatCalls \\
+&	$t_{calc}$(sec) &	$t_{sat}$(sec)	& $n_{sat}$ \\
 \hline
 $PB3$ & 1.482 & 0.863 & 4064 \\
 \end{tabular}
@@ -76,7 +78,7 @@ $PB3$ & 1.482 & 0.863 & 4064 \\
 %\end{wraptable}
 \end{table}
 
-First of all, we should make use of the fact, that all backbone literals are learned after the very first SAT call. This can be done with the scheme of approaching upper and lower bounds as described in section \ref{sec:upperLower}. The lower bound $bb_l$ of the backbone consists of all learned literals, whereas its upper bound $bb_u$ consists of the intersection of found models or reductions of them. Having both upper and lower bound not only allows to potentially stop the loop before the last sat call. It also accelerates the reduction of the first model to its required literals, because if you know that a literal is in the lower bound of the backbone, you don't need to explicitely test, whether it would also be in its upper bound. This behaviour is listed in algorithm \ref{alg:specReq}. It might sound sensible at first to regularly check for new learned literals in case some might only show up later. However for the reasons described in section \ref{subsec:axiomatic}, this is not guaranteed to result in valid backbone literals.
+First of all, we should make use of the fact, that all backbone literals are learned after the very first SAT call. This can be done with the scheme of approaching upper and lower bounds as described in section \ref{sec:upperLower}. The lower bound $bb_l$ of the backbone consists of all learned literals, whereas its upper bound $bb_u$ consists of the intersection of found models or reductions of them. Having both upper and lower bound not only allows to potentially stop the loop before the last SAT call. It also accelerates the reduction of the first model to its required literals, because if you know that a literal is in the lower bound of the backbone, you don't need to explicitely test, whether it would also be in its upper bound. This behaviour is listed in algorithm \ref{alg:specReq}. It might sound sensible at first to regularly check for new learned literals in case some might only show up later. However for the reasons described in section \ref{subsec:axiomatic}, this is not guaranteed to result in valid backbone literals.
 
 Secondly, it turned out, that only the first model reduction in line \ref{line:specReq} was worth its computational effort. The reduction of subsequent models did not give performance benefits that would have outweighed the time it took to do. That is why in line \ref{line:specNoReduc} the upper bound is intersected with the complete model instead of a reduction of it. This property of the $POF_1$ would also explain why the overall computation time of $PB1_{rotate}$ is over three times larger than its pure SAT time. If your instance requires a lot of SAT calls, then it might actually be a very sound strategy to apply optimizations such as model reductions only on the first iteration where it probably has the greatest effect. 
 

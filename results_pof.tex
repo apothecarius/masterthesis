@@ -1,15 +1,15 @@
 \section{Second industrial benchmark}
 
-\begin{wraptable}[9]{r}{7cm}
-\begin{tabular}{l| c c c c}
-& $n_{Literals}$ & $n_{Clauses}$ & $n_{test}$ & Filesize \\
+\begin{wraptable}[10]{r}{9cm}
+\begin{tabular}{l| c c c c c}
+& $n_{Literals}$ & $n_{Clauses}$ & $n_{test}$ & $avg(n_{bb})$ &  Filesize \\
 \hline
-$POF_1$ & 469 & 66957 & 407 & 817 KiB \\
-$POF_2$ & 5055 & 81267 & 948 & 1401 KiB \\
+$POF_1$ & 469 & 66957 & 407 & 355.24 & 817 KiB \\
+$POF_2$ & 5055 & 81267 & 948 & 1841.5 & 1401 KiB \\
 \end{tabular}
 \caption{Size comparison of the two $POF$s. 
 %$n_{test}$ denotes the number of tests executed on the formula.
-$n_{test}$ denotes the number of backbone sets to be computed for the formula.
+$n_{test}$ denotes the number of backbone sets to be computed for the formula. $avg(n_{bb})$ is the size of the backbones averaged over all tests.
 }
 \label{tab:indusComp}
 \end{wraptable}
@@ -44,7 +44,7 @@ $PB4$ 				& 363.885 & 318.21 &  146,498\\
 \label{tab:vonThore2pof} %for referencing
 \end{wraptable}
 
-The first thing that shows, again, is that algorithms with preferences have a much better performance overall. $PB0$ and $PB1$ finish between two and three times faster than $BB$ and $IBB$. Something similar can be seen when you compare $PB1b$ with the $PB2$ variants, however it becomes more complicated to explain the result of $PB1(forget)$, which outperformed $PB1$ slightly. Perhaps $POF_2$ contains easy components as well as difficult ones. If so, forgetting preferences could adjust to both dynamically during the same model computation, by only dropping preferences about complicated variables. This would be supported by the fact that $PB1(forget)$ turned out to be the fastest when it comes to pure SAT time.
+The first thing that shows, again, is that algorithms with preferences have a much better performance overall. $PB0$ and $PB1$ finish between two and three times faster than $BB$ and $IBB$. Something similar can be seen when you compare $PB1b$ with the $PB2$ variants, however it becomes more complicated to explain the result of $PB1_{forget}$, which outperformed $PB1$ slightly. Perhaps $POF_2$ contains easy components as well as difficult ones. If so, forgetting preferences could adjust to both dynamically during the same model computation, by only dropping preferences about complicated variables. This would be supported by the fact that $PB1_{forget}$ turned out to be the fastest when it comes to pure SAT time.
 
 Additionally, it seems that model reduction does not give any benefit in this instance. $PB1_{model}$ outperforms the base configuration with prime implicant reduction as well as $PB1_{rotate}$ and the same goes for the comparison between $PB0$ and $PB0_{model}$. Looking for required literals in the model\footnote{I.e. employing $PB1_{rotate}$} does give a performance benefit visible in the number of SAT calls and the pure calculation time, as is to be expected from the strongest model reduction scheme. It is however negligible. A more interesting case is $PB4$. Here the overall computation time is comparatively close to the pure SAT time, which coincides with the fact that $PB4$ reduces its model only once. However, $PB4$ is still outperformed by $PB0_{model}$. I also tried out the combination of forgetting preferences and not employing model reduction, but their benefits did not add up to result in a better method than $PB0_{model}$. This was done based on the $PB1$ algorithm, because the preferences scheme cannot be modified in $PB0$.
 
@@ -54,33 +54,28 @@ Judging from this, the best backbone computation strategy for $POF_2$ would be t
 
 
 
-\begin{wraptable}{l}{7.5cm}
-\begin{tabular}{l| c c  c}
-& $t_{calc}$ & $t_{sat}$ &  $n_{sat}$ \\
-\hline
-$BB$ & 1275.055 & 829.091 &  2,116,264 \\
-$IBB$ & 1312.134 & 878.177  & 431,554 \\
-$PB0$ & 487.614 & 287.116 &  129,626 \\
-$PB0_{model}$ & 316.511 & 285.347 & 129,668 \\
-\end{tabular}
-\caption{Results with assumptions instead of formula modification}
-\label{tab:pofAssump}
-\end{wraptable}
 
 
+\newpage
 
 
 \subsection{Efficiency over all assumptions}
-Since for this benchmark, the almost same formula is worked on hundreds of times, it makes sense to think about ways how to make this outer loop efficient as well.
+In both $POF$ benchmarks, the same formula is worked on hundreds of times. Therefore, it makes sense to think about ways how to make this outer loop efficient as well.
 
-eigentlich erstes: kopieren rausoptimieren
+The first consideration should be to reuse the formula object. The first time that I ran the 407 backbone computations for $POF_1$ with the algorithm $PB4$, the backbone computations by themselves took a sum of 1.5 seconds, but the loop overall took 3.9 seconds. The difference consisted of primarily the copying of the formula(2.2 seconds) and writing down benchmark information(around 150 milliseconds). Lacking deeper understanding of the $Sat4J$ library, at that time I created a new formula object\footnote{The class name in $Sat4J$ is $Solver$ or $ISolver$.} for each backbone computation and copied over the clauses from an unsolved formula object. But it would be much faster to just reuse the same one.
 
-The first consideration was to first compute information of the base formula and reuse it in all subsequent computations, where the backbone under an assumption was calculated. Two interesting pieces of this would be the clauses that would be learned by doing this and secondly the backbone of the base formula.
+\subsubsection{Resetting formula object}
+To do this in $Sat4J$ you can reset it. In the case of model enumeration algorithms like $IBB$ or $PB1$, this incorporates removing all the blocking clauses because they modify the formula. If you don't do this, all backbone computations after the first one will immediately fail, because the final blocking clause makes the formula unsatisfiable. Additionally, you must flush the set of learned clauses and literals because some of these may be based on the blocking clauses. Therefore, if you would leave them in place, they could reproduce some of the effects that the blocking clause had. Take care that all of this happens in a way that during the individual backbone computations, the learned clauses stay in place. $Sat4J$ supplies a special function to remove a clause under the expectation that it will immediately become subsumed or already is, which you can use to remove old blocking clauses during the loop without flushing the learned clauses. Alternatively you could remove all of them at the end. The ordinary function to remove a clause in $Sat4J$ triggers the cleanup automatically. 
 
-The gain of this depends on the formula. $POF_1$ by itself actually had neither backbone literals nor was it necessary for the SAT solver to learn any new clauses to find a model for it, and even when I tried to compute its backbone with either $PB0$ or $BB$\footnote{Both algorithms, that can leave their learned clauses in place after backbone computation.} in an effort to learn as much about the formula as possible, not a single clause was learned.
+Additionally, it makes sense to revert the decision heuristic if you replaced it with something that allows to implement preferences and you want to reuse the formula object with a backbone solver without them. The typical behaviour throughout the $Sat4J$ library, including the $BB$ and $IBB$ backbone solvers, is to assume that such a data structure is already set up correctly.
 
-$POF_2$ on the other hand actually had quite a large backbone and many clauses to learn. Table \ref{tab:pofPrepBenefit} shows performance results where the solver object was always copied from either the original formula or one where learned clauses and backbone literals were added explicitely. The third ssection shows how long the preparations took with different solvers and how many clauses were learned and additionally the size of $POF_2$'s backbone.
+One last bit of state inside the formula object that I noticed were two floating point numbers called $claInc$ and $claDecay$. These influence the scale in which the activity values inside the decision heuristic grow and shrink. They do not influence the calculation result, but merely the exact behaviour of the solver.
 
+With all of this taken care of, the duration of the outermost loop over the assumptions took just as long as the sum of the durations of the backbone computations.
+
+
+\subsubsection{Prepared formulas}
+Another good strategy would be to first compute information of the base formula $POF$ and reuse it in all subsequent computations, where the backbone under an assumption was calculated. Two interesting pieces of this would be the clauses that would be learned by doing this and secondly the backbone of the base formula. Both of these are valid for any $POF \cup \{a\}$ because, when a clause gets added to a CNF formula, its set of models can only shrink, no new model can be induced through an additional clause\footnote{Assuming that no new variable was introduced.}. This implies that an assignment that didn't occur in the models before will also not appear in the new smaller set of models, in turn implying that if a variable always occured with the same assignment in $POF$, it will also do so in $POF \cup \{a\}$.
 
 \begin{wraptable}{r}{8cm}
 \begin{tabular}{l | c c c}
@@ -98,13 +93,49 @@ PB1(model) 	& 290.615 & 244.659 & 140,790 \\
 $Preparation$ & $t_{calc}$ & $n_{learned}$ & $n_{BB}$  \\
 \hline
 BB         & 1.928 & 1898 & 1449 \\
-PB0        & 0.918 & 2214 & 1449 \\
-PB0(model) & 0.505 & 2244 & 1449 \\
+PB0        & 0.918 & 2214 & " \\
+PB0(model) & 0.505 & 2244 & " \\
 
 \end{tabular}
-\caption{Comparison of benchmark results depending on reuse of learned clauses and backbones of the base formula $POF_2$. Subsequently number of learned clauses and backbone literals through preparation.}
+\caption{Benchmark results with reuse of learned clauses and backbones of the base formula $POF_2$. Subsequently number of learned clauses and backbone literals through preparation.}
 \label{tab:pofPrepBenefit}
 \end{wraptable}
+
+The gain of this depends on the formula. $POF_1$ by itself actually had neither backbone literals nor was it necessary for the SAT solver to learn any new clauses to find a model for it, and even when I tried to compute its backbone with either $PB0$ or $BB$\footnote{Both algorithms, that can leave their learned clauses in place after backbone computation.} in an effort to learn as much about the formula as possible, not a single clause was learned.
+
+$POF_2$ on the other hand actually had quite a large backbone and many clauses to learn. The $Computation$ section of table \ref{tab:pofPrepBenefit} shows performance results where the base formula was always copied from a formula object that was already solved with the $PB0$ algorithm employing prime implicant reduction. With this method, the formula had learned 2214 clauses that its copies would treat as a clause that was explicitely written in the original formula $POF_2$. The $Preparation$ section shows how long the preparations took with different solvers and how many clauses were learned and additionally the size of $POF_2$'s backbone.
+
+In comparison with unprepared computations (see table \ref{tab:vonThore2pof}), the algorithms that benefitted from this approach were those that employed preferences. The $IBB$ algorithm doesn't seem to be affected and the $BB$ algorithm was even hindered by it.
+
+
+
+
+
+\subsubsection{Reusing same formula}
+There is however the possibility, that after one backbone computation, the formula object would contain information, that could be valuable to another backbone computation.
+
+TODO: mit vonThore ausprobieren, vielleicht gibts da mehr zu lernen
+
+\begin{wraptable}{l}{7.5cm}
+\begin{tabular}{l| c c  c}
+& $t_{calc}$ & $t_{sat}$ &  $n_{sat}$ \\
+\hline
+$BB$ & 1275.055 & 829.091 &  2,116,264 \\
+$IBB$ & 1312.134 & 878.177  & 431,554 \\
+$PB0$ & 487.614 & 287.116 &  129,626 \\
+$PB0_{model}$ & 316.511 & 285.347 & 129,668 \\
+\end{tabular}
+\caption{Results with assumptions instead of formula modification}
+\label{tab:pofAssump}
+\end{wraptable}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%eigentlich erstes: kopieren rausoptimieren
+
 
 learned lits übernehmen in POF ist schlechter ansatz, weil wird relativ schnell schlechter als immer die formel übernehmen, womöglich nutzlose learned clauses, die nur verlangsamen und nichts aussagen (weil von anderen assumptions)
 
@@ -117,12 +148,3 @@ One interesting piece of information would have been the set of clauses that wer
 Another thing I thought about was the backbone of the base formula. If you can determine backbone literals of $POF_1$, then you can safely assume, that all of these are part of any restricted formula $POF_1 \cup \{a\}$. This is because, when a clause gets added to a CNF formula, its set of models can only shrink, no new model can be induced through an additional clause\footnote{Assuming that no new variable was introduced.}. This implies that an assignment that didn't occur in the models before will also not appear in the new smaller set of models, in turn implying that if a variable always occured with the same assignment in $POF_1$, it will also do so in $POF_1 \cup \{a\}$. \\
 However this set was empty as well and for a good reason in this particular case. The backbone of a formula consists of all assignments that have to be done to end up in a model. In the context of a product formula, which we have here, this would mean, that a specific feature of the product would always have to be selected. In other words, the product has an option that is not optional. 
 
-What remained was to see, if the loop over the assumptions could be sped up. In fact whereas the backbone computations\footnote{Of only the new $PB4$ solver} took a sum of 1.5 seconds, this loop overall took 3.9 seconds. The difference consisted of primarily the copying of the formula(2.2 seconds) and writing down benchmark information(around 150 milliseconds). 
-
-To do this in $Sat4J$ you must first of all reset the formula object\footnote{The class name in $Sat4J$ is $Solver$ or $ISolver$.}. In the case of model enumeration algorithms like $IBB$ or $PB1$, this incorporates removing all the blocking clauses because they modify the formula. If you don't do this, all backbone computations after the first one will immediately fail, because the final blocking clause makes the formula unsatisfiable. Additionally, you must flush the set of learned clauses and literals because some of these may be based on the blocking clauses. Therefore, if you would leave them in place, they could reproduce some of the effects that the blocking clause had. Take care that all of this happens in a way that during the individual backbone computations, the learned clauses stay in place. $Sat4J$ supplies a special function to remove a clause under the expectation that it will immediately become subsumed or already is, which you can use to remove old blocking clauses during the loop without flushing the learned clauses. Alternatively you could remove all of them at the end. The ordinary function to remove a clause in $Sat4J$ triggers the cleanup automatically. 
-
-Additionally, it makes sense to revert the decision heuristic if you replaced it with something that allows to implement preferences and you want to reuse the formula object with a backbone solver without preferences. The typical behaviour throughout the $Sat4J$ library, including the $BB$ and $IBB$ backbone solvers, is to assume that such a data structure is already set up correctly.
-
-One last bit of state inside the formula object that I noticed were two floating point numbers called $claInc$ and $claDecay$. These influence the scale in which the activity values inside the decision heuristic grow and shrink. They do not influence the calculation result, but merely the exact behaviour of the solver.
-
-With all of this taken care of, the duration of the outermost loop over the assumptions took just as long as the sum of the durations of the backbone computations.

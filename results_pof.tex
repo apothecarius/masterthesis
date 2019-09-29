@@ -9,7 +9,7 @@
 $POF_1$ & 469 & 66957 & 407 & 355.24 & 817 KiB \\
 $POF_2$ & 5055 & 81267 & 948 & 1841.5 & 1401 KiB \\
 \end{tabular}
-\caption[Size comparison of the two $POF$ formulas. ]{Size comparison of the two $POF$s. 
+\caption[Size comparison of the two $POF$ formulae. ]{Size comparison of the two $POF$s. 
 %$n_{test}$ denotes the number of tests executed on the formula.
 $n_{test}$ denotes the number of backbone sets to be computed for the formula. $avg(n_{bb})$ is the size of the backbones averaged over all tests.
 }
@@ -84,7 +84,7 @@ One last bit of state inside the formula object that I noticed were two floating
 With all of this taken care of, the duration of the outermost loop over the assumptions took just as long as the sum of the durations of the backbone computations.
 
 
-\subsubsection{Prepared formulas}
+\subsubsection{Prepared formulae}
 \begin{wraptable}[20]{R}{8cm}
 \begin{tabular}{l | c c c}
 $Computation$ & $t_{full}$ & $t_{sat}$ & $n_{sat}$\\
@@ -139,14 +139,15 @@ $PB0_{model}$ & 316.511 & 285.347 & 129,668 \\
 
 However, taking a look at table \ref{tab:pofAssump}, this is clearly not happening. $BB$, $PB0$ and $PB0_{model}$ are 32\% , 14\% and 4\% slower respectively than when using a fresh or resetted formula object without any learned clauses\footnote{For which results are listed in table \ref{tab:vonThore2pof}}. Results for the previous benchmark $POF_1$ were inconclusive with negligible performance differences.
 
-Appearantly, the $POF$ formulas don't benefit much from this technique. It could be that they contain clause clusters that only become problematic with the right variable being fixed to a certain value. In this case the clauses learned during the computation of a backbone under one assumption would be much less useful for the backbone under another assumption. Note also that in the domain of SAT solving it is generally considered a bad thing to have many clauses in your formula that aren't useful to the current computation. Even if they are effectively meaningless in the context of their own formula, they have to be checked whether they indicate a unit assignment every time that a relevant variable is assigned a value. Typically a SAT solver removes unused learned clauses regularly, however in this benchmark, this never happened, even over 948 backbone computations, finally having learned 35,983 clauses but not having become noticeably faster.
+Appearantly, the $POF$ formulae don't benefit much from this technique. It could be that they contain clause clusters that only become problematic with the right variable being fixed to a certain value. In this case the clauses learned during the computation of a backbone under one assumption would be much less useful for the backbone under another assumption. Note also that in the domain of SAT solving it is generally considered a bad thing to have many clauses in your formula that aren't useful to the current computation. Even if they are effectively meaningless in the context of their own formula, they have to be checked whether they indicate a unit assignment every time that a relevant variable is assigned a value. Typically a SAT solver removes unused learned clauses regularly, however in this benchmark, this never happened, even over 948 backbone computations, finally having learned 35,983 clauses but not having become noticeably faster.
 
+
+
+
+
+
+\newpage
 TODO vergleichs bild zwischen $PB0_model(prepped)$ und $PB0_model(chained)$, am besten geglättet
-
-
-
-
-
 
 
 \iffalse

@@ -162,7 +162,7 @@ Rows indicate: Calculation time and number of SAT calls for the $BB$ solver ; Ca
 \label{tab:bbkbb}
 \end{table}
 
-Table \ref{tab:bbkbb}\footnote{In this table the pure sat calculation time for the $BB$ column is missing. The $BB$ algorithm actually spends almost no time outside of the SAT solver in the case of the listed formulas. TODO sicherstellen dass auf der richtigen seite (mit tabelle 5.3)
+Table \ref{tab:bbkbb}\footnote{In this table the pure sat calculation time for the $BB$ column is missing. The $BB$ algorithm actually spends almost no time outside of the SAT solver in the case of the listed formulae. TODO sicherstellen dass auf der richtigen seite (mit tabelle 5.3)
 	%\\Most of the performance differences in this table can be explained with other reasons than actual algorithmic differences. $fla-barthel-220-4.cnf$ for example should not be faster with $KBB$ since here no backbone literal was determined through unit propagation. However I was able to reproduce this performance difference just through the order of what was called first, i.e. if the two solvers are called the other way around the difference in timing between the first and second call are the same. A possible explanation could be a power saving feature in modern processors.
 	} 
 shows individual performance differences between the $BB$ solver supplied by $Sat4J$ and my own modification $BB_{unit}$ for comparison, as well as the backbone's size and the number of backbone literals identified through unit implication. The time columns also contain the number of sat calls that were comitted. Its content matches the results of table \ref{tab:satCompAvg}. Occasional cases where $BB_{unit}$ trumps in performance over $BB$ get balanced out by cases where this is the other way round, but the number of sat calls is always better with the $BB_{unit}$ algorithm. And this is true in spite of the fact that almost all identifications happened through unit implication. 
@@ -259,7 +259,7 @@ lists a comparison of multiple backbone algorithms once with ordinary, permanent
 In earlier executions of my benchmark setup, I also tested $PB1c$ with $0.5\%$ as preference size restriction, however only in combination with forgetting preferences. Without forgetting them, this configuration turned out to be completely unreasonable to test within an acceptable time frame and was dropped.}
 
 
-Table \ref{tab:vonThore1} in the upcoming section shows results for a formula that is more beneficient to preferences. Here we see, that in such a case, forgetting preferences still work as intended. If these results turn out to be reproducible for other formulas as well, forgetting preferences could be a viable strategy to compute the backbone of any formula without prior knowledge about it, since the penalty for difficult formulas would be relatively low but the speedup for easy ones very high.
+Table \ref{tab:vonThore1} in the upcoming section shows results for a formula that is more beneficient to preferences. Here we see, that in such a case, forgetting preferences still work as intended. If these results turn out to be reproducible for other formulae as well, forgetting preferences could be a viable strategy to compute the backbone of any formula without prior knowledge about it, since the penalty for difficult formulae would be relatively low but the speedup for easy ones very high.
 
 
 %in second benchmark sogar besser als PB1, hat möglicherweise schwierige und leichte komponenten und amnes kann mit beiden gut umgehen.

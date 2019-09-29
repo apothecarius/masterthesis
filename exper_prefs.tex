@@ -20,7 +20,7 @@ It is quite likely that a formula contains models that are relevant for the back
 
 \subsection{Subsets}
 \label{sec:subsets}
-During benchmarking it showed itself, that all solvers that did not employ any preferences at all were the fastest ones when it came to difficult formulas. So it might be interesting to test some algorithm that can be configured with a floating point number, where a ground value of $0.0$ would be equivalent to having no preferences at all and then allowing to enable preferences in very small increments.
+During benchmarking it showed itself, that all solvers that did not employ any preferences at all were the fastest ones when it came to difficult formulae. So it might be interesting to test some algorithm that can be configured with a floating point number, where a ground value of $0.0$ would be equivalent to having no preferences at all and then allowing to enable preferences in very small increments.
 
 The simplest way to do this would be to restrict the number of preferences that could be set for each SAT call. The parameter above is multiplied with the number of variables in the formula and then the number of preferred literals is pruned in each iteration to have at most that size, without of course discarding the set of assignments that has yet to be tested.
 

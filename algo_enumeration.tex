@@ -49,7 +49,7 @@ It generates an upper bound $\nu_r$ of the backbone by intersecting found models
 
 This is because what remains after the intersection of a handful of models, are the assignments that were the same in all these models and from that we make a blocking clause that prohibits the next model to contain that particular combination of assignments. The next model will then have to be different from all previous models for at least one of the variables in the blocking clause to satisfy it.
 
-Eventually $\nu_r$ will be reduced to the backbone. This can be easily recognized, because the blocking clause of the backbone or any of its subsets makes the formula unsatisfiable, except in the case that the formulas backbone would be empty. 
+Eventually $\nu_r$ will be reduced to the backbone. This can be easily recognized, because the blocking clause of the backbone or any of its subsets makes the formula unsatisfiable, except in the case that the formulae backbone would be empty. 
 
 Note that it is not particularly important for the algorithm whether the blocking clauses remain in $F$ or get replaced by the next blocking clause, because the new blocking clause $bc_{i+1}$ always subsumes the previous one $bc_i$, meaning that every solution that is prohibited by $bc_{i+1}$ is also prohibited by $bc_i$ and $F \cup \{bc_i , bc_{i+1}\}$ is equivalent to $F \cup \{bc_{i+1}\}$ concerning the set of models.
 

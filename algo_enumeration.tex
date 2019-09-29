@@ -21,14 +21,14 @@ $\nu_r \gets \{ x | x \in Var(F) \} \cup \{ \neg x | x \in Var(F) \}$\;
 $\Return\; \nu_r$\;
 \end{algorithm}
 
-Here, found models are prevented from being found again by adding a blocking clause of said model and the algorithm terminates once all models are prohibited and the formula became unsatisfiable through this.
+Here, found models are prevented from being found again by adding a blocking clause of said model and the algorithm terminates once all models are prohibited and the formula became unsatisfiable through this. Should it happen that the backbone estimate becomes empty because all variables have already been encountered with $\top$ and $\bot$ assigned to them, this algorithm can also return prematurely.
 
 \subsection{Upper bound reduction}
 
-Clearly, calculating every single model of a formula leaves room for optimization. Most models of a common boolean formula differ by small, independent differences that can just as well occur in other models. Therefore the intersection of only a handful of models can suffice to result in the backbone, as long as these models are chosen to be as different as possible. This was achieved in \cite{mjl15} as is described in algorithm \ref{alg:ibb}.
+Clearly, calculating every single model of a formula leaves room for optimization. Most models of a common boolean formula differ by small, independent differences that can just as well occur in other models. Therefore the intersection of only a handful of models can suffice to result in the backbone, as long as these models are chosen to be as different as possible. This was achieved in \cite{mjl15} as is described in algorithm \ref{alg:ibb}\footnote{In \cite{mjl15} this is called an "Iterative algorithm", but so are algorithms \ref{alg:iterTwo} and \ref{alg:bb} that occur in the same paper and have a different approach.}.
 
 \begin{algorithm}
-\caption{{\sc Iterative algorithm with complement of backbone estimate}}
+\caption{{\sc Refining algorithm with complement of backbone estimate}}
 \label{alg:ibb}
 \DontPrintSemicolon
 \KwIn{A satisfiable formula $F$}

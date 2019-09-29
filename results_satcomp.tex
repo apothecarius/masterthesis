@@ -24,19 +24,19 @@ $PB2_{50\%}$ & 10.135 & 10.133 & 6.428 & 10\\
 $PB2_{5\%}$ & 5.232 & 5.229 & 1.737 & 9\\
 $PB2_{0.5\%}$ & 5.251 & 5.249 & 1.816 & 9\\
 \end{tabular}
-\caption{Averages of 64 testfiles taken from sat competitions. The columns indicate: The full time that the calculation took in seconds; The time that was spent in the sat solver; The time that the last sat computation took; The number of sat calls (all values are averages).}
+\caption[Performance results of sat competition benchmark]{Averaged performance results of 64 testfiles taken from sat competitions. The columns indicate: The full time that the calculation took in seconds; The time that was spent in the sat solver; The time that the last sat computation took; The number of sat calls (all values are averages).}
 \label{tab:satCompAvg} %for referencing
 \end{wraptable}
 
 For the first benchmark, I collected a set of 64 files from the 2017 SAT competition\footnote{
 To be more precise the $essential$ folder from the $incremental$ package, currently available at \url{https://baldur.iti.kit.edu/sat-competition-2017/benchmarks/incremental.zip}
-}. The SAT competitions generally use problems that are difficult to solve compared to other problems of the same file size. This is in order to encourage development of solving strategies that reliably have good performance and not only for most of them. To save time during benchmarking, files that took longer than around one minute for a single model computation were excluded, resulting in files that are generally around 30 kilobytes large. Additionally, problems where the duration for backbone computation averaged below one second were excluded, because here the small differences in the measurements could just as well be explained with external factors like the CPU throttling for a short time. To get meaningful testresults for such files, multiple testpasses should be conducted.
+}. The SAT competitions generally use problems that are difficult to solve compared to other problems of the same file size. This is in order to encourage development of solving strategies that reliably have good performance and not only for most of them. To save time during benchmarking, files that took longer than around one minute for a single model computation were excluded, resulting in files that are generally around 30 kilobytes large. Additionally, problems where the duration for backbone computation averaged below one second were excluded, because here the small differences in the measurements could just as well be explained with external factors like short variations in the clock speed of the CPU. To get meaningful testresults for such files, multiple testpasses should be conducted.
 
 The averaged time to compute the backbones of these 64 testfiles can be seen in \ref{tab:satCompAvg}\footnote{
 	The hardware used for all benchmarks listed in this thesis was an Intel Core i7-8809G with 16 gigabytes of DDR4-2667 memory in dual channel and an NVMe harddrive. 
 }. The second column shows the time that was only spent in the SAT solver. This gives a hint on whether a particular algorithm configures its SAT solver well and whether it looses computation time in things besides the SAT calls, for example through model reduction.
 
-\begin{wraptable}[30]{R}{8cm}
+\begin{wraptable}[29]{R}{7.5cm}
 \begin{tabular}{l| c c }
 File & $t_{keep}$ & $t_{discard}$ \\
 \hline
@@ -116,7 +116,7 @@ fla-qhid-380-1.cnf & 189.895 & 249.003 \\
 fla-qhid-400-4.cnf & 55.213 & 52.811 \\
 smallSatBomb.cnf & 0.011 & 0.022 \\
 \end{tabular}
-\caption{Backbone computation time of the $IBB$ algorithm, once with keeping learned clauses ($t_{keep}$) and once discarding learned clauses between every sat call($t_{discard}$)}
+\caption[Benefit of keeping learned clauses in $IBB$]{Backbone computation time of the $IBB$ algorithm, once with keeping learned clauses ($t_{keep}$) and once discarding learned clauses between every sat call($t_{discard}$) TODO: sicherstellen, dass nicht zu hoch}
 \label{tab:learnedIbb} %for referencing
 \end{wraptable} 
 Taking a look at this table, we can quickly see that for these instances, all solvers that employed preferences as part of their algorithm performed much worse than those that did not. These would be $BB$,$IBB$ and $BB_{unit}$. This impression is further supported by the performance results of the three configurations of the $PB2$ algorithm. Here the effect of preferences was reduced incrementally, eventually reaching a computation time close to that of $IBB$ where no preferences were set.
@@ -132,30 +132,6 @@ Table \ref{tab:learnedIbb} shows a comparison of individual benchmarks to highli
 
 The information contained in learned clauses is very valuable, as it prevents the solver from repeating invalid combinations of assignments that might even be likely to occur again. But if already learned clauses can guide the SAT solver away from possible conflicts, it could ideally return a model without any backtracking.
 
-\iffalse 
-\subsection{Comparison of PB0 with PB1}
-topic dropped, weil vorhandene erklärung nicht eindeutig ist.
-
-\begin{wraptable}[7]{r}{7cm} %[tbp]
-\begin{tabular}{l| c c c c}
-& $t_{full}$ & $t_{sat}$ & $t_{last}$ & $n_{sat}$ \\
-\hline			
-PB0 & 1005.756 & 1005.753 & 810.946 & 3 \\
-PB1 & 6741.638 & 6741.635 & 6594.098 & 2 \\
-IBB & 556.815 & 556.719 & 361.825 & 2 \\
-\end{tabular}
-\caption{Comparison of runtime of file $grieu-vmpc-s05-27$ . $t_{last}$ shows the time that the very last SAT call took.}
-\label{tab:tLastGrieu} %for referencing
-\end{wraptable}
-Table \ref{tab:satCompAvg} shows a strong performance difference between PB0 and PB1.
-
- grieu beispiel rauspicken (letzter sat call)
-
-
-stammt daher, dass zuletzt unsat errechnet wird. vonThore hat das problem nicht (selten überhaupt eine millisekunde gebraucht für letzten aufruf). Ne, lässt sich nicht so einfach sagen, in vonThore sind alle aufrufe ziemlich billig.
-\fi
-
-
 \subsection{Benefits of unit implication}
 \label{ss:result_unit}
 This section evaluates the effects of trying to recognize backbone literals through unit implication as described in section \ref{subsec:unitImpl}. Table \ref{tab:satCompAvg} interestingly shows no performance benefit for this technique, even though the number of SAT calls is much smaller.
@@ -168,7 +144,7 @@ File & $t_{BB}[n_{sat}]$ & $t_{BB_{unit}}(t_{sat})[n_{sat}]$ & $n_{unit}$ & $n_{
 \hline
 brock400-2.cnf & 0.04[254] & 0.04(0.03)[254] & 0 & 0 \\
 fla-komb-400-3.cnf & 1276.71[381] & 1241.12(1241.11)[45] & 336 & 379 \\
-dimacs-hanoi5.cnf & 1.94[1931] & 1.84(1.23)[281] & 1650 & 1931 \\
+dimacs-hanoi5.cnf & 1.94[1,931] & 1.84(1.23)[281] & 1,650 & 1,931 \\
 vonThore42.cnf & 0.02[398] & 0.01(0.01)[51] & 345 & 346 \\
 grieu-vmpc-s05-27.cnf & 261.09[678] & 281.08(277.1)[536] & 142 & 677 \\
 fla-komb-360-4.cnf & 14.94[337] & 14.94(14.9)[45] & 292 & 333 \\
@@ -176,30 +152,31 @@ fla-qhid-360-1.cnf & 74.96[355] & 76.03(76.03)[29] & 326 & 355 \\
 grieu-vmpc-s05-25.cnf & 182.84[625] & 179.91(179.44)[51] & 574 & 625 \\
 fla-qhid-360-5.cnf & 20.68[350] & 20.89(20.89)[29] & 321 & 349 \\
 fla-barthel-220-4.cnf & 3.55[32] & 2.74(2.73)[32] & 0 & 6 \\
-9012345.cnf & 4.18[1483] & 6.73(5.92)[813] & 670 & 1478 \\
+9012345.cnf & 4.18[1483] & 6.73(5.92)[813] & 670 & 1,478 \\
 fla-barthel-220-2.cnf & 8.18[23] & 8.11(8.11)[23] & 0 & 4 \\
 1098765.cnf & 1.21[938] & 1.29(0.83)[493] & 444 & 921 \\
 smallSatBomb.cnf & 0.01[26] & 0.01(0.01)[19] & 7 & 9 \\
 \end{tabular}
-\caption{Benchmark results for a selection of files with a focus on the benefit of unit implication.
+\caption[Benefits of unit implication]{Benchmark results for a selection of files with a focus on the benefit of unit implication.
 Rows indicate: Calculation time and number of SAT calls for the $BB$ solver ; Calculation time, time spent in SAT solver and number of SAT calls for the $BB_{unit}$ solver ; Number of backbone literals identified through unit implication (in $BB_{unit}$) ; Number of backbone variables in formula.}
 \label{tab:bbkbb}
 \end{table}
 
-Table \ref{tab:bbkbb}\footnote{In this table the pure sat calculation time for the $BB$ column is missing. The $BB$ algorithm actually spends almost no time outside of the SAT solver in the case of the listed formulas.
+Table \ref{tab:bbkbb}\footnote{In this table the pure sat calculation time for the $BB$ column is missing. The $BB$ algorithm actually spends almost no time outside of the SAT solver in the case of the listed formulas. TODO sicherstellen dass auf der richtigen seite (mit tabelle 5.3)
 	%\\Most of the performance differences in this table can be explained with other reasons than actual algorithmic differences. $fla-barthel-220-4.cnf$ for example should not be faster with $KBB$ since here no backbone literal was determined through unit propagation. However I was able to reproduce this performance difference just through the order of what was called first, i.e. if the two solvers are called the other way around the difference in timing between the first and second call are the same. A possible explanation could be a power saving feature in modern processors.
 	} 
 shows individual performance differences between the $BB$ solver supplied by $Sat4J$ and my own modification $BB_{unit}$ for comparison, as well as the backbone's size and the number of backbone literals identified through unit implication. The time columns also contain the number of sat calls that were comitted. Its content matches the results of table \ref{tab:satCompAvg}. Occasional cases where $BB_{unit}$ trumps in performance over $BB$ get balanced out by cases where this is the other way round, but the number of sat calls is always better with the $BB_{unit}$ algorithm. And this is true in spite of the fact that almost all identifications happened through unit implication. 
 
-This indicates that the effect from scanning for unit implied backbone literals also appears in the $BB$ solver, only not quite as obvious. When you look at line \ref{algo:bb:learn} of algorithm \ref{alg:bb}, you see that $BB$ actually takes identified backbone literals up into the formula to speed up the solving process. Now imagine what happens, if the unit implication case happens during the course of the $BB$ algorithm. You have a clause that is not satisfied, even though all but one of its literals are already assigned through the learned backbone literals. When $BB$ tests the last of that clauses literals with an assumption against it, the clause becomes immediately unsatisfied\footnote{Remember that $BB$ tests by trying to disprove a potential backbone literal.}, proving that the last remaining literal in the clause is part of the backbone. 
+This indicates that the effect from scanning for unit implied backbone literals also appears in the $BB$ solver, only not quite as obvious. When you look at line \ref{algo:bb:learn} of algorithm \ref{alg:bb}, you see that $BB$ actually takes identified backbone literals up into the formula to speed up the solving process\footnote{Just like any other method by reusing learned clauses}. Now imagine what happens, if the unit implication case happens during the course of the $BB$ algorithm. You have a clause that is not satisfied, even though all but one of its literals are already assigned through the learned backbone literals. When $BB$ tests the last of that clauses literals with an assumption against it, the clause becomes immediately unsatisfied\footnote{Remember that $BB$ tests by trying to disprove a potential backbone literal.}, proving that the last remaining literal in the clause is part of the backbone. This happens without a single decision or conflict. 
 
 The results shown in the following chapter (\ref{sec:sectionVonThore}) paint a slightly different picture. Here the pure SAT time of $BB_{unit}$ is actually smaller than that of $BB$, however even $BB$ looses around a third of its calculation time outside of pure SAT calls. This could be explained by the much higher number of SAT calls for this benchmark and the overhead that comes with preparations and cleanups for a SAT call, which appearantly became relevant at that point. Given good conditions (like in that benchmark) $BB_{unit}$ can identify many backbone literals in a single search, which also requires less data structures around it compared to a complete SAT computation.
 
-In summary, searching for backbone literals through unit implication can be a more efficient strategy than testing each individual literal through a SAT call, however only if the search for unit literals is implemented in a very efficient way. Also note that the problem of having too many SAT calls can just as well be resolved by using an enumeration algorithm like $IBB$ instead of an iterative approach.
+In summary, searching for backbone literals through unit implication can be a more efficient strategy than testing each individual literal through a SAT call, however only if the search for unit literals is implemented in a very efficient way. %Also note that the problem of having too many SAT calls can just as well be resolved by using an enumeration algorithm like $IBB$ instead of an iterative approach.
 
 \subsection{Effect of subset preferences}
 
 \begin{wraptable}{r}{5cm} %[tbp]
+\center
 \begin{tabular}{l| c }
  & $t_{last}/t_{avg}$  \\
 \hline
@@ -210,22 +187,22 @@ $PB1_{model}$ & 1.682 \\
 $PB1_{rotate}$ & 1.703 \\
 $PB1_{forget}$ & 2.640 \\
 %$PB1x$ & 2.777 \\
-$PB1a$ & 3.808 \\
+%$PB1a$ & 3.808 \\
 $PB1b$ & 1.178 \\
 $PB1c_{50\%}$ & 2.550 \\
 $PB1c_{5\%}$ & 4.495 \\
 $PB1d_{50\%}$ & 2.109 \\
 $PB1e$ & 2.457 \\
-$PB1f$ & 1.627 \\
+%$PB1f$ & 1.627 \\
 $PB2_{50\%}$ & 6.343 \\
 $PB2_{5\%}$ & 2.989 \\
 $PB2_{0.5\%}$ & 3.113 \\
 \end{tabular}
-\caption{Ratio between the average duration of a SAT call and the duration of the last SAT call. Calculation is based on the values in table \ref{tab:satCompAvg}}
+\caption[Comparative duration of last SAT call]{Ratio between the average duration of a SAT call and the duration of the last SAT call. Calculation is based on the values in table \ref{tab:satCompAvg}}
 \label{tab:lastTimeToAvgTime}
 \end{wraptable}
 
-The algorithms where the set of preferences was restricted in size ($PB1c$ and $PB1d$) compared relatively bad to the base algorithm $PB1$ and this is most pronounced in the case of $PB1c(5\%)$ where the restriction is the strongest. This means that, at least for this benchmark, restricting the number of preferences completely backfired. The decrease in performance can be traced beginning with $PB1$ which is equivalent to $PB1(100\%)$ towards the $50\%$ and $5\%$ configuration.
+The algorithms where the set of preferences was restricted in size ($PB1c$ and $PB1d$) compared relatively bad to the base algorithm $PB1$ and this is most pronounced in the case of $PB1c_{5\%}$ where the restriction is the strongest. This means that, at least for this benchmark, restricting the number of preferences completely backfired. The decrease in performance can be traced beginning with $PB1$ which is equivalent to $PB1c_{100\%}$ towards the $50\%$ and $5\%$ configuration.
 
 %This behaviour matches an observation that you can make with the duration of the last SAT call. All of these take longer than the average. The commonality with the subset preferences is that the set of preferences is small here as well, since it 
 
@@ -237,7 +214,8 @@ However this can only happen if enough other variables are available in the same
 
 Additionally, the more that you restrict the size of the preferences, the more likely it becomes that all preferred literals are negated backbone literals. In this case, all decisions made based on $h_{pref}$ prevent you from finding a model and must eventually be reverted.
 
-Even worse, since the preferred assignments have to be done before all the others, they occur at the beginning of the CDCL table. This means that in case of a conflict with other assignments, the preferred decisions will not be reverted if there is any other decision available to be reverted, since the strategy of CDCL is usually to revert only the youngest decision involved with the conflict. But if this preference actually goes against a backbone literal of the formula, it must eventually be reverted to reach a valid model. This can only happen by a unit propagation, since otherwise a decision would just take the preference into account again. And since no decision can happen before the preferred decisions, to counter a preference a unit propagation requires the maximum amount of information so that it can happen without a prior decision. You would need to do an amount of learning that is actually equivalent to directly identifying a backbone literal. 
+Even worse, since the preferred assignments have to be done before all the others, they occur at the beginning of the CDCL table. This means that in case of a conflict with other assignments, the preferred decisions will not be reverted if there is any other decision available to be reverted, since the strategy of CDCL is to revert only the youngest decision involved with the conflict. But if this preference actually goes against a backbone literal of the formula, it must eventually be reverted to reach a valid model. This can only happen by a unit propagation, since otherwise a decision would just take the preference into account again. And since no decision can happen before the preferred decisions, to counter a preference a unit propagation requires the maximum amount of information so that it can happen without a prior decision. Not only do you need to identify a variable assignment as part of the backbone, but before that you have to learn enough other clauses so that you can reach the decisions that were made from unsatisfiable elements in $h_{pref}$.
+
 %eigentlihc: dass anstatt schlecht funktionierenden präferenzen bessere benutzt werden
 
 %However, this extreme amount of work could potentially be made use of, by combining strategies from $PB0$ and $PB1c$. The strategy of $PB0$ incorporates to check every time, whether any of it's preferences could be implemented. If not it is interpreted as that each preference goes against a backbone literal. The same can be applied to $PB1c$ to iteratively identify multiple backbone literals in case they all could not be implemented wahrschienlich nicht, kp wie das mit den blocking clauses interagiert.
@@ -248,7 +226,7 @@ Even worse, since the preferred assignments have to be done before all the other
 
 \subsection{Duration of last SAT call}
 \label{ss:durLastCall}
-A similar effect to the previous is hinted by the performance results listed in the third column $t_{last}$ of table \ref{tab:satCompAvg}. Many of these timings are larger than the average computation would take. The observation coincides exactly with whether the last SAT call would be unsatisfiable. The $PB0$ solver does not apply blocking clauses and still performs well in the last iteration, whereas the $IBB$ solver that does not employ preferences performs badly.\footnote{The $BB$ solvers are excluded from this table, because they are iterative algorithms. Algorithmically the first and last SAT calls do not differ that much.} This indicates that the problem lies in the fact, that in this last sat call, the formula is unsatisfiable.
+A similar effect to the previous is hinted by the performance results listed in the third column $t_{last}$ of table \ref{tab:satCompAvg}. Many of these timings are longer than the average computation would take. The observation coincides exactly with whether the last SAT call would be unsatisfiable. The $PB0$ solver does not apply blocking clauses and still performs well in the last iteration, whereas the $IBB$ solver that does not employ preferences performs badly.\footnote{The $BB$ solvers are excluded from this table, because they are iterative algorithms. Algorithmically the first and last SAT calls do not differ that much.} This indicates that the problem lies in the fact, that in this last sat call, the formula is unsatisfiable.
 
 That $PB0$ performs so well in the last SAT call is actually quite interesting, as here the last SAT call is about seven times faster than its own average. This could be explained by the fact that since the formula is never really changed in the case of $PB0$, the clauses that it learns never become outdated. In contrast, in the typical model enumeration schemes, they may not become invalid but at least less useful over time, because they might only affect the generation of implicants that are later excluded from the formula through a stronger blocking clause. The information stored in these learned clauses can be put to use especially well in the last iteration. Theoretically, the preferences at that point in time are all impossible to implement and should slow down that particular calculation. 
 But the solver has already spent a lot of time with conflicts that stem from them and should thus have learned many clauses that involve the backbone literals, possibly even directly identifying them as such. In that particular case, the corresponding preference is overridden immediately and $PB0$ merely needs to get the remainder of the formula to satisfy, just like any other backbone algorithm.
@@ -263,12 +241,12 @@ But the solver has already spent a lot of time with conflicts that stem from the
 \hline
 $PB1$ &	20.251 & 12.426 \\
 $PB1_{rotate}$ & 21.255 & 13.154 \\
-$PB1c(50\%)$ & 25.708 & 13.109 \\
-$PB1c(5\%)$ & 1080.724 & 14.483 \\
-$PB2(50\%)$ & 13.023 & 7.025 \\
-$PB2(5\%)$ & 6.283 & 6.348 \\
+$PB1c_{50\%}$ & 25.708 & 13.109 \\
+$PB1c_{5\%}$ & 1080.724 & 14.483 \\
+$PB2_{50\%}$ & 13.023 & 7.025 \\
+$PB2_{5\%}$ & 6.283 & 6.348 \\
 \end{tabular}
-\caption{Average of the complete backbone computation for variants of $PrefBones$ with and without forgetting preferences.}
+\caption[Benefit of forgetting preferences]{Average of the complete backbone computation for variants of $PrefBones$ with and without forgetting preferences.}
 \label{tab:satCompForgettingBenefits}
 \end{wraptable}
 
@@ -277,7 +255,7 @@ $PB2(5\%)$ & 6.283 & 6.348 \\
 %Table \ref{tab:satCompAvg} shows a relatively good result for $PB1(amnes)$. It is still worse than the solvers without any preferences, but in table \ref{tab:vonThore1} where pre
 Table \ref{tab:satCompForgettingBenefits}
 %\footnote{These performance ratings differ slightly from table \ref{tab:satCompAvg}. This is because it is a different execution.}
-lists a comparison of multiple backbone algorithms once with ordinary, permanent preferences and in a forgetting scheme as described in section \ref{sec:amnesPrefs}. Preferences in general resulted in worse performance for this benchmark. However, $PB1(forget)$, where the preferences are configured to immediately drop those that were involved in a conflict, reduced the penalty to an acceptable level in all examples. \footnote{
+lists a comparison of multiple backbone algorithms once with ordinary, permanent preferences and once in a forgetting scheme as described in section \ref{sec:amnesPrefs}. Preferences in general resulted in worse performance for this benchmark. However, $PB1_{forget}$, where the preferences are configured not to be applied a second time after they were reverted through conflict resolution, reduced the penalty to an acceptable level in all examples. \footnote{
 In earlier executions of my benchmark setup, I also tested $PB1c$ with $0.5\%$ as preference size restriction, however only in combination with forgetting preferences. Without forgetting them, this configuration turned out to be completely unreasonable to test within an acceptable time frame and was dropped.}
 
 

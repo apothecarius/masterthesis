@@ -6,28 +6,25 @@
 \begin{tabular}{l| c c c }
 &$t_{calc}$ & $t_{sat}$& $n_{sat}$ \\
 \hline
-$BB$ & 11.117 & 7.235 & 159545 \\
-$BB_{unit}$ & 13.747 & 2.11 & 15266 \\
-$IBB$ & 6.353 & 2.316 & 15748 \\
-$PB0$ & 3.659 & 1.469 & 6531 \\
-$PB1$ & 3.918 & 1.611 & 6531 \\
-$PB1_{model}$ & 2.148 & 1.59 & 6531 \\
-$PB1_{rotate}$ & 3.872 & 1.204 & 4471 \\
-$PB1_{forget}$ & 4.067 & 1.682 & 6531 \\
-$%PB1$(invert) & 8.154 & 3.26 & 15248 \\
-%$PB1x$ & 7.596 & 2.94 & 15748 \\
-$%PB1a$ & 5.096 & 2.112 & 9335 \\
-$PB1b$ & 7.754 & 3.199 & 15248 \\ %leave this in place, required for comparison with PB2
-$PB1c_{50\%}$ & 5.376 & 2.248 & 9680 \\
-$PB1c_{5\%}$ & 7.026 & 2.693 & 13955 \\
-$PB1d_{50\%}$ & 4.464 & 1.804 & 7386 \\
-$PB1e$ & 3.524 & 1.354 & 6387 \\
+$BB$ & 11.117 & 7.235 & 159,545 \\
+$BB_{unit}$ & 13.747 & 2.11 & 15,266 \\
+$IBB$ & 6.353 & 2.316 & 15,748 \\
+$PB0$ & 3.659 & 1.469 & 6,531 \\
+$PB1$ & 3.918 & 1.611 & 6,531 \\
+$PB1_{model}$ & 2.148 & 1.59 & 6,531 \\
+$PB1_{rotate}$ & 3.872 & 1.204 & 4,471 \\
+$PB1_{forget}$ & 4.067 & 1.682 & 6,531 \\
+$PB1b$ & 7.754 & 3.199 & 15,248 \\ %leave this in place, required for comparison with PB2
+$PB1c_{50\%}$ & 5.376 & 2.248 & 9,680 \\
+$PB1c_{5\%}$ & 7.026 & 2.693 & 13,955 \\
+$PB1d_{50\%}$ & 4.464 & 1.804 & 7,386 \\
+$PB1e$ & 3.524 & 1.354 & 6,387 \\
 %$PB1f$ & 3.603 & 1.526 & 6369 \\
-$PB2_{50\%}$ & 8.341 & 3.457 & 15752 \\
-$PB2_{5\%}$ & 8.313 & 3.484 & 15752 \\
-$PB2_{0.5\%}$ & 8.364 & 3.529 & 15752 \\
+$PB2_{50\%}$ & 8.341 & 3.457 & 15,752 \\
+$PB2_{5\%}$ & 8.313 & 3.484 & 15,752 \\
+$PB2_{0.5\%}$ & 8.364 & 3.529 & 15,752 \\
 \end{tabular}
-\caption{Performance results for computation of the backbone of a product formula. Values are not averaged, but summed up over 407 backbone computations, each with a different assumption.}
+\caption[Performance results of first industrial benchmark]{Performance results for computation of the backbone of a product formula. Values are not averaged, but summed up over 407 backbone computations, each with a different assumption.}
 \label{tab:vonThore1}
 \end{wraptable}
 
@@ -35,23 +32,23 @@ Another benchmark I applied the various backbone algorithms to, was a formula fo
 
 The particular use case that I examined was to find the implications in the formula, i.e. if a customer requests feature $a$, would he also have to pick feature $b$. A primitive way to calculate this would be to iterate over all possible pairs of features 
 %\footnote{Minus permutations and pairs with the same feature twice}
-and check for satisfiability of $POF_1$ under the condition that $a$ is $\top$ and $b$ is $\bot$. If this was unsatisfiable, then $a$ would imply $b$. However, with 407 literals to choose from, you would have to do 165,242\footnote{407 times 406} sat calls. 
+and check for satisfiability of $POF_1$ under the condition that $a$ is $\top$ and $b$ is $\bot$. If this was unsatisfiable, then $a$ would imply $b$. However, with 407 literals to choose from, you would have to do 165,242\footnote{407 times 406. This is actually very close to the number of sat calls of the $BB$ algorithm.} sat calls. 
 
 A more efficient approach is to only go over the 407 options once and for each variable $a$ of them calculate the backbone of $POF_1 \cup \{a\}$ or in other words $POF_1$ under the assumption $a$. If a feature $b$ occurs in all models when $a$ is assumed, then $a$ implies $b$ in some way.
 
 
 \subsection{Performance measurement and discussion}
-Table \ref{tab:vonThore1}\footnote{The duration of the last SAT call is missing in this table, because it was too small to be properly measureable in each backbone computation.} lists experimental results with the same set of algorithms that were run on the files from the SAT competition. In the following, I will list some observations about these results.
+Table \ref{tab:vonThore1}\footnote{The duration of the last SAT call is missing in this table, because it was too small to be properly measureable in each individual backbone computation.} lists experimental results with the same set of algorithms that were run on the files from the SAT competition. In the following, I will list some observations about these results.
 
 \begin{itemize}
 \item We immediately see that preferences give a great benefit to performance, other than in the previous benchmark with the files from the SAT competition. Here, all cases where I tried to soften the effects of preferences ($PB1_{forget}$,$PB1c$, $PB2$) had worse results than the base algorithm $PB1$\footnote{
 	Especially $PB2$, but note that this algorithm only affects the assignment order. A fair comparison would be between $PB2$ and $PB1b$, but here $PB2$ is the slower one as well.
 }. 
-\item The fastest algorithm overall ($PB1(model)$) is the one that does not reduce the models at all. The number of SAT calls is even exactly the same as that of that variant with prime implicant reduction. However the time that was spent in the SAT solver is very similar to that execution with prime implicant reduction ($PB1$), so the difference must be the time that was spent to reduce the model and the benefit, namely the number of optional variables in the prime implicant, was very small.\\
+\item The fastest algorithm overall is the one that does not reduce the models at all, namely $PB1_{model}$. The number of SAT calls is even exactly the same as that of the variant with prime implicant reduction. However the time that was spent in the SAT solver is very similar to the default $PB1$ configuration with prime implicant reduction, so the difference must be the time that was spent to reduce the model and the benefit, namely the number of optional variables in the prime implicant, was very small.\\
 Still, this does not mean that model reduction wouldn't be useful at all in this benchmark, as the next point will show. It merely implies that the benefit of applying any special strategy may very well be outweighed by the extra performance cost that comes with it, since here all of this work would have to be done a very large number of times.
 \item The fastest implementation when it comes to pure SAT solver time as well as number of SAT calls was $PB1_{rotate}$, where literal rotation is used to reduce models instead of prime implicant computation. Apparantly the models that occur in this formula actually do contain many optional assignments. However these are spread over many different prime implicants with little distance to the model.\\
 A previous variant of this algorithm took around 250 seconds to compute overall. This version did not use the lookup from literal to containing clauses (as described in later paragraphs of section \ref{ss:rot}), but iterated over all clauses in the formula. Such a drastic effect of an efficient implementation did not occur for the SAT competition benchmark.\\
-This has primarily two reasons. First, the number of SAT calls per instance is twice as much in this benchmark compared to those from the SAT competitions\footnote{The 4471 calls span over 407 problem instances.}, therefore the model reduction happens twice as often. Secondly, the formula of this benchmark is much larger than those from the SAT competition, with the filesize being around twenty times as large. Therefore there are much more clauses to search through.
+This has primarily two reasons. First, the number of SAT calls per instance is twice as much in this benchmark compared to those from the SAT competitions\footnote{The 4471 calls span over 407 problem instances.}, therefore the model reduction happens twice as often. Secondly, the formula of this benchmark is much larger than those from the SAT competition, with the filesize being around twenty times as large. Therefore, there are much more clauses to search through.
 \item The algorithm in second place of overall computation time was $PB1e$. This one makes use of learned literals, so appearantly the backbone literals in this formula are easy to identify by checking the set of literals that the solver learns when it computes new models.\\
 In fact, on inspection, all literals that later turn out to be part of the backbone occur in this set after the very first SAT call(with an exception of the forced literal, which can be extracted by searching the formula for clauses with only one literal).
 \item Another noteworthy line is $BB_{unit}$ where unit implication is used to identify backbone literals. The implementation of this algorithm was based on that of the $BB$ algorithm and here the number of SAT calls of $BB_{unit}$ is a tenth of the number in the case of $BB$. However this advantage is not expressed equally strong when it comes to the time spent in the SAT solver(around a fourth), which means that the identification through calculating a new model can sometimes be more efficient than regularly checking unit implications, as was already explained in the previous section (\ref{ss:result_unit}).\\
@@ -60,20 +57,24 @@ Finally, the overall computation time of $BB_{unit}$ is actually worse than that
 \end{itemize}
 
 \subsection{Specialized algorithm}
-TODO PB0(model) war auch ziemlich gut
 
-With the findings from the last section and some experimentation, I devised a specialized algorithm $PB4$ for this use case which is listed in algorithm \ref{alg:thoreSpecial}. For comparison with the other implementations, the performance results can be seen in table \ref{tab:thoreSpecialResults}.
+With the findings from the last section and some experimentation, I devised a specialized algorithm $PB3$ for this use case which is listed in algorithm \ref{alg:thoreSpecial}\footnote{
+	Another method that faired very well on quick examination and was also easier to set up was $PB0$ if the model reduction was deactivated. $PB3$ however faired even better.
+}. For comparison with the other implementations, the performance results can be seen in table \ref{tab:thoreSpecialResults}.
 
-\begin{wraptable}[7]{r}{8cm}
-%\begin{table}[tbp]
+
+%\begin{wraptable}[8]{r}{6.5cm}
+\begin{table}[h]
+\centering
 \begin{tabular}{l| c c c }
 &	$t_{calc}$(sec) &	$t_{sat}$(sec)	& NSatCalls \\
 \hline
-PB4 & 1.482 & 0.863 & 4064 \\
+$PB3$ & 1.482 & 0.863 & 4064 \\
 \end{tabular}
-\caption{Results of specialized backbone algorithm on product formula benchmark.}
+\caption[Performance result of specialized backbone algorithm]{Performance result of specialized backbone algorithm on product formula benchmark $POF_1$.}
 \label{tab:thoreSpecialResults}
-\end{wraptable}
+%\end{wraptable}
+\end{table}
 
 First of all, we should make use of the fact, that all backbone literals are learned after the very first SAT call. This can be done with the scheme of approaching upper and lower bounds as described in section \ref{sec:upperLower}. The lower bound $bb_l$ of the backbone consists of all learned literals, whereas its upper bound $bb_u$ consists of the intersection of found models or reductions of them. Having both upper and lower bound not only allows to potentially stop the loop before the last sat call. It also accelerates the reduction of the first model to its required literals, because if you know that a literal is in the lower bound of the backbone, you don't need to explicitely test, whether it would also be in its upper bound. This behaviour is listed in algorithm \ref{alg:specReq}. It might sound sensible at first to regularly check for new learned literals in case some might only show up later. However for the reasons described in section \ref{subsec:axiomatic}, this is not guaranteed to result in valid backbone literals.
 
@@ -118,8 +119,8 @@ $bb_u \gets required(model,F,bb_l)$\;
 \KwIn{A model $M$ for formula $F$, a lower bound $bb_l$ of the backbone of $F$}
 \KwOut{All unrotatable literals in $M$ as an upper bound of the backbone of $F$}
 $R \gets bb_l$\;
-\For{$l \in M$}{
-	\If{$l \in bb_l \lor \exists c \in F : c\langle M \textbackslash l \rangle = \bot$}{
+\For{$l \in M \textbackslash bb_l$}{
+	\If{$\exists c \in F : (c\langle M \textbackslash l \rangle = \bot)$}{
 		$R \gets R \cup \{l\}$\;
 	}
 }

@@ -1,14 +1,14 @@
 \section{Tested modifications}
 As is mentioned in \cite{PJ18}, the concept of preferences has not experienced much research as of yet. That is why I experimented a lot with various modifications on the concept for the purpose of this thesis.
 
-All of the following modifications were implemented ontop of algorithm \ref{alg:blockPref} ($PB1$). Algorithm \ref{alg:pb0} (PB0) depends on that all available preferences are taken into account strictly, so there is not much space to experiment there without making the algorithm unreliable. 
+All of the following modifications were implemented on top of algorithm \ref{alg:blockPref} ($PB1$). Algorithm \ref{alg:pb0} (PB0) depends on that all available preferences are taken into account strictly, so there is not much space to experiment there without making the algorithm unreliable. 
 
 
 \subsection{Forgetting preferences}
 \label{sec:amnesPrefs}
 During the course of solving a CNF formula with the CDCL algorithm, many assignment conflicts occur which must be resolved through backtracking. This means that some assignments need to be taken back. Looking at this from the other direction, it can very well happen, that the same variable can occur in decisions multiple times over such a calculation. If a variable assignment is even slightly involved in a conflict, then, lacking any further knowledge, it is a good strategy to simply try its negation in the future. It is not guaranteed, but simply more likely that the other assignment resolves the conflict that occurred with the previous assignment. 
 
-The default way in that preferences are implemented stands in the way of this. If you tell the SAT solver to always assign the same boolean value to a specific variable, then the strategy above cannot be applied. That is why I have implemented an option to $PB1$ where preferences are forgotten after the first time when they are taken into account. This means that when a variable is selected for a decision, it is removed from the primary heap that is consulted first for this selection\footnote{
+The default way in that preferences are implemented stands in the way of this. If you tell the SAT solver to always assign the same boolean value to a specific variable, then the strategy above cannot be applied. That is why I have implemented an option to $PB1$ where individual preferences are forgotten after the first time when they are taken into account. This means that when a variable is selected for a decision, it is removed from the primary heap that is consulted first for this selection\footnote{
 	In the $Sat4J$ library, what decides the order of decisions and what decides the value assigned in these decisions are actually two separate data structures. This means that this removal must be written in two separate places.
 }. 
 
@@ -24,7 +24,7 @@ During benchmarking it showed itself, that all solvers that did not employ any p
 
 The simplest way to do this would be to restrict the number of preferences that could be set for each SAT call. The parameter above is multiplied with the number of variables in the formula and then the number of preferred literals is pruned in each iteration to have at most that size, without of course discarding the set of assignments that has yet to be tested.
 
-Aside from the straightforward implementation, I also created a variant, where extra care is taken to use different subsets for the preferences for each SAT call. To do this, all preferences given to the SAT solver are remembered and not picked again until all of them were tried once. At this point the memory of previously used preferences is cleared so that it builds up again.
+Aside from the straightforward implementation, I also created a variant, where extra care is taken to use different subsets for the preferences in each SAT call. To do this, all preferences given to the SAT solver are remembered and not picked again until all of them were tried once. At this point the memory of previously used preferences is cleared so that it builds up again.
 
 
 %Some preferences are difficult to take into account, but it is still possible that they will eventually disappear through model reduction, without spending too much time on finding a model with them. TODO irgendwo unterbringen

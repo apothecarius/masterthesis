@@ -6,22 +6,22 @@ For clarity, the used algorithms are listed here. All algorithms unless otherwis
 \begin{itemize}
 \setlength\itemsep{0.2em}
 \item $\boldsymbol{BB}$: $Sat4J$ implementation of algorithm \ref{alg:bb}.
-\item $\boldsymbol{BB_{unit}}$: Algorithm $BB$ in combination with unit implication, see section \ref{subsec:unitImpl}.
+\item $\boldsymbol{BB_{unit}}$: $BB$ in combination with unit implication, see section \ref{subsec:unitImpl}.
 \item $\boldsymbol{IBB}$: $Sat4J$ implementation of algorithm \ref{alg:ibb}.
 \item $\boldsymbol{PB0}$: $PrefBones$ after \cite{PJ18}. See algorithm \ref{alg:pb0}.
 \item $\boldsymbol{PB0_{model}}$: $PB0$ without any model reduction.
 \item $\boldsymbol{PB1}$: $PrefBones$ with blocking clause. See algorithm \ref{alg:blockPref}.
 \item $\boldsymbol{PB1_{model}}$: $PB1$ without any model reduction.
-\item $\boldsymbol{PB1_{rotate}}$: $PB1$ with model reduction through rotation. 
-\item $\boldsymbol{PB1_{forget}}$: $PB1$ with forgetting preferences as described in section \ref{sec:amnesPrefs}.
+\item $\boldsymbol{PB1_{rotate}}$: $PB1$ with model reduction through rotation. See section \ref{ss:rot}
+\item $\boldsymbol{PB1_{forget}}$: $PB1$ with forgetting preferences. See section \ref{sec:amnesPrefs}.
 %\item $\boldsymbol{PB1x}$: TODOweg $PB1$ without preferences. Structurally identical with $IBB$\footnote{There are slight differences in the performance measurements between these two implementations. These probably stem from differences in the implementation. The differences divided by the number of sat calls is relatively comparable, implying that the two implementations scale comparably.}
 %\item $\boldsymbol{PB1a}$: TODO nötig?
 \item $\boldsymbol{PB1b}$: $PB1$ where preferences can only affect the selection order. Given for the purpose of comparison with $PB2$.
-\item $\boldsymbol{PB1c}$: $PB1$ with a limited number of preferences, as described in section \ref{sec:subsets}. Listed with three different size restrictions.
+\item $\boldsymbol{PB1c}$: $PB1$ with a limited number of preferences, as described in section \ref{sec:subsets}. Listed with various different size restrictions.
 \item $\boldsymbol{PB1d}$: Like $PB1c$, but with more diverse preferences in each iteration.
 \item $\boldsymbol{PB1e}$: $PB1$ in combination with approaching upper and lower bounds as described in section \ref{sec:upperLower}, where the lower bound is made up of learned literals\footnote{As previously mentioned, this method should not be applied once a formula is modified. Results of $PB1e$ serve the sole purpose of indicating that looking for learned literals is a useful strategy.}.
 %\item $\boldsymbol{PB1f}$: Based on $PB1e$, but sollte eigenltich weg
-\item $\boldsymbol{PB2}$: Uses scalable preferences as described in section \ref{sec:nudging}.
+\item $\boldsymbol{PB2}$: Uses blocking clauses and scalable preferences. See section \ref{sec:nudging}.
 \end{itemize}
 
 

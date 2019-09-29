@@ -1,7 +1,7 @@
 \section{Iterative algorithms}
 \label{sec:iterative}
 \subsection{Testing every literal}
-Alternatively, you can define the backbone as all literals that occur with the same assignment in all models of its problem, which implies that enforcing a backbone literal to its negation should make the formula unsatisfiable. This definition already leads to a simple algorithm that can calculate the backbone, by checking both assignments of every literal for whether it would make the formula unsatisfiable, see algorithm \ref{alg:iterTwo}. This algorithm is referenced in \cite{mjl10}
+Alternatively, you can define the backbone as all literals that occur with the same assignment in all models of its problem, which implies that enforcing a backbone literal to its negation should make the formula unsatisfiable. This definition already leads to a simple algorithm that can calculate the backbone, by checking both assignments of every literal for whether it would make the formula unsatisfiable, see algorithm \ref{alg:iterTwo}. This algorithm is referenced in \cite{mjl10} and also written slightly differently in \cite{kk01}.
 \begin{algorithm}
 \caption{{\sc Iterative algorithm (two tests per variable)}}
 \label{alg:iterTwo}
@@ -36,7 +36,7 @@ First observe that any model of $F$ would already reduce the set of literals to 
 
 This can be repeated with every further model that we find. The following algorithm \ref{alg:bb} is another one that is listed in both \cite{mjl10} and \cite{mjl15} and is implemented in the $Sat4J$ library as $BB$\footnote{With the exception of using prime implicants instead of models, similar to the $IBB$ algorithm.}.
 
-\begin{algorithm}
+\begin{algorithm}[t]
 \caption{{\sc Iterative algorithm (one test per variable)}}
 \label{alg:bb}
 \DontPrintSemicolon
@@ -65,13 +65,14 @@ $\Return \; \nu_r$\;
 
 Note that both possible results of the call to the SAT solver are converted to useful information. In the else branch, the formula together with the blocked literal $l$ was still solvable. In this case $\nu$ is still a valid model for $F$, so we can search through it to look for more assignments that don't need to be checked. Note that here $\nu$ must contain $\neg l$, as it was enforced. Therefore $l$ will be removed from $\Lambda$ in this case as well.
 
-In the other case, we identified $l$ as a backbone literal. In that case it will be added to the returned set, removed from the set of literals to test and, lastly, added to the problem $F$, which increases performance in subsequent solving steps. However it would be even better, not only to reuse the learned backbone literals, but all learned clauses.
+In the other case, we identified $l$ as a backbone literal. In that case it will be added to the returned set, removed from the set of literals to test and, lastly, added to the problem $F$, which increases performance in subsequent solving steps. In practice, this happens automatically, as the SAT solver keeps backbone literals in the form of learned clauses for reuse in following computations. %However it would be even better, not only to reuse the learned backbone literals, but all learned clauses.
 
-It is possible to apply the concept of preferences described in section \ref{ss:prefs} to the iterative algorithms listed here. However, this is less beneficial than adding it to the enumeration approach of $IBB$, because in the $BB$ algorithm many SAT calls are supposed to return $UNSAT$ to positively identify an assignment as backbone. However, this case does not give us a model, so the extra effort of trying to find a more valuable model is often wasted here.
+It is possible to apply the concept of preferences described in section \ref{ss:prefs} to the iterative algorithms listed here. However, this should be less beneficial than adding it to the enumeration approach of $IBB$, because in the $BB$ algorithm many SAT calls are supposed to return $UNSAT$ to positively identify an assignment as backbone. This case does not give us a model, so the extra effort of trying to find a more valuable model is often wasted here.
 
-Another difficulty with the $BB$ algorithm in comparison to $IBB$ is that here it is more difficult to reuse learned clauses. These are based on a subset of the clauses in $F$. Their existence is virtual so to speak, implied through these base clauses but difficult to find. Adding more clauses to the formula does not remove a learned clause, as the set of base clauses is untouched. At most it might be possible to subsume it with another learned clause. However if a clause is removed from $F$, it might be that the learned clause is no longer implied through the formula, therefore making it invalid. 
+A benefit of this algorithm is the fact that other than $IBB$ it does not need to employ blocking clauses. This is because the temporary modifications of the formula given to it are not clauses where you have a choice on how to satisfy them, but a fixed assignment of a variable. This results in the fact that after the backbone computation, the clauses learned during that operation can all be kept. For more details on this aspect, see section \ref{subsec:axiomatic}.
 
-Example: Using the iterative approach on formula $F$ which contains the clause $\{(a,b,c)\}$ we temporarily add the blocking clause $(\neg a)$. In this case, the clause $(b,c)$ is implied. CDCL could learn this new clause by making the resolution of $\{(a,b,c)\}$ with the blocking clause $\{\neg a\}$. Should we now change the blocking clause, this learned clause must be discarded. Otherwise when we test with a different blocking clause $(\neg b)$, together with $(b,c)$ it would imply $(c)$, making $c$ a backbone of $F$, which it clearly isn't.
+%Another difficulty with the $BB$ algorithm in comparison to $IBB$ is that here it is more difficult to reuse learned clauses. These are based on a subset of the clauses in $F$. Their existence is virtual so to speak, implied through these base clauses but difficult to find. Adding more clauses to the formula does not remove a learned clause, as the set of base clauses is untouched. At most it might be possible to subsume it with another learned clause. However if a clause is removed from $F$, it might be that the learned clause is no longer implied through the formula, therefore making it invalid. 
+%TODO: falsch, BB darf danach learned clauses wieder verwenden, IBB nicht.
 
 As a sidenote, the general approach of the $BB$ algorithm can be extended to test multiple backbone literals simultaneously in one single SAT call with a concept called "Chunking". Whereas in algorithm \ref{alg:bb} you would pass only one possible backbone literal in negation, here you would instead pass a clause that contained multiple negated candidates. To make the formula unsatisfiable, each literal of that clause would have to be impossible to satisfy in any way, meaning that all of them are negated backbone literals. The downside is that in the other case, you still don't know whether an individual literal of that temporarily added clause could be in the backbone after all, so you might end up having to make additional tests. However, this thesis contains no experimental results for this concept, because it was not supplied in the $Sat4J$ library and I focused more on the concept of preferences as described in the next section.
 

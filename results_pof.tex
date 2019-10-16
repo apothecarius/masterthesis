@@ -122,7 +122,7 @@ In comparison with unprepared computations (see table \ref{tab:vonThore2pof}), t
 
 
 \subsubsection{Reusing formula instance}
-But why should you discard any information about the formula at all? Both $BB$ and $PB0$ never change their formula during the whole benchmark, so you would think that all of these learned clauses would be just as valuable in subsequent iterations of this benchmark. When you have an object representing a formula in $Sat4J$, calculate its backbone with either $PB0$ or $BB$ and put that into an infinite loop, the duration of each repetition will quickly decrease to only a handful of milliseconds, because all possible conflicts will eventually be evaded with help of knowledge from previous repetitions.
+But why should you discard any information about the formula at all? Both $BB$ and $PB0$ never change their formula during the whole benchmark\footnote{If implemented to use assumptions instead of a blocking clause.}, so you would think that all of these learned clauses would be just as valuable in subsequent iterations of this benchmark. When you have an object representing a formula in $Sat4J$, calculate its backbone with either $PB0$ or $BB$ and put that into an infinite loop, the duration of each repetition will quickly decrease to only a handful of milliseconds, because all possible conflicts will eventually be evaded with help of knowledge from previous repetitions.
 
 \begin{table}[h]
 %\begin{wraptable}{l}{7.5cm}
@@ -146,50 +146,16 @@ Appearantly, the $POF$ formulae don't benefit much from this technique. It could
 
 Note also that in the domain of SAT solving it is generally considered a bad thing to have many clauses in your formula that aren't useful to the current computation. Even if they are effectively meaningless in the context of their own formula, they have to be checked whether they indicate a unit assignment every time that a relevant variable is assigned a value. Typically a SAT solver removes unused learned clauses regularly, however in this benchmark, this never happened, even over 948 backbone computations, finally having learned 35,983 clauses but not having become noticeably faster.
 
-In fact, as figure \ref{fig:reusePrep} shows, it became slower. Here, the grey continuous line shows the overall computation duration of the $PB0_{model}$ algorithm with reusing the same formula object, while the dashed black line denotes the computation time of the same algorithm solving a prepared formula object and discarding all newer learned clauses. The latter is is faster in every single case, while the grey line even increases its performance loss through its build-up of learned clauses. 
+In fact, as figure \ref{fig:reusePrep} shows, it became slower. Here, the grey continuous line shows the overall computation duration of the $PB0_{model}$ algorithm with reusing the same formula object, while the dashed black line denotes the computation time of the same algorithm solving a prepared formula object and discarding all newer learned clauses. The latter is faster in every single case, but when it comes to the cases where this one requires around 400 milliseconds for each instance, the grey line's offset from it indicating the performance loss becomes twice as much to the end through its build-up of learned clauses. 
 
 
 \begin{figure}[h]
 \centering
 \includegraphics[angle=90,origin=c,width=\textwidth,height=\textheight,keepaspectratio=true]{reuseprep}
-\caption[Performance comparison of using a prepared formula object and reusing the same one.]{Performance comparison of using a prepared formula object (dashed black) and reusing the same one (grey) with algorithm $PB0_{model}$. Values are smoothed over a five element window with weights $[\frac{1}{10},\frac{1}{5},\frac{2}{5},\frac{1}{5},\frac{1}{10}]$.}
+\caption[Performance comparison of using a prepared formula object and reusing the same one.]{Performance comparison of using a prepared formula object (dashed black) and reusing the same one (grey) with algorithm $PB0_{model}$. Raw values are the same as those used for tables \ref{tab:pofPrepBenefit} and \ref{tab:pofAssump}, but smoothed over a five element window with weights $[\frac{1}{10},\frac{1}{5},\frac{2}{5},\frac{1}{5},\frac{1}{10}]$.}
 \label{fig:reusePrep}
 %\end{wrapfigure}
 \end{figure}
 
 %\newpage
 %TODO vergleichs bild zwischen $PB0_model(prepped)$ und $PB0_model(chained)$, am besten geglättet
-
-
-\iffalse
-
-
-
-wenn man BB oder PB0 in einer schleife auf dieselbe formel laufen lässt, geht computation time gegen 0, weil alles gelernte wieder verwendet wird. Ist nicht so.
-
-muss auch berücksichtigen, dass mehr klauseln mehr overhead durch propagation bedeuten
-There is however the possibility, that after one backbone computation, the formula object would contain information, that could be valuable to another backbone computation.
-
-TODO: mit vonThore ausprobieren, vielleicht gibts da mehr zu lernen nein gibts nicht, nicht jenseits der grenze zum rauschen.
-
-
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%eigentlich erstes: kopieren rausoptimieren
-
-
-learned lits übernehmen in POF ist schlechter ansatz, weil wird relativ schnell schlechter als immer die formel übernehmen, womöglich nutzlose learned clauses, die nur verlangsamen und nichts aussagen (weil von anderen assumptions)
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-The first consideration was to first compute information of the base formula and reuse it in all subsequent computations, where the backbone under an assumption was calculated. However this was not possible.\\
-One interesting piece of information would have been the set of clauses that were learned during the computation of a model of the base formula $POF_1$. However this set was empty. Appearantly the formula is simple enough, that the model can be found without a single conflict. The solver returned without having learned any new clause for the formula.
-
-Another thing I thought about was the backbone of the base formula. If you can determine backbone literals of $POF_1$, then you can safely assume, that all of these are part of any restricted formula $POF_1 \cup \{a\}$. This is because, when a clause gets added to a CNF formula, its set of models can only shrink, no new model can be induced through an additional clause\footnote{Assuming that no new variable was introduced.}. This implies that an assignment that didn't occur in the models before will also not appear in the new smaller set of models, in turn implying that if a variable always occured with the same assignment in $POF_1$, it will also do so in $POF_1 \cup \{a\}$. \\
-However this set was empty as well and for a good reason in this particular case. The backbone of a formula consists of all assignments that have to be done to end up in a model. In the context of a product formula, which we have here, this would mean, that a specific feature of the product would always have to be selected. In other words, the product has an option that is not optional. 
-
-\fi
